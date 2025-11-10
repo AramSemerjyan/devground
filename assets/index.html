@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DartPad Lite - Editor</title>
+    <style>
+        html,
+        body,
+        #container {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #editor {
+            height: calc(100% - 40px);
+        }
+
+        #toolbar {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px;
+        }
+
+        #output {
+            height: 150px;
+            overflow: auto;
+            background: #1e1e1e;
+            color: #dcdcdc;
+            font-family: monospace;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="editor"></div>
+    <div id="output"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.37.1/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.37.1/min/vs' } });
+        window.editor = null;
+        require(['vs/editor/editor.main'], function () {
+            window.editor = monaco.editor.create(document.getElementById('editor'), {
+                value: [
+                    "void main() {",
+                    "  print('Hello from Dart!');",
+                    "}"
+                ].join('\n'),
+                language: 'dart',
+                automaticLayout: true,
+                theme: 'vs-dark',
+                fontSize: 14,
+                minimap: {
+                    enabled: false,
+                }
+            });
+        });
+
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+
+        function sendToFlutter(msg) {
+            // This name ('EditorChannel') must match the JavascriptChannel created in Flutter
+            try {
+                EditorChannel.postMessage(JSON.stringify(msg));
+            } catch (e) {
+                console.error('postMessage failed', e);
+            }
+        }
+
+        // Messages FROM Flutter: Flutter will call `evaluateJavascript` that executes window.postMessageToEditor(...)
+        window.postMessageToEditor = function (message) {
+            try {
+                const msg = typeof message === 'string' ? JSON.parse(message) : message;
+                if (msg.type === 'output') {
+                    output.textContent += msg.payload + '\n';
+                } else if (msg.type === 'status') {
+                    status.textContent = msg.payload;
+                } else if (msg.type === 'replaceCode') {
+                    window.editor.setValue(msg.payload);
+                } else if (msg.type === 'clearOutput') {
+                    output.textContent = '';
+                } else if (msg.type === 'setDiagnostics') {
+                    // You could implement monaco.editor.setModelMarkers here to show errors inline.
+                    // Keep it simple for now: print them to output
+                    output.textContent += 'DIAGNOSTICS:\\n' + JSON.stringify(msg.payload, null, 2) + '\\n';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        window.runEditorCode = function() {
+            if (!window.editor) return;
+            const code = window.editor.getValue();
+            sendToFlutter({ type: 'run', code });
+        };
+
+        window.formatEditorCode = function() {
+            if (!window.editor) return;
+            sendToFlutter({ type: 'format', code: window.editor.getValue() });
+        };
+    </script>
+    <script src="https://unpkg.com/vscode-ws-jsonrpc/dist/browser.js"></script>
+    <script src="https://unpkg.com/monaco-languageclient/lib/monaco-languageclient.js"></script>
+    <script>
+        // utility to create WebSocket
+        function createWebSocket(url) {
+          const socket = new WebSocket(url);
+          socket.onopen = () => console.log('ws open');
+          socket.onclose = () => console.log('ws closed');
+          return socket;
+        }
+
+        function connectToAnalysisServer(wsUrl) {
+          // use vscode-ws-jsonrpc to create a message reader/writer over the web socket
+          const webSocket = createWebSocket(wsUrl);
+
+          // Use to convert classic websocket to MessageConnection for monaco-languageclient
+          webSocket.onopen = () => {
+            const socketTransport = toSocket(webSocket); // provided by vscode-ws-jsonrpc
+            const reader = new WebSocketMessageReader(socketTransport);
+            const writer = new WebSocketMessageWriter(socketTransport);
+
+            const languageClient = new MonacoLanguageClient({
+              name: "Dart Language Client",
+              clientOptions: {
+                // use the existing monaco model
+                documentSelector: [{ language: 'dart' }],
+                errorHandler: { /* default handlers */ },
+              },
+              connectionProvider: {
+                get: (errorHandler, closeHandler) => {
+                  return Promise.resolve(createConnection(reader, writer, errorHandler, closeHandler));
+                }
+              }
+            });
+
+            languageClient.start();
+          };
+        }
+
+        // Connect to local bridge
+        connectToAnalysisServer('ws://127.0.0.1:8081/');
+    </script>
+</body>
+
+</html>
