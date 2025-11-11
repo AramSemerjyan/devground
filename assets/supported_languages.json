@@ -17,6 +17,7 @@
     "name": "Shell",
     "extension": ".sh",
     "icon": "",
+    "sdk_path": "/bin",
     "path": {
       "validation": "/bash",
       "hint": ""

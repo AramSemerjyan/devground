@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:dartpad_lite/UI/app/app_page_vm.dart';
 import 'package:dartpad_lite/UI/app/route_observer.dart';
+import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
 import 'package:dartpad_lite/UI/editor/editor_page.dart';
 import 'package:dartpad_lite/UI/history/history_page.dart';
 import 'package:dartpad_lite/UI/settings/settings_page.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_tool_bar.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 
 import '../tool_bar/bottom_tool_bar/bottom_tool_bar.dart';
@@ -28,89 +32,103 @@ class _AppPageState extends State<AppPage> {
     _vm.setUp();
   }
 
+  Widget _buildMain() {
+    return ValueListenableBuilder(
+      valueListenable: _vm.inProgress,
+      builder: (_, value, __) {
+        if (value) {
+          return Center(
+            child: SizedBox(
+              height: 50,
+              width: 50,
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        return Navigator(
+          key: _navigatorKey,
+          observers: [_observer],
+          initialRoute: 'editor',
+          onGenerateRoute: (RouteSettings settings) {
+            WidgetBuilder builder;
+            switch (settings.name) {
+              case 'editor':
+                builder = (context) => EditorPage(
+                  monacoWebBridgeService: _vm.monacoWebBridgeService,
+                  compiler: _vm.compiler,
+                  saveFileService: _vm.fileService,
+                );
+                break;
+              case 'settings':
+                builder = (context) =>
+                    SettingsPage(languageRepo: _vm.languageRepo);
+                break;
+              case 'history':
+                builder = (context) => HistoryPage(
+                  fileService: _vm.fileService,
+                  importFileService: _vm.importFileService,
+                );
+              default:
+                builder = (context) => EditorPage(
+                  monacoWebBridgeService: _vm.monacoWebBridgeService,
+                  compiler: _vm.compiler,
+                  saveFileService: _vm.fileService,
+                );
+            }
+            return MaterialPageRoute(builder: builder, settings: settings);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.mainGrey,
-      body: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                // Side bar
-                SideToolBar(navigatorKey: _navigatorKey),
+      body: DropTarget(
+        onDragEntered: (_) {
+          print('on drag entered');
 
-                Container(
-                  width: 1,
-                  height: double.infinity,
-                  color: Color(0xff2b2b2b),
-                ),
+          CommandPalette.showFileImport(context);
+        },
+        onDragExited: (details) {
+          print('on drag exited');
+          CommandPalette.hide();
+        },
+        onDragDone: (details) {
+          CommandPalette.hide();
 
-                Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: _vm.inProgress,
-                    builder: (_, value, __) {
-                      if (value) {
-                        return Center(
-                          child: SizedBox(
-                            height: 50,
-                            width: 50,
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-
-                      return Navigator(
-                        key: _navigatorKey,
-                        observers: [_observer],
-                        initialRoute: 'editor',
-                        onGenerateRoute: (RouteSettings settings) {
-                          WidgetBuilder builder;
-                          switch (settings.name) {
-                            case 'editor':
-                              builder = (context) => EditorPage(
-                                monacoWebBridgeService:
-                                    _vm.monacoWebBridgeService,
-                                compiler: _vm.compiler,
-                                saveFileService: _vm.fileService,
-                              );
-                              break;
-                            case 'settings':
-                              builder = (context) =>
-                                  SettingsPage(languageRepo: _vm.languageRepo);
-                              break;
-                            case 'history':
-                              builder = (context) => HistoryPage(
-                                fileService: _vm.fileService,
-                                importFileService: _vm.importFileService,
-                              );
-                            default:
-                              builder = (context) => EditorPage(
-                                monacoWebBridgeService:
-                                    _vm.monacoWebBridgeService,
-                                compiler: _vm.compiler,
-                                saveFileService: _vm.fileService,
-                              );
-                          }
-                          return MaterialPageRoute(
-                            builder: builder,
-                            settings: settings,
-                          );
-                        },
-                      );
-                    },
+          for (final file in details.files) {
+            if (file.path.isNotEmpty) {
+              _vm.importFileService.importFile(file: File(file.path));
+            }
+          }
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  SideToolBar(navigatorKey: _navigatorKey),
+                  Container(
+                    width: 1,
+                    height: double.infinity,
+                    color: Color(0xff2b2b2b),
                   ),
-                ),
-              ],
+                  Expanded(child: _buildMain()),
+                ],
+              ),
             ),
-          ),
-          Container(
-            width: double.infinity,
-            height: 1,
-            color: Color(0xff2b2b2b),
-          ),
-          BottomToolBar(languageRepo: _vm.languageRepo),
-        ],
+            Container(
+              width: double.infinity,
+              height: 1,
+              color: Color(0xff2b2b2b),
+            ),
+            BottomToolBar(languageRepo: _vm.languageRepo),
+          ],
+        ),
       ),
     );
   }

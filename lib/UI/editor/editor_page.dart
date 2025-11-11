@@ -81,7 +81,8 @@ class _EditorPageState extends State<EditorPage> {
           icon: const Icon(Icons.save),
           onPressed: () async {
             final name = await CommandPalette.showRename(context);
-            _vm.save(name: name);
+
+            if (name != null) _vm.save(name: name);
           },
         ),
       ],

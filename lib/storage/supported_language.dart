@@ -94,6 +94,7 @@ class SupportedLanguage implements CommandPaletteItem {
       snippet: json['snippet'],
       needSDKPath: json['need_sdk_path'],
       supported: LanguageSupport.fromJson(json['supported']),
+      sdkPath: json['sdk_path'],
     );
   }
 
@@ -107,6 +108,7 @@ class SupportedLanguage implements CommandPaletteItem {
       'path': path.toJson(),
       'supported': supported.value,
       'need_sdk_path': needSDKPath,
+      'sdk_path': sdkPath,
     };
   }
 

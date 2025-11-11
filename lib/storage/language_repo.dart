@@ -138,9 +138,10 @@ class LanguageRepo implements LanguageRepoInterface {
     await prefs.setString(_sdkPathKey, encoded);
 
     // Update in-memory language
-    final language = _supportedLanguages?[key];
+    SupportedLanguage? language = _supportedLanguages?[key];
     if (language != null) {
-      _supportedLanguages?[key] = language.addSDKPath(path);
+      language = language.addSDKPath(path);
+      _supportedLanguages?[key] = language;
     }
 
     return language;

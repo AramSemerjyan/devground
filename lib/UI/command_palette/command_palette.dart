@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 abstract class CommandPaletteItem {
@@ -169,6 +170,46 @@ class CommandPalette {
                         ],
                       ),
                     ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    return completer.future;
+  }
+
+  static Future<String?> showFileImport(
+    BuildContext context, {
+    double width = 100,
+  }) {
+    final completer = Completer<String?>();
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        return GestureDetector(
+          onTap: hide,
+          child: Material(
+            color: Colors.black54,
+            child: Center(
+              child: Material(
+                color: Colors.grey[900],
+                elevation: 12,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: width,
+                  height: width,
+                  padding: const EdgeInsets.all(16),
+                  child: Center(
+                    child: Icon(
+                      Icons.file_download,
+                      color: AppColor.mainGreyLighter,
+                    ),
                   ),
                 ),
               ),

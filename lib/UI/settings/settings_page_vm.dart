@@ -62,7 +62,9 @@ class SettingsPageVM implements SettingsPageVMInterface {
         path: sdkPath,
       );
       _selectedLanguage.value = updatedLang;
-      EventService.instance.onEvent.add(Event.success(title: 'Success'));
+      EventService.instance.onEvent.add(
+        Event(type: EventType.sdkPathUpdated, data: updatedLang),
+      );
     } catch (e) {
       EventService.instance.onEvent.add(Event.error(title: e.toString()));
     }

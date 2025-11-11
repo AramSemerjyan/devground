@@ -117,16 +117,17 @@ class _BottomToolBarState extends State<BottomToolBar> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AnimatedDefaultTextStyle(
-                curve: Curves.linear,
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontWeight: FontWeight.normal,
+              Expanded(
+                child: AnimatedDefaultTextStyle(
+                  curve: Curves.linear,
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  duration: const Duration(milliseconds: 100),
+                  child: Text(data.title ?? ''),
                 ),
-                duration: const Duration(milliseconds: 100),
-                child: Text(data.title ?? ''),
               ),
-              // Text(data.title ?? '', style: TextStyle(color: Colors.white54)),
               const Spacer(),
               _buildLanguageSelection(),
             ],

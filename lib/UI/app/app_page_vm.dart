@@ -8,8 +8,6 @@ import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../services/lsp_bridge.dart';
-
 enum SDKState { inProgress, ready, notReady }
 
 class AppPageVM {
@@ -41,8 +39,8 @@ class AppPageVM {
     if (language != null) {
       _setLanguage(language);
 
-      lspBridge = LspBridge(8081, language);
-      await lspBridge.start();
+      // lspBridge = LspBridge(8081, language);
+      // await lspBridge.start();
 
       await monacoWebBridgeService.setUp();
       monacoWebBridgeService.setLanguage(language: language);
@@ -71,6 +69,18 @@ class AppPageVM {
           await languageRepo.setSelectedLanguage(
             key: importedFile.language.key,
           );
+        });
+
+    EventService.instance.onEvent.stream
+        .where((event) => event.type == EventType.sdkPathUpdated)
+        .listen((event) {
+          final updatedLanguage = event.data as SupportedLanguage;
+          final selectedLanguage = languageRepo.selectedLanguage.value;
+
+          if (selectedLanguage == updatedLanguage) {
+            _setLanguage(updatedLanguage);
+            EventService.instance.onEvent.add(Event.success(title: 'Success'));
+          }
         });
 
     inProgress.value = false;
