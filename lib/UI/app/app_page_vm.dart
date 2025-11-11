@@ -1,6 +1,8 @@
 import 'package:dartpad_lite/services/compiler/compiler_interface.dart';
 import 'package:dartpad_lite/services/event_service.dart';
-import 'package:dartpad_lite/services/save_file/save_file_service.dart';
+import 'package:dartpad_lite/services/import_file/import_file_service.dart';
+import 'package:dartpad_lite/services/monaco_bridge_service/monaco_bridge_service.dart';
+import 'package:dartpad_lite/services/save_file/file_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 
@@ -10,6 +12,12 @@ class AppPageVM {
   late final Compiler compiler = Compiler();
   late final LanguageRepo languageRepo = LanguageRepo();
   late final FileServiceInterface fileService = FileService(languageRepo);
+  late final MonacoWebBridgeServiceInterface monacoWebBridgeService =
+      MonacoWebBridgeService();
+  late final ImportFileServiceInterface importFileService = ImportFileService(
+    languageRepo,
+    monacoWebBridgeService,
+  );
 
   void setUp() async {
     EventService.instance.onEvent.add(

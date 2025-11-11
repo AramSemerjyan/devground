@@ -54,6 +54,7 @@ class _AppPageState extends State<AppPage> {
                       switch (settings.name) {
                         case 'editor':
                           builder = (context) => EditorPage(
+                            monacoWebBridgeService: _vm.monacoWebBridgeService,
                             compiler: _vm.compiler,
                             saveFileService: _vm.fileService,
                           );
@@ -63,10 +64,13 @@ class _AppPageState extends State<AppPage> {
                               SettingsPage(languageRepo: _vm.languageRepo);
                           break;
                         case 'history':
-                          builder = (context) =>
-                              HistoryPage(fileService: _vm.fileService);
+                          builder = (context) => HistoryPage(
+                            fileService: _vm.fileService,
+                            importFileService: _vm.importFileService,
+                          );
                         default:
                           builder = (context) => EditorPage(
+                            monacoWebBridgeService: _vm.monacoWebBridgeService,
                             compiler: _vm.compiler,
                             saveFileService: _vm.fileService,
                           );

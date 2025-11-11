@@ -38,6 +38,7 @@ dependencies:
   multi_window: ^0.2.0
   desktop_drop: ^0.7.0
   intl: ^0.20.2
+  process_run: ^1.2.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

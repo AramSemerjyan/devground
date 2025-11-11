@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:dartpad_lite/UI/history/history_page_vm.dart';
-import 'package:dartpad_lite/services/save_file/save_file_service.dart';
+import 'package:dartpad_lite/services/import_file/import_file_service.dart';
+import 'package:dartpad_lite/services/save_file/file_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,14 +10,23 @@ import '../../utils/app_colors.dart';
 
 class HistoryPage extends StatefulWidget {
   final FileServiceInterface fileService;
-  const HistoryPage({super.key, required this.fileService});
+  final ImportFileServiceInterface importFileService;
+
+  const HistoryPage({
+    super.key,
+    required this.fileService,
+    required this.importFileService,
+  });
 
   @override
   State<HistoryPage> createState() => _HistoryPageState();
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  late final HistoryPageVMInterface _vm = HistoryPageVM(widget.fileService);
+  late final HistoryPageVMInterface _vm = HistoryPageVM(
+    widget.fileService,
+    widget.importFileService,
+  );
 
   @override
   void initState() {
@@ -34,9 +44,7 @@ class _HistoryPageState extends State<HistoryPage> {
         padding: const EdgeInsets.all(16.0),
         child: ValueListenableBuilder<List<File>>(
           valueListenable: _vm.onFilesUpdate,
-          builder: (_, value, __) {
-            final files = value;
-
+          builder: (_, files, __) {
             return ListView.builder(
               itemCount: files.length,
               itemBuilder: (context, index) {
@@ -75,17 +83,32 @@ class _HistoryPageState extends State<HistoryPage> {
                         ),
                       ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.delete_forever,
-                        color: AppColor.error,
-                      ),
-                      onPressed: () {
-                        _vm.deleteFile(file: file);
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete_forever,
+                            color: AppColor.error,
+                          ),
+                          onPressed: () {
+                            _vm.deleteFile(file: file);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.folder,
+                            color: AppColor.mainGreyLighter,
+                          ),
+                          onPressed: () {
+                            _vm.onReveal(file: file);
+                          },
+                        ),
+                      ],
                     ),
-                    onTap: () {
-                      // Optional: open file in Monaco editor
+                    onTap: () async {
+                      await _vm.onSelect(file: file);
+                      if (context.mounted) Navigator.of(context).pop();
                     },
                   ),
                 );

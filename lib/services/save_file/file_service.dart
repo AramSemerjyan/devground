@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:process_run/shell.dart';
 
 abstract class FileServiceInterface {
   Future<List<File>> getHistoryFiles();
   Future<File?> saveMonacoCodeToFile({required String raw, String? fileName});
   Future<bool> deleteFile({required File file});
+  Future<void> revealInFinder({required File file});
 }
 
 class FileService implements FileServiceInterface {
@@ -85,6 +87,23 @@ class FileService implements FileServiceInterface {
     } catch (e) {
       EventService.instance.onEvent.add(Event.error(title: e.toString()));
       return false;
+    }
+  }
+
+  @override
+  Future<void> revealInFinder({required File file}) async {
+    if (!await file.exists()) return;
+
+    final shell = Shell();
+
+    if (Platform.isMacOS) {
+      await shell.run('open -R "${file.path}"');
+    } else if (Platform.isWindows) {
+      await shell.run('explorer /select,"${file.path.replaceAll('/', '\\')}"');
+    } else if (Platform.isLinux) {
+      // Try xdg-open to open the containing directory
+      final dir = file.parent.path;
+      await shell.run('xdg-open "$dir"');
     }
   }
 }
