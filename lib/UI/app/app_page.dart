@@ -1,5 +1,7 @@
 import 'package:dartpad_lite/UI/app/app_page_vm.dart';
+import 'package:dartpad_lite/UI/app/route_observer.dart';
 import 'package:dartpad_lite/UI/editor/editor_page.dart';
+import 'package:dartpad_lite/UI/history/history_page.dart';
 import 'package:dartpad_lite/UI/settings/settings_page.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_tool_bar.dart';
 import 'package:flutter/material.dart';
@@ -15,13 +17,14 @@ class AppPage extends StatefulWidget {
 
 class _AppPageState extends State<AppPage> {
   final _navigatorKey = GlobalKey<NavigatorState>();
-  late final vm = AppPageVM();
+  final _observer = AppRouteObserver();
+  late final _vm = AppPageVM();
 
   @override
   void initState() {
     super.initState();
 
-    vm.checkLanguageState();
+    _vm.setUp();
   }
 
   @override
@@ -44,18 +47,29 @@ class _AppPageState extends State<AppPage> {
                 Expanded(
                   child: Navigator(
                     key: _navigatorKey,
+                    observers: [_observer],
                     initialRoute: 'editor',
                     onGenerateRoute: (RouteSettings settings) {
                       WidgetBuilder builder;
                       switch (settings.name) {
                         case 'editor':
-                          builder = (context) => EditorPage();
+                          builder = (context) => EditorPage(
+                            compiler: _vm.compiler,
+                            saveFileService: _vm.fileService,
+                          );
                           break;
                         case 'settings':
-                          builder = (context) => SettingsPage();
+                          builder = (context) =>
+                              SettingsPage(languageRepo: _vm.languageRepo);
                           break;
+                        case 'history':
+                          builder = (context) =>
+                              HistoryPage(fileService: _vm.fileService);
                         default:
-                          builder = (context) => EditorPage();
+                          builder = (context) => EditorPage(
+                            compiler: _vm.compiler,
+                            saveFileService: _vm.fileService,
+                          );
                       }
                       return MaterialPageRoute(
                         builder: builder,
@@ -72,7 +86,7 @@ class _AppPageState extends State<AppPage> {
             height: 1,
             color: Color(0xff2b2b2b),
           ),
-          BottomToolBar(),
+          BottomToolBar(languageRepo: _vm.languageRepo),
         ],
       ),
     );

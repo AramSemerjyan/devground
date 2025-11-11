@@ -148,6 +148,17 @@
         // Connect to local bridge
         connectToAnalysisServer('ws://127.0.0.1:8081/');
     </script>
+    <script>
+        window.setEditorLanguage = function(language) {
+          if (!window.editor) return;
+          try {
+            monaco.editor.setModelLanguage(window.editor.getModel(), language);
+            console.log("Language changed to", language);
+          } catch (e) {
+            console.error("Failed to change language", e);
+          }
+        };
+    </script>
 </body>
 
 </html>

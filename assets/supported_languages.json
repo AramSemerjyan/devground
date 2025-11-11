@@ -1,10 +1,110 @@
-{
-  "dart": {
-    "name": "Dart",
-    "icon": ""
+[
+  {
+    "key": "dart",
+    "name": "Dart SDK",
+    "extension": ".dart",
+    "icon": "",
+    "path": {
+      "validation": "/bin/flutter",
+      "hint": "/Users/your_username/flutter"
+    },
+    "snippet": "void main() {\n  print('Hello from Dart!');\n}",
+    "supported": "supported"
   },
-  "shell": {
+  {
+    "key": "shell",
     "name": "Shell",
-    "icon": ""
+    "extension": ".sh",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "#!/bin/bash\necho \"Hello from Shell\"",
+    "supported": "upcoming"
+  },
+  {
+    "key": "c",
+    "name": "C",
+    "extension": ".c",
+    "icon": "",
+    "path": {
+      "validation": "/usr/bin/gcc",
+      "hint": "/usr/bin/gcc"
+    },
+    "snippet": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello from C!\\n\");\n    return 0;\n}",
+    "supported": "upcoming"
+  },
+  {
+    "key": "cpp",
+    "name": "C++",
+    "extension": ".cpp",
+    "icon": "",
+    "path": {
+      "validation": "/usr/bin/g++",
+      "hint": "/usr/bin/g++"
+    },
+    "snippet": "#include <iostream>\n\nint main() {\n    std::cout << \"Hello from C++!\" << std::endl;\n    return 0;\n}",
+    "supported": "upcoming"
+  },
+  {
+    "key": "python",
+    "name": "Python",
+    "extension": ".py",
+    "icon": "",
+    "path": {
+      "validation": "/usr/bin/python3",
+      "hint": "/usr/local/bin/python3"
+    },
+    "snippet": "def main():\n    print(\"Hello from Python!\")\n\nif __name__ == \"__main__\":\n    main()",
+    "supported": "upcoming"
+  },
+  {
+    "key": "swift",
+    "name": "Swift",
+    "extension": ".swift",
+    "icon": "",
+    "path": {
+      "validation": "/usr/bin/swift",
+      "hint": "/usr/bin/swift"
+    },
+    "snippet": "import Foundation\n\nprint(\"Hello from Swift!\")",
+    "supported": "upcoming"
+  },
+  {
+    "key": "javascript",
+    "name": "JavaScript",
+    "extension": ".js",
+    "icon": "",
+    "path": {
+      "validation": "/usr/local/bin/node",
+      "hint": "/usr/local/bin/node"
+    },
+    "snippet": "console.log(\"Hello from JavaScript!\");",
+    "supported": "upcoming"
+  },
+  {
+    "key": "html",
+    "name": "HTML",
+    "extension": ".html",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Hello HTML</title>\n</head>\n<body>\n  <h1>Hello from HTML!</h1>\n</body>\n</html>",
+    "supported": "upcoming"
+  },
+  {
+    "key": "css",
+    "name": "CSS",
+    "extension": ".css",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "body {\n  background-color: #f0f0f0;\n  color: #333;\n  font-family: sans-serif;\n}",
+    "supported": "upcoming"
   }
-}
+]

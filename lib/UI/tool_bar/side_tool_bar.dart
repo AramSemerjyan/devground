@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:multi_window/multi_window.dart';
 
 import '../../utils/app_colors.dart';
 
@@ -20,6 +21,29 @@ class _SideToolBarState extends State<SideToolBar> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          Tooltip(
+            message: 'New window',
+            child: InkWell(
+              onTap: () async {
+                await MultiWindow.create(
+                  DateTime.now().microsecondsSinceEpoch.toString(),
+                  alignment: Alignment.center,
+                );
+              },
+              child: Icon(Icons.add, color: AppColor.mainGreyLighter),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Tooltip(
+            message: 'History',
+            child: InkWell(
+              onTap: () async {
+                widget.navigatorKey.currentState?.pushNamed('history');
+              },
+              child: Icon(Icons.history_edu, color: AppColor.mainGreyLighter),
+            ),
+          ),
+          const SizedBox(height: 10),
           Tooltip(
             message: 'Settings',
             child: InkWell(

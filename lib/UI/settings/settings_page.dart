@@ -1,49 +1,98 @@
-import 'dart:io';
-
-import 'package:dartpad_lite/services/event_service.dart';
+import 'package:dartpad_lite/UI/settings/settings_page_vm.dart';
+import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../../settings_manager.dart';
+import '../../storage/language_repo.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final LanguageRepoInterface languageRepo;
+
+  const SettingsPage({super.key, required this.languageRepo});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final TextEditingController _flutterPathController = TextEditingController();
-  String? _statusMessage;
+  final TextEditingController _pathController = TextEditingController();
+  late final SettingsPageVMInterface _vm = SettingsPageVM(widget.languageRepo);
 
-  @override
-  void initState() {
-    super.initState();
-    _load();
+  void _selectDirectory(SupportedLanguage? language) async {
+    if (language == null) return;
+
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory != null) {
+      await _vm.setSDKPath(language: language, sdkPath: selectedDirectory);
+      _pathController.text = selectedDirectory;
+    }
   }
 
-  Future<void> _load() async {
-    final path = await SettingsManager.getFlutterPath();
-    _flutterPathController.text = path ?? '';
-  }
+  Widget _buildSDKPathRow() {
+    return SizedBox(
+      height: 200,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FutureBuilder(
+            future: _vm.getSupportedLanguages(),
+            builder: (c, f) {
+              final data = f.data;
 
-  Future<void> _save() async {
-    final path = _flutterPathController.text.trim();
-    if (path.isEmpty) {
-      setState(() => _statusMessage = 'Path cannot be empty.');
-      return;
-    }
+              if (data == null) return Container();
 
-    final flutterBin = File('$path/bin/flutter');
-    if (!await flutterBin.exists()) {
-      setState(() => _statusMessage = 'Invalid Flutter SDK path.');
-      return;
-    }
-
-    await SettingsManager.setFlutterPath(path);
-    setState(() => _statusMessage = '✅ Saved successfully.');
+              return ValueListenableBuilder(
+                valueListenable: _vm.selectedLanguage,
+                builder: (_, value, __) {
+                  return DropdownButton<SupportedLanguage>(
+                    value: value,
+                    hint: Text(value?.name ?? ''),
+                    focusColor: Colors.transparent,
+                    style: TextStyle(color: AppColor.mainGreyLighter),
+                    items: data.values.map((lang) {
+                      return DropdownMenuItem(
+                        value: lang,
+                        child: Row(
+                          children: [
+                            if (lang.icon.isNotEmpty)
+                              Image.asset(lang.icon, width: 20, height: 20),
+                            const SizedBox(width: 8),
+                            Text(lang.name),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        _vm.selectedLanguage.value = value;
+                      }
+                    },
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          ValueListenableBuilder(
+            valueListenable: _vm.selectedLanguage,
+            builder: (_, value, __) {
+              return Text(
+                value?.sdkPath ?? value?.path.hint ?? '',
+                style: TextStyle(
+                  color: AppColor.mainGreyLighter.withValues(alpha: 0.3),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => _selectDirectory(_vm.selectedLanguage.value),
+            child: const Text('Browse...'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -53,54 +102,8 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: AppColor.mainGreyDarker,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Flutter SDK Path:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColor.mainGreyLighter,
-              ),
-            ),
-            TextField(
-              controller: _flutterPathController,
-              enabled: false,
-              style: TextStyle(
-                color: AppColor.mainGreyLighter.withValues(alpha: 0.3),
-              ),
-              decoration: InputDecoration(
-                hintText: '/Users/your_username/flutter',
-                hintStyle: TextStyle(
-                  color: AppColor.mainGreyLighter.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                String? selectedDirectory = await FilePicker.platform
-                    .getDirectoryPath();
-                if (selectedDirectory != null) {
-                  setState(() {
-                    _flutterPathController.text = selectedDirectory;
-                    _save();
-                    StatusEvent.instance.onEvent.add(
-                      Event.success(title: 'Ready'),
-                    );
-                  });
-                }
-              },
-              child: const Text('Browse...'),
-            ),
-            if (_statusMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _statusMessage!,
-                style: TextStyle(color: AppColor.mainGreyLighter),
-              ),
-            ],
-          ],
+        child: SingleChildScrollView(
+          child: Column(children: [_buildSDKPathRow()]),
         ),
       ),
     );

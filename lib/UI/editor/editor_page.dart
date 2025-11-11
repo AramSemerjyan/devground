@@ -1,39 +1,35 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
 import 'package:dartpad_lite/services/compiler/compiler_interface.dart';
-import 'package:dartpad_lite/services/compiler/dart_compiler.dart';
 import 'package:dartpad_lite/services/event_service.dart';
+import 'package:dartpad_lite/services/save_file/save_file_service.dart';
+import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:multi_window/multi_window.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../services/lsp_bridge.dart';
-import '../../settings_manager.dart';
 import '../../utils/app_colors.dart';
 import '../console/result_console_page.dart';
 
-class RunCodeIntent extends Intent {
-  const RunCodeIntent();
-}
-
-class FormatCodeIntent extends Intent {
-  const FormatCodeIntent();
-}
-
 class EditorPage extends StatefulWidget {
-  const EditorPage({super.key});
+  final CompilerInterface compiler;
+  final FileServiceInterface saveFileService;
+
+  const EditorPage({
+    super.key,
+    required this.compiler,
+    required this.saveFileService,
+  });
   @override
   State<EditorPage> createState() => _EditorPageState();
 }
 
 class _EditorPageState extends State<EditorPage> {
   late final WebViewController _controller;
-  final CompilerInterface compiler = DartCompiler();
 
   final uuid = const Uuid();
 
@@ -65,6 +61,22 @@ class _EditorPageState extends State<EditorPage> {
         },
       );
     _loadHtmlFromAssets();
+
+    EventService.instance.onEvent.stream
+        .where((e) => e.type == EventType.languageChanged)
+        .listen((event) async {
+          final lang = event.data as SupportedLanguage?;
+
+          if (lang != null) {
+            final jsLang = lang.key.value;
+            await _controller.runJavaScript('setEditorLanguage("$jsLang");');
+
+            final codeJson = jsonEncode(lang.snippet);
+            await _controller.runJavaScript(
+              'postMessageToEditor({type:"replaceCode", payload:$codeJson});',
+            );
+          }
+        });
 
     // _lspBridge = LspBridge(lspPort);
     // _lspBridge.start();
@@ -100,139 +112,50 @@ class _EditorPageState extends State<EditorPage> {
     _outputController.sink.add(_output.toString());
   }
 
-  String extractDartError(String stderr) {
-    // Find the start: first colon after the temp file path
-    final startIndex = stderr.indexOf(
-      '.dart:',
-    ); // e.g. ../../../snippet_*.dart:2:27:
-    if (startIndex == -1) return stderr.trim();
-
-    // Find the end: before "Error: AOT compilation failed"
-    final endIndex = stderr.indexOf('Error: AOT compilation failed');
-    if (endIndex == -1) return stderr.substring(startIndex).trim();
-
-    // Extract substring
-    final slice = stderr.substring(startIndex, endIndex).trim();
-
-    // Remove the file path at the start (optional)
-    final firstColon = slice.indexOf('Error:');
-    if (firstColon != -1) {
-      return slice.substring(firstColon).trim();
-    }
-
-    return slice;
-  }
-
   Future<void> runCode(String code) async {
     _inProgress.value = true;
 
     _output.clear();
     _outputController.sink.add('');
 
-    final result = await compiler.runCode(code);
+    try {
+      final result = await widget.compiler.runCode(code);
 
-    if (result.hasError) {
-      sendOutput(result.data);
-      StatusEvent.instance.onEvent.add(Event.error(title: 'Error'));
-    } else {
-      sendOutput(result.data);
-      StatusEvent.instance.onEvent.add(Event.success(title: 'Success'));
+      _handleCompileResult(result);
+    } catch (e) {
+      EventService.instance.onEvent.add(Event.error(title: e.toString()));
     }
-
-    // sendStatus('Writing temp file...');
-    // final tmpDir = await getTemporaryDirectory();
-    // final id = uuid.v4();
-    // final file = File('${tmpDir.path}/snippet_$id.dart');
-    // await file.writeAsString(code);
-    // sendStatus('Compiling...');
-    // // Try to compile to an exe to capture compile errors.
-    // final compiledPath = '${tmpDir.path}/snippet_$id.bin';
-    //
-    // // Run: dart compile exe <file> -o <compiledPath>
-    // final flutterPath = await SettingsManager.getFlutterPath();
-    // final dartExecutable = flutterPath != null && flutterPath.isNotEmpty
-    //     ? '$flutterPath/bin/dart'
-    //     : 'dart'; // fallback to default if not set
-    //
-    // final compileProc = await Process.start(dartExecutable, [
-    //   'compile',
-    //   'exe',
-    //   file.path,
-    //   '-o',
-    //   compiledPath,
-    // ]);
-    // // collect output
-    // final compileStdout = StringBuffer();
-    // final compileStderr = StringBuffer();
-    // compileProc.stdout
-    //     .transform(utf8.decoder)
-    //     .listen((d) => compileStdout.write(d));
-    // compileProc.stderr
-    //     .transform(utf8.decoder)
-    //     .listen((d) => compileStderr.write(d));
-    // final exitCode = await compileProc.exitCode;
-    //
-    // if (exitCode != 0) {
-    //   sendStatus('Compilation failed (code $exitCode)');
-    //   _inProgress.value = false;
-    //   if (compileStderr.isNotEmpty) {
-    //     sendOutput(extractDartError(compileStderr.toString()));
-    //   }
-    //   StatusEvent.instance.onEvent.add(Event.error(title: 'Compile failed'));
-    //   return;
-    // }
-    // sendStatus('Compilation succeeded. Running...');
-    // // run the compiled binary
-    // try {
-    //   final runProc = await Process.start(compiledPath, []);
-    //   runProc.stdout
-    //       .transform(utf8.decoder)
-    //       .map((value) {
-    //         StatusEvent.instance.onEvent.add(Event.success(title: 'Success'));
-    //         return value;
-    //       })
-    //       .listen(sendOutput);
-    //   runProc.stderr
-    //       .transform(utf8.decoder)
-    //       .map((value) {
-    //         StatusEvent.instance.onEvent.add(Event.error(title: 'Failed'));
-    //         return value;
-    //       })
-    //       .listen(sendOutput);
-    //   final rc = await runProc.exitCode;
-    //   sendStatus('Program finished (exit $rc)');
-    // } catch (e) {
-    //   StatusEvent.instance.onEvent.add(Event.error(title: 'Failed'));
-    //   sendOutput('Failed to run compiled binary: $e');
-    //   sendStatus('Run failed');
-    // }
 
     _inProgress.value = false;
   }
 
   Future<void> formatCode(String code) async {
-    sendStatus('Formatting...');
-    final tmpDir = await getTemporaryDirectory();
-    final id = uuid.v4();
-    final file = File('${tmpDir.path}/snippet_fmt_$id.dart');
-    final flutterPath = await SettingsManager.getFlutterPath();
-    final dartExecutable = flutterPath != null && flutterPath.isNotEmpty
-        ? '$flutterPath/bin/dart'
-        : 'dart';
-    await file.writeAsString(code);
-    // run dart format -n does not write; run 'dart format' overwrites, but we want formatted output
-    // Simplest: run `dart format <file>` then read file back.
-    final proc = await Process.start(dartExecutable, ['format', file.path]);
-    final exitCode = await proc.exitCode;
-    if (exitCode == 0) {
-      final formatted = await file.readAsString();
-      final payload = jsonEncode({'type': 'replaceCode', 'payload': formatted});
-      _controller.runJavaScript(
-        'window.postMessageToEditor(${jsonEncode(payload)});',
-      );
-      sendStatus('Formatted');
+    try {
+      final result = await widget.compiler.formatCode(code);
+
+      if (result.hasError) {
+        EventService.instance.onEvent.add(Event.error(title: 'Error'));
+      } else {
+        final payload = jsonEncode({
+          'type': 'replaceCode',
+          'payload': result.data,
+        });
+        _controller.runJavaScript(
+          'window.postMessageToEditor(${jsonEncode(payload)});',
+        );
+      }
+    } catch (e) {
+      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+    }
+  }
+
+  void _handleCompileResult(CompilerResult result) {
+    if (result.hasError) {
+      sendOutput(result.data);
+      EventService.instance.onEvent.add(Event.error(title: 'Error'));
     } else {
-      sendStatus('Format failed (exit $exitCode)');
+      sendOutput(result.data);
+      EventService.instance.onEvent.add(Event.success(title: 'Success'));
     }
   }
 
@@ -242,99 +165,76 @@ class _EditorPageState extends State<EditorPage> {
       children: [
         // Editor area (WebView)
         Expanded(
-          child: Shortcuts(
-            shortcuts: <LogicalKeySet, Intent>{
-              // Cmd+R → Run
-              LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyR):
-                  const RunCodeIntent(),
-              // Cmd+S → Format
-              LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyS):
-                  const FormatCodeIntent(),
-            },
-            child: Actions(
-              actions: <Type, Action<Intent>>{
-                RunCodeIntent: CallbackAction<RunCodeIntent>(
-                  onInvoke: (intent) {
-                    _controller.runJavaScript('window.runEditorCode();');
-                    return null;
-                  },
-                ),
-                FormatCodeIntent: CallbackAction<FormatCodeIntent>(
-                  onInvoke: (intent) {
-                    _controller.runJavaScript('window.formatEditorCode();');
-                    return null;
-                  },
-                ),
-              },
-              child: Focus(
-                autofocus: true, // Important: captures keyboard input
-                child: Stack(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              // Floating buttons
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: Row(
                   children: [
-                    WebViewWidget(controller: _controller),
-                    // Floating buttons
-                    Positioned(
-                      bottom: 16,
-                      left: 16,
-                      child: Row(
-                        children: [
-                          FloatingActionButton(
-                            heroTag: 'runBtn',
-                            tooltip: 'Run',
-                            mini: true,
-                            child: ValueListenableBuilder(
-                              valueListenable: _inProgress,
-                              builder: (_, value, ___) {
-                                if (value) {
-                                  return SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
+                    FloatingActionButton(
+                      heroTag: 'runBtn',
+                      tooltip: 'Run',
+                      mini: true,
+                      child: ValueListenableBuilder(
+                        valueListenable: _inProgress,
+                        builder: (_, value, ___) {
+                          if (value) {
+                            return SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                                return Icon(Icons.play_arrow);
-                              },
-                            ),
-                            onPressed: () {
-                              if (_inProgress.value) return;
-                              _controller.runJavaScript(
-                                'window.runEditorCode();',
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          FloatingActionButton(
-                            heroTag: 'formatBtn',
-                            tooltip: 'Format',
-                            mini: true,
-                            child: const Icon(Icons.format_align_left),
-                            onPressed: () {
-                              _controller.runJavaScript(
-                                'window.formatEditorCode();',
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          FloatingActionButton(
-                            heroTag: 'newWindowBtn',
-                            tooltip: 'New window',
-                            mini: true,
-                            child: const Icon(Icons.add),
-                            onPressed: () async {
-                              await MultiWindow.create(
-                                DateTime.now().microsecondsSinceEpoch
-                                    .toString(),
-                                alignment: Alignment.center,
-                              );
-                            },
-                          ),
-                        ],
+                          return Icon(Icons.play_arrow);
+                        },
                       ),
+                      onPressed: () {
+                        if (_inProgress.value) return;
+                        _controller.runJavaScript('window.runEditorCode();');
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    FloatingActionButton(
+                      heroTag: 'formatBtn',
+                      tooltip: 'Format',
+                      mini: true,
+                      child: const Icon(Icons.format_align_left),
+                      onPressed: () {
+                        _controller.runJavaScript('window.formatEditorCode();');
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    FloatingActionButton(
+                      heroTag: 'saveBtn',
+                      tooltip: 'Save',
+                      mini: true,
+                      child: const Icon(Icons.save),
+                      onPressed: () async {
+                        print('Save button tapped');
+
+                        final name = await CommandPalette.showRename(context);
+
+                        if (name != null && name.isNotEmpty) {
+                          final code =
+                              await _controller.runJavaScriptReturningResult(
+                                    'window.editor.getValue()',
+                                  )
+                                  as String;
+                          widget.saveFileService.saveMonacoCodeToFile(
+                            raw: code,
+                            fileName: name,
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
 

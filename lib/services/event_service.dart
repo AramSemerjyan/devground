@@ -10,6 +10,7 @@ enum EventType {
   success,
   warning,
   sdkSetUp,
+  languageChanged,
   idle;
 
   Color get color {
@@ -53,10 +54,10 @@ class Event {
   }
 }
 
-class StatusEvent {
+class EventService {
   StreamController<Event> onEvent = StreamController.broadcast();
 
-  StatusEvent._internal();
+  EventService._internal();
 
-  static final StatusEvent instance = StatusEvent._internal();
+  static final EventService instance = EventService._internal();
 }

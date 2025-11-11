@@ -5,18 +5,19 @@ import 'package:dartpad_lite/services/compiler/compiler_interface.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../settings_manager.dart';
-
 class DartCompiler implements CompilerInterface {
+  final String flutterPath;
   final uuid = const Uuid();
+
+  DartCompiler(this.flutterPath);
 
   @override
   Future<CompilerResult> formatCode(String code) async {
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_fmt_$id.dart');
-    final flutterPath = await SettingsManager.getFlutterPath();
-    final dartExecutable = flutterPath != null && flutterPath.isNotEmpty
+    // final flutterPath = await SettingsManager.getFlutterPath();
+    final dartExecutable = flutterPath.isNotEmpty
         ? '$flutterPath/bin/dart'
         : 'dart';
     await file.writeAsString(code);
@@ -42,8 +43,8 @@ class DartCompiler implements CompilerInterface {
     final compiledPath = '${tmpDir.path}/snippet_$id.bin';
 
     // Run: dart compile exe <file> -o <compiledPath>
-    final flutterPath = await SettingsManager.getFlutterPath();
-    final dartExecutable = flutterPath != null && flutterPath.isNotEmpty
+    // final flutterPath = await SettingsManager.getFlutterPath();
+    final dartExecutable = flutterPath.isNotEmpty
         ? '$flutterPath/bin/dart'
         : 'dart'; // fallback to default if not set
 
