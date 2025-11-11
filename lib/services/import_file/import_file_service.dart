@@ -34,11 +34,6 @@ class ImportFileService implements ImportFileServiceInterface {
         // Read file content
         final content = await file.readAsString();
 
-        // await _monacoWebBridgeService.setLanguage(language: matchedLanguage);
-        // await _monacoWebBridgeService.setCode(code: content);
-        //
-        // await _languageRepo.setSelectedLanguage(key: matchedLanguage.key);
-
         final importedFile = ImportedFile(
           language: matchedLanguage,
           code: content,
@@ -47,11 +42,6 @@ class ImportFileService implements ImportFileServiceInterface {
         EventService.instance.onEvent.add(
           Event(type: EventType.importedFile, data: importedFile),
         );
-
-        // // Do something with the matched language and content
-        // EventService.instance.onEvent.add(
-        //   Event.success(title: 'File imported'),
-        // );
       } else {
         EventService.instance.onEvent.add(
           Event.warning(title: 'Unsupported file type'),
