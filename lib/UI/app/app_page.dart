@@ -4,6 +4,7 @@ import 'package:dartpad_lite/UI/editor/editor_page.dart';
 import 'package:dartpad_lite/UI/history/history_page.dart';
 import 'package:dartpad_lite/UI/settings/settings_page.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_tool_bar.dart';
+import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import '../tool_bar/bottom_tool_bar/bottom_tool_bar.dart';
@@ -30,6 +31,7 @@ class _AppPageState extends State<AppPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.mainGrey,
       body: Column(
         children: [
           Expanded(
@@ -45,39 +47,56 @@ class _AppPageState extends State<AppPage> {
                 ),
 
                 Expanded(
-                  child: Navigator(
-                    key: _navigatorKey,
-                    observers: [_observer],
-                    initialRoute: 'editor',
-                    onGenerateRoute: (RouteSettings settings) {
-                      WidgetBuilder builder;
-                      switch (settings.name) {
-                        case 'editor':
-                          builder = (context) => EditorPage(
-                            monacoWebBridgeService: _vm.monacoWebBridgeService,
-                            compiler: _vm.compiler,
-                            saveFileService: _vm.fileService,
-                          );
-                          break;
-                        case 'settings':
-                          builder = (context) =>
-                              SettingsPage(languageRepo: _vm.languageRepo);
-                          break;
-                        case 'history':
-                          builder = (context) => HistoryPage(
-                            fileService: _vm.fileService,
-                            importFileService: _vm.importFileService,
-                          );
-                        default:
-                          builder = (context) => EditorPage(
-                            monacoWebBridgeService: _vm.monacoWebBridgeService,
-                            compiler: _vm.compiler,
-                            saveFileService: _vm.fileService,
-                          );
+                  child: ValueListenableBuilder(
+                    valueListenable: _vm.inProgress,
+                    builder: (_, value, __) {
+                      if (value) {
+                        return Center(
+                          child: SizedBox(
+                            height: 50,
+                            width: 50,
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
                       }
-                      return MaterialPageRoute(
-                        builder: builder,
-                        settings: settings,
+
+                      return Navigator(
+                        key: _navigatorKey,
+                        observers: [_observer],
+                        initialRoute: 'editor',
+                        onGenerateRoute: (RouteSettings settings) {
+                          WidgetBuilder builder;
+                          switch (settings.name) {
+                            case 'editor':
+                              builder = (context) => EditorPage(
+                                monacoWebBridgeService:
+                                    _vm.monacoWebBridgeService,
+                                compiler: _vm.compiler,
+                                saveFileService: _vm.fileService,
+                              );
+                              break;
+                            case 'settings':
+                              builder = (context) =>
+                                  SettingsPage(languageRepo: _vm.languageRepo);
+                              break;
+                            case 'history':
+                              builder = (context) => HistoryPage(
+                                fileService: _vm.fileService,
+                                importFileService: _vm.importFileService,
+                              );
+                            default:
+                              builder = (context) => EditorPage(
+                                monacoWebBridgeService:
+                                    _vm.monacoWebBridgeService,
+                                compiler: _vm.compiler,
+                                saveFileService: _vm.fileService,
+                              );
+                          }
+                          return MaterialPageRoute(
+                            builder: builder,
+                            settings: settings,
+                          );
+                        },
                       );
                     },
                   ),

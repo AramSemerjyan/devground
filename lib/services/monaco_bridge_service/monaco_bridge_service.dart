@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartpad_lite/storage/supported_language.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 abstract class MonacoWebBridgeServiceInterface {
@@ -9,6 +11,7 @@ abstract class MonacoWebBridgeServiceInterface {
   Function(String)? onRunCode;
   Function(String)? onFormatCode;
 
+  Future<void> setUp();
   Future<void> formatCode();
   Future<void> runCode();
   Future<String> getValue();
@@ -18,19 +21,47 @@ abstract class MonacoWebBridgeServiceInterface {
 
 class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
   @override
-  late final WebViewController controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..addJavaScriptChannel(
-      'EditorChannel',
-      onMessageReceived: (message) async {
-        try {
-          final msg = jsonDecode(message.message) as Map<String, dynamic>;
-          await handleEditorMessage(msg);
-        } catch (e) {
-          sendStatus("Invalid message: $e");
-        }
-      },
-    );
+  late final WebViewController controller;
+
+  @override
+  Future<void> setUp() async {
+    final html = await rootBundle.loadString('assets/index.html');
+
+    final completer = Completer<void>();
+
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {
+            if (!completer.isCompleted) completer.complete();
+          },
+          onWebResourceError: (error) {
+            if (!completer.isCompleted) {
+              completer.completeError(
+                Exception('Failed to load HTML: ${error.description}'),
+              );
+            }
+          },
+        ),
+      )
+      ..addJavaScriptChannel(
+        'EditorChannel',
+        onMessageReceived: (message) async {
+          try {
+            final msg = jsonDecode(message.message) as Map<String, dynamic>;
+            await handleEditorMessage(msg);
+          } catch (e) {
+            sendStatus("Invalid message: $e");
+          }
+        },
+      );
+
+    await controller.loadHtmlString(html);
+
+    // 🔥 Wait until onPageFinished or onWebResourceError
+    await completer.future;
+  }
 
   @override
   Function(String)? onRunCode;

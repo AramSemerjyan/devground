@@ -1,14 +1,10 @@
-import 'dart:async';
-
 import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
 import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
 import 'package:dartpad_lite/services/compiler/compiler_interface.dart';
 import 'package:dartpad_lite/services/save_file/file_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../services/lsp_bridge.dart';
 import '../../services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../utils/app_colors.dart';
 import '../console/result_console_page.dart';
@@ -36,30 +32,60 @@ class _EditorPageState extends State<EditorPage> {
     widget.saveFileService,
   );
 
-  double _sidebarWidth = 300;
+  ValueNotifier<double> _sidebarWidth = ValueNotifier(300);
   bool _isDragging = false;
-
-  late LspBridge _lspBridge;
-  final int lspPort = 8081;
 
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
-    _loadHtmlFromAssets();
-
-    // _lspBridge = LspBridge(lspPort);
-    // _lspBridge.start();
 
     _vm.compileResultStream.listen((_) {
       _inProgress.value = false;
     });
   }
 
-  Future<void> _loadHtmlFromAssets() async {
-    final html = await rootBundle.loadString('assets/index.html');
-    _vm.controller.loadHtmlString(html);
+  Widget _buildButtons() {
+    return Row(
+      children: [
+        FloatingProgressButton(
+          inProgress: _vm.runProgress,
+          heroTag: 'runBtn',
+          tooltip: 'Run',
+          mini: true,
+          icon: const Icon(Icons.play_arrow),
+          onPressed: () {
+            if (_inProgress.value) return;
+            _inProgress.value = true;
+            _vm.runCode();
+          },
+        ),
+        const SizedBox(width: 8),
+        FloatingProgressButton(
+          inProgress: _vm.formatProgress,
+          heroTag: 'formatBtn',
+          tooltip: 'Format',
+          mini: true,
+          icon: const Icon(Icons.format_align_left),
+          onPressed: () {
+            _vm.formatCode();
+          },
+        ),
+        const SizedBox(width: 8),
+        FloatingProgressButton(
+          inProgress: _vm.saveProgress,
+          heroTag: 'saveBtn',
+          tooltip: 'Save',
+          mini: true,
+          icon: const Icon(Icons.save),
+          onPressed: () async {
+            final name = await CommandPalette.showRename(context);
+            _vm.save(name: name);
+          },
+        ),
+      ],
+    );
   }
 
   @override
@@ -72,49 +98,7 @@ class _EditorPageState extends State<EditorPage> {
             children: [
               WebViewWidget(controller: _vm.controller),
               // Floating buttons
-              Positioned(
-                bottom: 16,
-                left: 16,
-                child: Row(
-                  children: [
-                    FloatingProgressButton(
-                      inProgress: _vm.runProgress,
-                      heroTag: 'runBtn',
-                      tooltip: 'Run',
-                      mini: true,
-                      icon: const Icon(Icons.play_arrow),
-                      onPressed: () {
-                        if (_inProgress.value) return;
-                        _inProgress.value = true;
-                        _vm.runCode();
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    FloatingProgressButton(
-                      inProgress: _vm.formatProgress,
-                      heroTag: 'formatBtn',
-                      tooltip: 'Format',
-                      mini: true,
-                      icon: const Icon(Icons.format_align_left),
-                      onPressed: () {
-                        _vm.formatCode();
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    FloatingProgressButton(
-                      inProgress: _vm.saveProgress,
-                      heroTag: 'saveBtn',
-                      tooltip: 'Save',
-                      mini: true,
-                      icon: const Icon(Icons.save),
-                      onPressed: () async {
-                        final name = await CommandPalette.showRename(context);
-                        _vm.save(name: name);
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              Positioned(bottom: 16, left: 16, child: _buildButtons()),
             ],
           ),
         ),
@@ -123,10 +107,8 @@ class _EditorPageState extends State<EditorPage> {
         GestureDetector(
           behavior: HitTestBehavior.translucent,
           onHorizontalDragUpdate: (details) {
-            setState(() {
-              _sidebarWidth -= details.delta.dx;
-              _sidebarWidth = _sidebarWidth.clamp(200, 800);
-            });
+            _sidebarWidth.value -= details.delta.dx;
+            _sidebarWidth.value = _sidebarWidth.value.clamp(200, 800);
           },
           onHorizontalDragStart: (_) => setState(() => _isDragging = true),
           onHorizontalDragEnd: (_) => setState(() => _isDragging = false),
@@ -142,11 +124,16 @@ class _EditorPageState extends State<EditorPage> {
         ),
 
         // Output sidebar
-        Container(
-          width: _sidebarWidth,
-          height: double.infinity,
-          color: AppColor.black,
-          child: ResultConsolePage(outputStream: _vm.compileResultStream),
+        ValueListenableBuilder(
+          valueListenable: _sidebarWidth,
+          builder: (_, value, __) {
+            return Container(
+              width: value,
+              height: double.infinity,
+              color: AppColor.black,
+              child: ResultConsolePage(outputStream: _vm.compileResultStream),
+            );
+          },
         ),
       ],
     );

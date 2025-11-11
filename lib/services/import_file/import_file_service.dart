@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dartpad_lite/services/import_file/imported_file.dart';
 import 'package:dartpad_lite/services/monaco_bridge_service/monaco_bridge_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:path/path.dart';
@@ -33,18 +34,24 @@ class ImportFileService implements ImportFileServiceInterface {
         // Read file content
         final content = await file.readAsString();
 
-        await _monacoWebBridgeService.setLanguage(language: matchedLanguage);
-        await _monacoWebBridgeService.setCode(code: content);
+        // await _monacoWebBridgeService.setLanguage(language: matchedLanguage);
+        // await _monacoWebBridgeService.setCode(code: content);
+        //
+        // await _languageRepo.setSelectedLanguage(key: matchedLanguage.key);
 
-        await _languageRepo.setSelectedLanguage(key: matchedLanguage.key);
-        // EventService.instance.onEvent.add(
-        //   Event(type: EventType.languageChanged, data: language),
-        // );
-
-        // Do something with the matched language and content
-        EventService.instance.onEvent.add(
-          Event.success(title: 'File imported'),
+        final importedFile = ImportedFile(
+          language: matchedLanguage,
+          code: content,
         );
+
+        EventService.instance.onEvent.add(
+          Event(type: EventType.importedFile, data: importedFile),
+        );
+
+        // // Do something with the matched language and content
+        // EventService.instance.onEvent.add(
+        //   Event.success(title: 'File imported'),
+        // );
       } else {
         EventService.instance.onEvent.add(
           Event.warning(title: 'Unsupported file type'),

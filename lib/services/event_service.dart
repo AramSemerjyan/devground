@@ -11,6 +11,7 @@ enum EventType {
   warning,
   sdkSetUp,
   languageChanged,
+  importedFile,
   idle;
 
   Color get color {

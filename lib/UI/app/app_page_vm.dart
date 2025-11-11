@@ -1,10 +1,14 @@
 import 'package:dartpad_lite/services/compiler/compiler_interface.dart';
 import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/services/import_file/import_file_service.dart';
+import 'package:dartpad_lite/services/import_file/imported_file.dart';
 import 'package:dartpad_lite/services/monaco_bridge_service/monaco_bridge_service.dart';
 import 'package:dartpad_lite/services/save_file/file_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
+import 'package:flutter/cupertino.dart';
+
+import '../../services/lsp_bridge.dart';
 
 enum SDKState { inProgress, ready, notReady }
 
@@ -12,14 +16,20 @@ class AppPageVM {
   late final Compiler compiler = Compiler();
   late final LanguageRepo languageRepo = LanguageRepo();
   late final FileServiceInterface fileService = FileService(languageRepo);
-  late final MonacoWebBridgeServiceInterface monacoWebBridgeService =
+  final MonacoWebBridgeServiceInterface monacoWebBridgeService =
       MonacoWebBridgeService();
   late final ImportFileServiceInterface importFileService = ImportFileService(
     languageRepo,
     monacoWebBridgeService,
   );
 
+  late final lspBridge;
+
+  ValueNotifier<bool> inProgress = ValueNotifier(false);
+
   void setUp() async {
+    inProgress.value = true;
+
     EventService.instance.onEvent.add(
       Event(type: EventType.idle, title: 'Initializing...'),
     );
@@ -30,6 +40,12 @@ class AppPageVM {
 
     if (language != null) {
       _setLanguage(language);
+
+      lspBridge = LspBridge(8081, language);
+      await lspBridge.start();
+
+      await monacoWebBridgeService.setUp();
+      monacoWebBridgeService.setLanguage(language: language);
     }
 
     EventService.instance.onEvent.stream
@@ -39,6 +55,25 @@ class AppPageVM {
 
           if (data != null) _setLanguage(data);
         });
+
+    EventService.instance.onEvent.stream
+        .where((event) => event.type == EventType.importedFile)
+        .listen((event) async {
+          final importedFile = event.data as ImportedFile;
+
+          _setLanguage(importedFile.language);
+
+          await monacoWebBridgeService.setLanguage(
+            language: importedFile.language,
+          );
+          await monacoWebBridgeService.setCode(code: importedFile.code);
+
+          await languageRepo.setSelectedLanguage(
+            key: importedFile.language.key,
+          );
+        });
+
+    inProgress.value = false;
   }
 
   void _setLanguage(SupportedLanguage language) {

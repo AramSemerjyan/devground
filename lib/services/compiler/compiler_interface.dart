@@ -1,4 +1,5 @@
 import 'package:dartpad_lite/services/compiler/dart_compiler.dart';
+import 'package:dartpad_lite/services/compiler/html_compiler.dart';
 import 'package:dartpad_lite/services/compiler/shell_compiler.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 
@@ -39,17 +40,19 @@ class Compiler implements CompilerInterface {
   void setCompilerForLanguage({required SupportedLanguage language}) {
     final sdkPath = language.sdkPath;
 
-    if (sdkPath == null) {
+    if (sdkPath == null && language.needSDKPath) {
       _selectedCompiler = null;
       throw Exception('SDK path missing');
     }
 
     switch (language.key) {
       case SupportedLanguageType.dart:
-        _selectedCompiler = DartCompiler(sdkPath);
+        _selectedCompiler = DartCompiler(sdkPath!);
         break;
       case SupportedLanguageType.shell:
-        _selectedCompiler = ShellCompiler(sdkPath);
+        _selectedCompiler = ShellCompiler(sdkPath!);
+      case SupportedLanguageType.html:
+        _selectedCompiler = HTMLCompiler();
       default:
         _selectedCompiler = null;
     }

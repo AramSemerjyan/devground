@@ -2,18 +2,24 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dartpad_lite/settings_manager.dart';
+import 'package:dartpad_lite/storage/supported_language.dart';
 
 class LspBridge {
+  final SupportedLanguage language;
+
   final int port;
   Process? _analysisProc;
   HttpServer? _httpServer;
 
-  LspBridge(this.port);
+  LspBridge(this.port, this.language);
 
   /// Start analysis server and ws bridge
   Future<void> start() async {
-    _analysisProc = await SettingsManager.startAnalysisServer();
+    if (language.key != SupportedLanguageType.dart) {
+      return;
+    }
+
+    _analysisProc = await startAnalysisServer();
     // Listen to analysis stdout; forward messages to connected websocket clients.
     _analysisProc!.stdout.listen((data) {
       // data are bytes that contain framed LSP messages; we forward raw bytes as text frames
@@ -79,5 +85,38 @@ class LspBridge {
     _httpServer = null;
     _analysisProc?.kill();
     _analysisProc = null;
+  }
+
+  Future<Process> startAnalysisServer() async {
+    final flutterPath = language.sdkPath;
+    final dartExec = flutterPath != null && flutterPath.isNotEmpty
+        ? '$flutterPath/bin/dart'
+        : 'dart';
+
+    // analysis server snapshot location (Flutter-provided Dart SDK)
+    final snapshot = flutterPath != null
+        ? '$flutterPath/bin/cache/dart-sdk/bin/snapshots/analysis_server.dart.snapshot'
+        : null; // adjust if not using flutterPath
+
+    if (snapshot == null) {
+      throw Exception(
+        'Cannot locate analysis_server.dart.snapshot. Set Flutter path in settings.',
+      );
+    }
+
+    final args = [
+      snapshot,
+      '--lsp',
+      '--client-id', 'dartpad_lite', // optional
+      '--client-version', '0.1.0',
+    ];
+
+    final proc = await Process.start(
+      dartExec,
+      args,
+      mode: ProcessStartMode.detachedWithStdio,
+    );
+
+    return proc;
   }
 }
