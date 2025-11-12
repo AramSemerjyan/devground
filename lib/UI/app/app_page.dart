@@ -7,6 +7,7 @@ import 'package:dartpad_lite/UI/editor/editor_page.dart';
 import 'package:dartpad_lite/UI/history/history_page.dart';
 import 'package:dartpad_lite/UI/settings/settings_page.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_tool_bar.dart';
+import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class AppPage extends StatefulWidget {
   State<AppPage> createState() => _AppPageState();
 }
 
-class _AppPageState extends State<AppPage> {
+class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
   late final _observer = AppRouteObserver(
     monacoWebBridgeService: _vm.monacoWebBridgeService,
@@ -32,6 +33,24 @@ class _AppPageState extends State<AppPage> {
     super.initState();
 
     _vm.setUp();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.inactive:
+        EventService.event(type: EventType.monacoDropFocus);
+        break;
+      default:
+    }
   }
 
   Widget _buildMain() {

@@ -1,6 +1,8 @@
 PODS:
   - desktop_drop (0.0.1):
     - FlutterMacOS
+  - desktop_multi_window (0.0.1):
+    - FlutterMacOS
   - file_picker (0.0.1):
     - FlutterMacOS
   - flutter_js (0.0.1):
@@ -20,6 +22,7 @@ PODS:
 
 DEPENDENCIES:
   - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
+  - desktop_multi_window (from `Flutter/ephemeral/.symlinks/plugins/desktop_multi_window/macos`)
   - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
   - flutter_js (from `Flutter/ephemeral/.symlinks/plugins/flutter_js/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
@@ -31,6 +34,8 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   desktop_drop:
     :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
+  desktop_multi_window:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_multi_window/macos
   file_picker:
     :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
   flutter_js:
@@ -48,6 +53,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   desktop_drop: 1eeeb9484299585770b6461e4f3d60950e99efa2
+  desktop_multi_window: 566489c048b501134f9d7fb6a2354c60a9126486
   file_picker: e716a70a9fe5fd9e09ebc922d7541464289443af
   flutter_js: c664361655af1d8fc24e278c7d086e9cbe0d68bc
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1

@@ -11,6 +11,7 @@ import '../../storage/supported_language.dart';
 
 abstract class EditorPageVMInterface {
   WebViewController get controller;
+  MonacoWebBridgeServiceInterface get bridge;
 
   Stream<String> get compileResultStream;
 
@@ -28,6 +29,9 @@ class EditorPageVM implements EditorPageVMInterface {
   final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
   final CompilerInterface _compiler;
   final FileServiceInterface _saveFileService;
+
+  @override
+  MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
 
   @override
   get controller => _monacoWebBridgeService.controller;

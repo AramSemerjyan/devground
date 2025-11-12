@@ -13,6 +13,7 @@ enum EventType {
   languageChanged,
   sdkPathUpdated,
   importedFile,
+  monacoDropFocus,
   idle;
 
   Color get color {
@@ -62,6 +63,17 @@ class EventService {
 
   EventService._internal();
   static final EventService instance = EventService._internal();
+
+  static void error({String? msg, String? title}) {
+    EventService.instance.emit(
+      Event(type: EventType.error, data: msg, title: title),
+    );
+  }
+
+  static event({required EventType type, String? data, String? title}) {
+    print('EVENT: $type');
+    EventService.instance.emit(Event(type: type, title: title, data: data));
+  }
 
   Stream<Event> get stream async* {
     // First send buffered events

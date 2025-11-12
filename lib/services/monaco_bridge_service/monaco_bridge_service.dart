@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -19,6 +20,7 @@ abstract class MonacoWebBridgeServiceInterface {
   Future<void> setCode({required String code});
   Future<void> reload();
   Future<void> dropFocus();
+  Future<void> debug();
 }
 
 class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
@@ -68,6 +70,12 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
 
     await reload();
     await completer.future;
+
+    EventService.instance.stream
+        .where((e) => e.type == EventType.monacoDropFocus)
+        .listen((event) {
+          dropFocus();
+        });
   }
 
   @override
@@ -140,5 +148,12 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
   @override
   Future<void> dropFocus() async {
     return await controller.runJavaScript('document.activeElement?.blur();');
+  }
+
+  @override
+  Future<void> debug() async {
+    await controller.runJavaScript(
+      'postMessageToEditor({type:"setDiagnostics"});',
+    );
   }
 }

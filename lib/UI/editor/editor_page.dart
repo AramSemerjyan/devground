@@ -45,6 +45,12 @@ class _EditorPageState extends State<EditorPage> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant EditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _vm.dropEditorFocus();
+  }
+
   Widget _buildButtons() {
     return Row(
       children: [
@@ -82,16 +88,23 @@ class _EditorPageState extends State<EditorPage> {
             final name = await CommandPalette.showRename(context);
 
             if (name != null) _vm.save(name: name);
+
+            _vm.dropEditorFocus();
+          },
+        ),
+        const SizedBox(width: 8),
+        FloatingProgressButton(
+          inProgress: _vm.saveProgress,
+          heroTag: 'dbugBtn',
+          tooltip: 'Debug',
+          mini: true,
+          icon: const Icon(Icons.bug_report_outlined),
+          onPressed: () async {
+            // _vm.bridge.debug();
           },
         ),
       ],
     );
-  }
-
-  @override
-  void didUpdateWidget(covariant EditorPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _vm.dropEditorFocus();
   }
 
   @override

@@ -1,9 +1,9 @@
+import 'package:dartpad_lite/UI/editor/result_web_view.dart';
 import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class ResultConsolePage extends StatefulWidget {
   final Stream<String> outputStream;
@@ -16,7 +16,6 @@ class ResultConsolePage extends StatefulWidget {
 
 class _ResultConsolePageState extends State<ResultConsolePage> {
   final ValueNotifier<String?> _resultText = ValueNotifier(null);
-  late final webViewController = WebViewController();
 
   Widget _buildDefaultConsole(String data) {
     return SingleChildScrollView(
@@ -30,14 +29,6 @@ class _ResultConsolePageState extends State<ResultConsolePage> {
         ),
       ),
     );
-  }
-
-  Widget _buildWebView(String data) {
-    if (data.isNotEmpty) {
-      webViewController.loadFile(data);
-    }
-
-    return WebViewWidget(controller: webViewController);
   }
 
   @override
@@ -60,7 +51,7 @@ class _ResultConsolePageState extends State<ResultConsolePage> {
               if (data == null) return Container();
 
               if (data.key == SupportedLanguageType.html) {
-                return _buildWebView(snapshot.data ?? '');
+                return ResultWebView(filePath: snapshot.data ?? '');
               }
 
               return _buildDefaultConsole(snapshot.data ?? '');

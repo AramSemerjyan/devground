@@ -78,30 +78,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                   );
-                  // return DropdownButton<SupportedLanguage>(
-                  //   value: value,
-                  //   hint: Text(value?.name ?? ''),
-                  //   focusColor: Colors.transparent,
-                  //   style: TextStyle(color: AppColor.mainGreyLighter),
-                  //   items: data.values.map((lang) {
-                  //     return DropdownMenuItem(
-                  //       value: lang,
-                  //       child: Row(
-                  //         children: [
-                  //           if (lang.icon.isNotEmpty)
-                  //             Image.asset(lang.icon, width: 20, height: 20),
-                  //           const SizedBox(width: 8),
-                  //           Text(lang.name),
-                  //         ],
-                  //       ),
-                  //     );
-                  //   }).toList(),
-                  //   onChanged: (value) {
-                  //     if (value != null) {
-                  //       _vm.selectedLanguage.value = value;
-                  //     }
-                  //   },
-                  // );
                 },
               );
             },

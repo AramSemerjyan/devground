@@ -1,5 +1,5 @@
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:multi_window/multi_window.dart';
 
 import '../../utils/app_colors.dart';
 
@@ -23,10 +23,14 @@ class _SideToolBarState extends State<SideToolBar> {
         children: [
           InkWell(
             onTap: () async {
-              await MultiWindow.create(
-                DateTime.now().microsecondsSinceEpoch.toString(),
-                alignment: Alignment.center,
+              final controller = await WindowController.create(
+                WindowConfiguration(
+                  hiddenAtLaunch: false,
+                  arguments: 'YOUR_WINDOW_ARGUMENTS_HERE',
+                ),
               );
+
+              await controller.show();
             },
             child: Icon(Icons.add, color: AppColor.mainGreyLighter),
           ),
