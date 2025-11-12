@@ -89,6 +89,12 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   @override
+  void didUpdateWidget(covariant EditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _vm.dropEditorFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,

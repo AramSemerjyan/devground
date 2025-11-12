@@ -21,6 +21,7 @@ abstract class EditorPageVMInterface {
   Future<void> formatCode();
   Future<void> runCode();
   Future<void> save({String? name});
+  Future<void> dropEditorFocus();
 }
 
 class EditorPageVM implements EditorPageVMInterface {
@@ -134,5 +135,10 @@ class EditorPageVM implements EditorPageVMInterface {
     await _saveFileService.saveMonacoCodeToFile(raw: code, fileName: name);
 
     saveProgress.value = false;
+  }
+
+  @override
+  Future<void> dropEditorFocus() {
+    return _monacoWebBridgeService.dropFocus();
   }
 }

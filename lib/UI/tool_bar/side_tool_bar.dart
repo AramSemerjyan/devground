@@ -21,23 +21,14 @@ class _SideToolBarState extends State<SideToolBar> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Opacity(
-            opacity: false ? 1.0 : 0.5,
-            child: IgnorePointer(
-              ignoring: true,
-              child: Tooltip(
-                message: 'New window',
-                child: InkWell(
-                  onTap: () async {
-                    await MultiWindow.create(
-                      DateTime.now().microsecondsSinceEpoch.toString(),
-                      alignment: Alignment.center,
-                    );
-                  },
-                  child: Icon(Icons.add, color: AppColor.mainGreyLighter),
-                ),
-              ),
-            ),
+          InkWell(
+            onTap: () async {
+              await MultiWindow.create(
+                DateTime.now().microsecondsSinceEpoch.toString(),
+                alignment: Alignment.center,
+              );
+            },
+            child: Icon(Icons.add, color: AppColor.mainGreyLighter),
           ),
           const SizedBox(height: 10),
           Tooltip(

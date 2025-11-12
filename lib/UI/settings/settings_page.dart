@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/language_repo.dart';
+import '../command_palette/command_palette.dart';
 
 class SettingsPage extends StatefulWidget {
   final LanguageRepoInterface languageRepo;
@@ -45,30 +46,62 @@ class _SettingsPageState extends State<SettingsPage> {
               return ValueListenableBuilder(
                 valueListenable: _vm.selectedLanguage,
                 builder: (_, value, __) {
-                  return DropdownButton<SupportedLanguage>(
-                    value: value,
-                    hint: Text(value?.name ?? ''),
-                    focusColor: Colors.transparent,
-                    style: TextStyle(color: AppColor.mainGreyLighter),
-                    items: data.values.map((lang) {
-                      return DropdownMenuItem(
-                        value: lang,
-                        child: Row(
-                          children: [
-                            if (lang.icon.isNotEmpty)
-                              Image.asset(lang.icon, width: 20, height: 20),
-                            const SizedBox(width: 8),
-                            Text(lang.name),
-                          ],
+                  return InkWell(
+                    onTap: () {
+                      CommandPalette.showOption<SupportedLanguage>(
+                        context: context,
+                        items: data.values.toList(),
+                        itemBuilder: (context, item) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            item.name,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
+                        onSelected: (item) {
+                          _vm.selectedLanguage.value = item;
+                        },
+                        hintText: 'Select a language…',
                       );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        _vm.selectedLanguage.value = value;
-                      }
                     },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          value?.name ?? '',
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Icon(Icons.keyboard_arrow_down, color: Colors.white54),
+                      ],
+                    ),
                   );
+                  // return DropdownButton<SupportedLanguage>(
+                  //   value: value,
+                  //   hint: Text(value?.name ?? ''),
+                  //   focusColor: Colors.transparent,
+                  //   style: TextStyle(color: AppColor.mainGreyLighter),
+                  //   items: data.values.map((lang) {
+                  //     return DropdownMenuItem(
+                  //       value: lang,
+                  //       child: Row(
+                  //         children: [
+                  //           if (lang.icon.isNotEmpty)
+                  //             Image.asset(lang.icon, width: 20, height: 20),
+                  //           const SizedBox(width: 8),
+                  //           Text(lang.name),
+                  //         ],
+                  //       ),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (value) {
+                  //     if (value != null) {
+                  //       _vm.selectedLanguage.value = value;
+                  //     }
+                  //   },
+                  // );
                 },
               );
             },
