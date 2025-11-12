@@ -86,9 +86,18 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _selectDirectory(_vm.selectedLanguage.value),
-            child: const Text('Browse...'),
+          ValueListenableBuilder(
+            valueListenable: _vm.selectedLanguage,
+            builder: (_, value, __) {
+              if (!(value?.needSDKPath ?? false)) {
+                return Container();
+              }
+
+              return ElevatedButton(
+                onPressed: () => _selectDirectory(_vm.selectedLanguage.value),
+                child: const Text('Browse...'),
+              );
+            },
           ),
         ],
       ),

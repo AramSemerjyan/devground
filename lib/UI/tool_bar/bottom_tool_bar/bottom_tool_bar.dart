@@ -43,45 +43,48 @@ class _BottomToolBarState extends State<BottomToolBar> {
 
         if (data == null) return Container();
 
-        return ValueListenableBuilder(
-          valueListenable: _vm.selectedLanguage,
-          builder: (_, value, __) {
-            return InkWell(
-              onTap: () {
-                print('on language select');
+        return Tooltip(
+          message: 'Change language',
+          child: ValueListenableBuilder(
+            valueListenable: _vm.selectedLanguage,
+            builder: (_, value, __) {
+              return InkWell(
+                onTap: () {
+                  print('on language select');
 
-                CommandPalette.showOption<SupportedLanguage>(
-                  context: context,
-                  items: data.values.toList(),
-                  itemBuilder: (context, item) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      item.name,
-                      style: const TextStyle(color: Colors.white),
+                  CommandPalette.showOption<SupportedLanguage>(
+                    context: context,
+                    items: data.values.toList(),
+                    itemBuilder: (context, item) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                  onSelected: (item) {
-                    debugPrint('Selected: $item');
-                    _vm.selectLanguage(language: item);
-                  },
-                  hintText: 'Select a language…',
-                );
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    value?.name ?? '',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontWeight: FontWeight.bold,
+                    onSelected: (item) {
+                      debugPrint('Selected: $item');
+                      _vm.selectLanguage(language: item);
+                    },
+                    hintText: 'Select a language…',
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      value?.name ?? '',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Icon(Icons.keyboard_arrow_down, color: Colors.white54),
-                ],
-              ),
-            );
-          },
+                    Icon(Icons.keyboard_arrow_down, color: Colors.white54),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
     );
