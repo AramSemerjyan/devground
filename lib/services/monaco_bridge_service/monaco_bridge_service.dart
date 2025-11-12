@@ -17,6 +17,7 @@ abstract class MonacoWebBridgeServiceInterface {
   Future<String> getValue();
   Future<void> setLanguage({required SupportedLanguage language});
   Future<void> setCode({required String code});
+  Future<void> reload();
 }
 
 class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
@@ -25,8 +26,6 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
 
   @override
   Future<void> setUp() async {
-    final html = await rootBundle.loadString('assets/index.html');
-
     final completer = Completer<void>();
 
     controller = WebViewController()
@@ -66,7 +65,7 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
         },
       );
 
-    await controller.loadHtmlString(html);
+    await reload();
 
     // 🔥 Wait until onPageFinished or onWebResourceError
     await completer.future;
@@ -130,5 +129,12 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
     await controller.runJavaScript(
       'postMessageToEditor({type:"replaceCode", payload:$codeJson});',
     );
+  }
+
+  @override
+  Future<void> reload() async {
+    final html = await rootBundle.loadString('assets/index.html');
+
+    return await controller.loadHtmlString(html);
   }
 }

@@ -50,8 +50,6 @@ class _BottomToolBarState extends State<BottomToolBar> {
             builder: (_, value, __) {
               return InkWell(
                 onTap: () {
-                  print('on language select');
-
                   CommandPalette.showOption<SupportedLanguage>(
                     context: context,
                     items: data.values.toList(),
@@ -63,7 +61,6 @@ class _BottomToolBarState extends State<BottomToolBar> {
                       ),
                     ),
                     onSelected: (item) {
-                      debugPrint('Selected: $item');
                       _vm.selectLanguage(language: item);
                     },
                     hintText: 'Select a language…',

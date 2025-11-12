@@ -6,7 +6,7 @@ abstract class AppColor {
 
   static const error = Colors.red;
   static const success = Colors.green;
-  static const warning = Colors.orange;
+  static const warning = Color(0xffFF6C0C);
 
   static const mainGrey = Color(0xff3d3f41);
   static const mainGreyDarker = Color(0xff2b2b2b);

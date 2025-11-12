@@ -5,7 +5,7 @@ enum SupportedLanguageType {
   shell('shell'),
   c('c'),
   cpp('cpp'),
-  python('python'),
+  python('py'),
   swift('swift'),
   js('js'),
   json('json'),

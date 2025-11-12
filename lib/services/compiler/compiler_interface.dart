@@ -1,3 +1,5 @@
+import 'package:dartpad_lite/services/compiler/c_compiler.dart';
+import 'package:dartpad_lite/services/compiler/cpp_compiler.dart';
 import 'package:dartpad_lite/services/compiler/dart_compiler.dart';
 import 'package:dartpad_lite/services/compiler/html_compiler.dart';
 import 'package:dartpad_lite/services/compiler/js_compiler.dart';
@@ -56,6 +58,11 @@ class Compiler implements CompilerInterface {
         _selectedCompiler = HTMLCompiler();
       case SupportedLanguageType.js:
         _selectedCompiler = JsCompiler();
+      case SupportedLanguageType.c:
+        _selectedCompiler = CCompiler(sdkPath!);
+      case SupportedLanguageType.cpp:
+        _selectedCompiler = CPPCompiler(sdkPath!);
+      case SupportedLanguageType.python:
       default:
         _selectedCompiler = null;
     }
