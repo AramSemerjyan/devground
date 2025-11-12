@@ -39,16 +39,16 @@ class ImportFileService implements ImportFileServiceInterface {
           code: content,
         );
 
-        EventService.instance.onEvent.add(
+        EventService.instance.emit(
           Event(type: EventType.importedFile, data: importedFile),
         );
       } else {
-        EventService.instance.onEvent.add(
+        EventService.instance.emit(
           Event.warning(title: 'Unsupported file type'),
         );
       }
     } catch (e) {
-      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+      EventService.instance.emit(Event.error(title: e.toString()));
     }
   }
 }

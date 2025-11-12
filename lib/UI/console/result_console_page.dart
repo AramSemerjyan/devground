@@ -1,8 +1,9 @@
-import 'dart:async';
-
+import 'package:dartpad_lite/services/event_service.dart';
+import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ResultConsolePage extends StatefulWidget {
   final Stream<String> outputStream;
@@ -15,27 +16,55 @@ class ResultConsolePage extends StatefulWidget {
 
 class _ResultConsolePageState extends State<ResultConsolePage> {
   final ValueNotifier<String?> _resultText = ValueNotifier(null);
+  late final webViewController = WebViewController();
+
+  Widget _buildDefaultConsole(String data) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(8),
+      child: SelectableText(
+        data,
+        style: const TextStyle(
+          color: Colors.greenAccent,
+          fontFamily: 'monospace',
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebView(String data) {
+    if (data.isNotEmpty) {
+      webViewController.loadFile(data);
+    }
+
+    return WebViewWidget(controller: webViewController);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.black,
-      body: StreamBuilder<String>(
-        stream: widget.outputStream,
-        builder: (context, snapshot) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _resultText.value = snapshot.data;
-          });
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(8),
-            child: SelectableText(
-              snapshot.data ?? '',
-              style: const TextStyle(
-                color: Colors.greenAccent,
-                fontFamily: 'monospace',
-                fontSize: 13,
-              ),
-            ),
+      body: StreamBuilder(
+        stream: EventService.instance.stream.where(
+          (e) => e.type == EventType.languageChanged,
+        ),
+        builder: (c, eventStream) {
+          return StreamBuilder(
+            stream: widget.outputStream,
+            builder: (context, snapshot) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _resultText.value = snapshot.data;
+              });
+              final data = eventStream.data?.data as SupportedLanguage?;
+
+              if (data == null) return Container();
+
+              if (data.key == SupportedLanguageType.html) {
+                return _buildWebView(snapshot.data ?? '');
+              }
+
+              return _buildDefaultConsole(snapshot.data ?? '');
+            },
           );
         },
       ),

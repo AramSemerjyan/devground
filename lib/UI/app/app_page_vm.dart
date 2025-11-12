@@ -28,16 +28,20 @@ class AppPageVM {
   void setUp() async {
     inProgress.value = true;
 
-    EventService.instance.onEvent.add(
+    EventService.instance.emit(
       Event(type: EventType.idle, title: 'Initializing...'),
     );
+
+    _setListeners();
 
     await languageRepo.setUp();
 
     final language = await languageRepo.getSelectedLanguage();
 
     if (language != null) {
-      _setLanguage(language);
+      EventService.instance.emit(
+        Event(type: EventType.languageChanged, data: language),
+      );
 
       // lspBridge = LspBridge(8081, language);
       // await lspBridge.start();
@@ -46,7 +50,11 @@ class AppPageVM {
       monacoWebBridgeService.setLanguage(language: language);
     }
 
-    EventService.instance.onEvent.stream
+    inProgress.value = false;
+  }
+
+  void _setListeners() {
+    EventService.instance.stream
         .where((event) => event.type == EventType.languageChanged)
         .listen((event) {
           final data = event.data as SupportedLanguage?;
@@ -54,24 +62,26 @@ class AppPageVM {
           if (data != null) _setLanguage(data);
         });
 
-    EventService.instance.onEvent.stream
+    EventService.instance.stream
         .where((event) => event.type == EventType.importedFile)
         .listen((event) async {
           final importedFile = event.data as ImportedFile;
 
-          _setLanguage(importedFile.language);
+          EventService.instance.emit(
+            Event(type: EventType.languageChanged, data: importedFile.language),
+          );
 
           await monacoWebBridgeService.setLanguage(
             language: importedFile.language,
           );
-          await monacoWebBridgeService.setCode(code: importedFile.code);
-
           await languageRepo.setSelectedLanguage(
             key: importedFile.language.key,
           );
+
+          await monacoWebBridgeService.setCode(code: importedFile.code);
         });
 
-    EventService.instance.onEvent.stream
+    EventService.instance.stream
         .where((event) => event.type == EventType.sdkPathUpdated)
         .listen((event) {
           final updatedLanguage = event.data as SupportedLanguage;
@@ -79,34 +89,32 @@ class AppPageVM {
 
           if (selectedLanguage == updatedLanguage) {
             _setLanguage(updatedLanguage);
-            EventService.instance.onEvent.add(Event.success(title: 'Success'));
+            EventService.instance.emit(Event.success(title: 'Success'));
           }
         });
-
-    inProgress.value = false;
   }
 
   void _setLanguage(SupportedLanguage language) {
     switch (language.supported) {
       case LanguageSupport.upcoming:
         compiler.resetCompiler();
-        EventService.instance.onEvent.add(
+        EventService.instance.emit(
           Event(type: EventType.warning, title: 'Upcoming support'),
         );
         break;
       case LanguageSupport.supported:
         try {
           compiler.setCompilerForLanguage(language: language);
-          EventService.instance.onEvent.add(Event.success(title: 'Ready'));
+          EventService.instance.emit(Event.success(title: 'Ready'));
         } catch (e) {
-          EventService.instance.onEvent.add(
+          EventService.instance.emit(
             Event(type: EventType.error, title: e.toString()),
           );
         }
         break;
       default:
         compiler.resetCompiler();
-        EventService.instance.onEvent.add(
+        EventService.instance.emit(
           Event(type: EventType.error, title: 'Not supported'),
         );
     }

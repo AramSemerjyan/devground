@@ -33,52 +33,36 @@ class _AppPageState extends State<AppPage> {
   }
 
   Widget _buildMain() {
-    return ValueListenableBuilder(
-      valueListenable: _vm.inProgress,
-      builder: (_, value, __) {
-        if (value) {
-          return Center(
-            child: SizedBox(
-              height: 50,
-              width: 50,
-              child: CircularProgressIndicator(),
-            ),
-          );
+    return Navigator(
+      key: _navigatorKey,
+      observers: [_observer],
+      initialRoute: 'editor',
+      onGenerateRoute: (RouteSettings settings) {
+        WidgetBuilder builder;
+        switch (settings.name) {
+          case 'editor':
+            builder = (context) => EditorPage(
+              monacoWebBridgeService: _vm.monacoWebBridgeService,
+              compiler: _vm.compiler,
+              saveFileService: _vm.fileService,
+            );
+            break;
+          case 'settings':
+            builder = (context) => SettingsPage(languageRepo: _vm.languageRepo);
+            break;
+          case 'history':
+            builder = (context) => HistoryPage(
+              fileService: _vm.fileService,
+              importFileService: _vm.importFileService,
+            );
+          default:
+            builder = (context) => EditorPage(
+              monacoWebBridgeService: _vm.monacoWebBridgeService,
+              compiler: _vm.compiler,
+              saveFileService: _vm.fileService,
+            );
         }
-
-        return Navigator(
-          key: _navigatorKey,
-          observers: [_observer],
-          initialRoute: 'editor',
-          onGenerateRoute: (RouteSettings settings) {
-            WidgetBuilder builder;
-            switch (settings.name) {
-              case 'editor':
-                builder = (context) => EditorPage(
-                  monacoWebBridgeService: _vm.monacoWebBridgeService,
-                  compiler: _vm.compiler,
-                  saveFileService: _vm.fileService,
-                );
-                break;
-              case 'settings':
-                builder = (context) =>
-                    SettingsPage(languageRepo: _vm.languageRepo);
-                break;
-              case 'history':
-                builder = (context) => HistoryPage(
-                  fileService: _vm.fileService,
-                  importFileService: _vm.importFileService,
-                );
-              default:
-                builder = (context) => EditorPage(
-                  monacoWebBridgeService: _vm.monacoWebBridgeService,
-                  compiler: _vm.compiler,
-                  saveFileService: _vm.fileService,
-                );
-            }
-            return MaterialPageRoute(builder: builder, settings: settings);
-          },
-        );
+        return MaterialPageRoute(builder: builder, settings: settings);
       },
     );
   }
@@ -106,28 +90,43 @@ class _AppPageState extends State<AppPage> {
             }
           }
         },
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  SideToolBar(navigatorKey: _navigatorKey),
-                  Container(
-                    width: 1,
-                    height: double.infinity,
-                    color: Color(0xff2b2b2b),
+        child: ValueListenableBuilder(
+          valueListenable: _vm.inProgress,
+          builder: (_, value, __) {
+            if (value) {
+              return Center(
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      SideToolBar(navigatorKey: _navigatorKey),
+                      Container(
+                        width: 1,
+                        height: double.infinity,
+                        color: Color(0xff2b2b2b),
+                      ),
+                      Expanded(child: _buildMain()),
+                    ],
                   ),
-                  Expanded(child: _buildMain()),
-                ],
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              height: 1,
-              color: Color(0xff2b2b2b),
-            ),
-            BottomToolBar(languageRepo: _vm.languageRepo),
-          ],
+                ),
+                Container(
+                  width: double.infinity,
+                  height: 1,
+                  color: Color(0xff2b2b2b),
+                ),
+                BottomToolBar(languageRepo: _vm.languageRepo),
+              ],
+            );
+          },
         ),
       ),
     );

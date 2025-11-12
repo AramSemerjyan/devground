@@ -29,7 +29,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
     _timer = null;
 
     _timer = Timer(duration, () {
-      EventService.instance.onEvent.add(Event(type: EventType.idle));
+      EventService.instance.emit(Event(type: EventType.idle));
 
       _timer = null;
     });
@@ -90,7 +90,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: EventService.instance.onEvent.stream,
+      stream: EventService.instance.stream,
       builder: (c, s) {
         final data = s.data;
 

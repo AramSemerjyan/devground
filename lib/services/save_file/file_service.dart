@@ -37,12 +37,10 @@ class FileService implements FileServiceInterface {
       final file = File('${historyDir.path}/$fullName');
       await file.writeAsString(raw);
 
-      EventService.instance.onEvent.add(
-        Event.success(title: 'Saved ${file.path}'),
-      );
+      EventService.instance.emit(Event.success(title: 'Saved ${file.path}'));
       return file;
     } catch (e) {
-      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+      EventService.instance.emit(Event.error(title: e.toString()));
       return null;
     }
   }
@@ -68,7 +66,7 @@ class FileService implements FileServiceInterface {
 
       return files;
     } catch (e) {
-      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+      EventService.instance.emit(Event.error(title: e.toString()));
       return [];
     }
   }
@@ -78,14 +76,14 @@ class FileService implements FileServiceInterface {
     try {
       if (await file.exists()) {
         await file.delete();
-        EventService.instance.onEvent.add(
+        EventService.instance.emit(
           Event.success(title: 'Successfully deleted'),
         );
         return true;
       }
       return false;
     } catch (e) {
-      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+      EventService.instance.emit(Event.error(title: e.toString()));
       return false;
     }
   }

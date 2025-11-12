@@ -68,13 +68,13 @@ class EditorPageVM implements EditorPageVMInterface {
 
       if (result.hasError) {
         _sendOutput(result.data);
-        EventService.instance.onEvent.add(Event.error(title: 'Error'));
+        EventService.instance.emit(Event.error(title: 'Error'));
       } else {
         _sendOutput(result.data);
-        EventService.instance.onEvent.add(Event.success(title: 'Success'));
+        EventService.instance.emit(Event.success(title: 'Success'));
       }
     } catch (e) {
-      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+      EventService.instance.emit(Event.error(title: e.toString()));
     }
 
     runProgress.value = false;
@@ -85,12 +85,12 @@ class EditorPageVM implements EditorPageVMInterface {
       final result = await _compiler.formatCode(code);
 
       if (result.hasError) {
-        EventService.instance.onEvent.add(Event.error(title: 'Error'));
+        EventService.instance.emit(Event.error(title: 'Error'));
       } else {
         _monacoWebBridgeService.setCode(code: result.data);
       }
     } catch (e) {
-      EventService.instance.onEvent.add(Event.error(title: e.toString()));
+      EventService.instance.emit(Event.error(title: e.toString()));
     }
 
     formatProgress.value = false;
@@ -102,7 +102,7 @@ class EditorPageVM implements EditorPageVMInterface {
   }
 
   void _setListeners() {
-    EventService.instance.onEvent.stream
+    EventService.instance.stream
         .where((e) => e.type == EventType.languageChanged)
         .listen((event) async {
           final lang = event.data as SupportedLanguage?;

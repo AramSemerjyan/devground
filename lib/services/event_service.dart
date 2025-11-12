@@ -57,9 +57,23 @@ class Event {
 }
 
 class EventService {
-  StreamController<Event> onEvent = StreamController.broadcast();
+  final StreamController<Event> _controller = StreamController.broadcast();
+  final List<Event> _buffer = [];
 
   EventService._internal();
-
   static final EventService instance = EventService._internal();
+
+  Stream<Event> get stream async* {
+    // First send buffered events
+    for (final e in _buffer) {
+      yield e;
+    }
+    // Then forward new events
+    yield* _controller.stream;
+  }
+
+  void emit(Event event) {
+    _buffer.add(event);
+    _controller.add(event);
+  }
 }
