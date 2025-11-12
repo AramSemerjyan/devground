@@ -3,7 +3,9 @@ import 'package:dartpad_lite/services/compiler/cpp_compiler.dart';
 import 'package:dartpad_lite/services/compiler/dart_compiler.dart';
 import 'package:dartpad_lite/services/compiler/html_compiler.dart';
 import 'package:dartpad_lite/services/compiler/js_compiler.dart';
+import 'package:dartpad_lite/services/compiler/py_compiler.dart';
 import 'package:dartpad_lite/services/compiler/shell_compiler.dart';
+import 'package:dartpad_lite/services/compiler/swift_compiler.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 
 class CompilerResult {
@@ -63,6 +65,9 @@ class Compiler implements CompilerInterface {
       case SupportedLanguageType.cpp:
         _selectedCompiler = CPPCompiler(sdkPath!);
       case SupportedLanguageType.python:
+        _selectedCompiler = PythonCompiler(sdkPath!);
+      case SupportedLanguageType.swift:
+        _selectedCompiler = SwiftCompiler(sdkPath!);
       default:
         _selectedCompiler = null;
     }

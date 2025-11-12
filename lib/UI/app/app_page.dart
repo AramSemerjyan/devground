@@ -22,7 +22,9 @@ class AppPage extends StatefulWidget {
 
 class _AppPageState extends State<AppPage> {
   final _navigatorKey = GlobalKey<NavigatorState>();
-  final _observer = AppRouteObserver();
+  late final _observer = AppRouteObserver(
+    monacoWebBridgeService: _vm.monacoWebBridgeService,
+  );
   late final _vm = AppPageVM();
 
   @override

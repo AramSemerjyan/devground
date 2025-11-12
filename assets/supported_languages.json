@@ -31,6 +31,7 @@
     "name": "C",
     "extension": ".c",
     "icon": "",
+    "sdk_path": "/usr/bin",
     "path": {
       "validation": "/gcc",
       "hint": "/usr/bin/gcc"
@@ -44,6 +45,7 @@
     "name": "C++",
     "extension": ".cpp",
     "icon": "",
+    "sdk_path": "/usr/bin",
     "path": {
       "validation": "/g++",
       "hint": "/usr/bin/g++"
@@ -58,7 +60,7 @@
     "extension": ".py",
     "icon": "",
     "path": {
-      "validation": "/usr/bin/python3",
+      "validation": "/python3",
       "hint": "/usr/local/bin/python3"
     },
     "snippet": "def main():\n    print(\"Hello from Python!\")\n\nif __name__ == \"__main__\":\n    main()",
@@ -70,12 +72,13 @@
     "name": "Swift",
     "extension": ".swift",
     "icon": "",
+    "sdk_path": "/usr/bin",
     "path": {
-      "validation": "/usr/bin/swift",
+      "validation": "/swift",
       "hint": "/usr/bin/swift"
     },
     "snippet": "import Foundation\n\nprint(\"Hello from Swift!\")",
-    "supported": "upcoming",
+    "supported": "supported",
     "need_sdk_path": true
   },
   {
@@ -84,7 +87,7 @@
     "extension": ".js",
     "icon": "",
     "path": {
-      "validation": "/usr/local/bin/node",
+      "validation": "/node",
       "hint": "/usr/local/bin/node"
     },
     "snippet": "console.log(\"Hello from JavaScript!\");",
@@ -114,8 +117,8 @@
       "hint": ""
     },
     "snippet": "body {\n  background-color: #f0f0f0;\n  color: #333;\n  font-family: sans-serif;\n}",
-    "supported": "upcoming",
-    "need_sdk_path": true
+    "supported": "supported",
+    "need_sdk_path": false
   },
   {
     "key": "json",

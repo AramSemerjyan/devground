@@ -7,8 +7,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../utils/app_colors.dart';
-import '../console/result_console_page.dart';
 import 'editor_page_vm.dart';
+import 'result_console_page.dart';
 
 class EditorPage extends StatefulWidget {
   final CompilerInterface compiler;

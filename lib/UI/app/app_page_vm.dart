@@ -80,6 +80,7 @@ class AppPageVM {
           );
 
           await monacoWebBridgeService.setCode(code: importedFile.code);
+          await monacoWebBridgeService.dropFocus();
         });
 
     EventService.instance.stream

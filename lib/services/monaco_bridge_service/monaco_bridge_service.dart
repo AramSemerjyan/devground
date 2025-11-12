@@ -18,6 +18,7 @@ abstract class MonacoWebBridgeServiceInterface {
   Future<void> setLanguage({required SupportedLanguage language});
   Future<void> setCode({required String code});
   Future<void> reload();
+  Future<void> dropFocus();
 }
 
 class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
@@ -66,8 +67,6 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
       );
 
     await reload();
-
-    // 🔥 Wait until onPageFinished or onWebResourceError
     await completer.future;
   }
 
@@ -136,5 +135,10 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
     final html = await rootBundle.loadString('assets/index.html');
 
     return await controller.loadHtmlString(html);
+  }
+
+  @override
+  Future<void> dropFocus() async {
+    return await controller.runJavaScript('document.activeElement?.blur();');
   }
 }
