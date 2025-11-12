@@ -7,7 +7,9 @@ enum SupportedLanguageType {
   cpp('cpp'),
   python('python'),
   swift('swift'),
-  javascript('javascript'),
+  js('js'),
+  json('json'),
+  xml('xml'),
   html('html'),
   css('css');
 

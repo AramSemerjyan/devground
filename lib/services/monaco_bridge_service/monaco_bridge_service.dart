@@ -33,6 +33,15 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
+          onNavigationRequest: (request) {
+            // Block all navigation except for the initial loaded HTML
+            if (request.url.startsWith('data:text/html') ||
+                request.url == 'about:blank') {
+              return NavigationDecision.navigate;
+            }
+            // Otherwise, prevent navigation
+            return NavigationDecision.prevent;
+          },
           onPageFinished: (_) {
             if (!completer.isCompleted) completer.complete();
           },

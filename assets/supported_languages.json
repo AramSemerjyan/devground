@@ -79,7 +79,7 @@
     "need_sdk_path": true
   },
   {
-    "key": "javascript",
+    "key": "js",
     "name": "JavaScript",
     "extension": ".js",
     "icon": "",
@@ -88,8 +88,8 @@
       "hint": "/usr/local/bin/node"
     },
     "snippet": "console.log(\"Hello from JavaScript!\");",
-    "supported": "upcoming",
-    "need_sdk_path": true
+    "supported": "supported",
+    "need_sdk_path": false
   },
   {
     "key": "html",
@@ -116,5 +116,31 @@
     "snippet": "body {\n  background-color: #f0f0f0;\n  color: #333;\n  font-family: sans-serif;\n}",
     "supported": "upcoming",
     "need_sdk_path": true
+  },
+  {
+    "key": "json",
+    "name": "JSON",
+    "extension": ".json",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "{\n  \"key\": \"value\"\n}",
+    "supported": "supported",
+    "need_sdk_path": false
+  },
+  {
+    "key": "xml",
+    "name": "XML",
+    "extension": ".xml",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "<root>\n  <element>Value</element>\n</root>",
+    "supported": "supported",
+    "need_sdk_path": false
   }
 ]

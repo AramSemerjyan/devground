@@ -72,15 +72,8 @@ class _AppPageState extends State<AppPage> {
     return Scaffold(
       backgroundColor: AppColor.mainGrey,
       body: DropTarget(
-        onDragEntered: (_) {
-          print('on drag entered');
-
-          CommandPalette.showFileImport(context);
-        },
-        onDragExited: (details) {
-          print('on drag exited');
-          CommandPalette.hide();
-        },
+        onDragEntered: (_) => CommandPalette.showFileImport(context),
+        onDragExited: (details) => CommandPalette.hide(),
         onDragDone: (details) {
           CommandPalette.hide();
 
