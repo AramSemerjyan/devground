@@ -32,9 +32,8 @@ class _EditorPageState extends State<EditorPage> {
     widget.saveFileService,
   );
 
-  ValueNotifier<double> _sidebarWidth = ValueNotifier(300);
-  bool _isDragging = false;
-
+  final ValueNotifier<bool> _isDragging = ValueNotifier(false);
+  final ValueNotifier<double> _sidebarWidth = ValueNotifier(300);
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
 
   @override
@@ -91,52 +90,76 @@ class _EditorPageState extends State<EditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Editor area (WebView)
-        Expanded(
-          child: Stack(
-            children: [
-              WebViewWidget(controller: _vm.controller),
-              // Floating buttons
-              Positioned(bottom: 16, left: 16, child: _buildButtons()),
-            ],
-          ),
-        ),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragUpdate: (details) {
+        _sidebarWidth.value -= details.delta.dx;
+        _sidebarWidth.value = _sidebarWidth.value.clamp(200, 800);
+      },
+      onHorizontalDragStart: (_) => _isDragging.value = true,
+      onHorizontalDragEnd: (_) => _isDragging.value = false,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.resizeColumn,
+        child: ValueListenableBuilder(
+          valueListenable: _isDragging,
+          builder: (_, isDragging, __) {
+            return Row(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      WebViewWidget(controller: _vm.controller),
+                      // Floating buttons
+                      Positioned(bottom: 16, left: 16, child: _buildButtons()),
+                      if (isDragging)
+                        Positioned.fill(
+                          child: Container(
+                            color: AppColor.mainGreyLighter.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
 
-        // Drag handle
-        GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onHorizontalDragUpdate: (details) {
-            _sidebarWidth.value -= details.delta.dx;
-            _sidebarWidth.value = _sidebarWidth.value.clamp(200, 800);
-          },
-          onHorizontalDragStart: (_) => setState(() => _isDragging = true),
-          onHorizontalDragEnd: (_) => setState(() => _isDragging = false),
-          child: MouseRegion(
-            cursor: SystemMouseCursors.resizeColumn,
-            child: Container(
-              width: 4,
-              color: _isDragging
-                  ? Colors.grey
-                  : Colors.grey.withValues(alpha: 0.2),
-            ),
-          ),
-        ),
+                // Drag handle
+                Container(
+                  width: 4,
+                  color: isDragging ? Colors.grey : AppColor.mainGreyLighter,
+                ),
 
-        // Output sidebar
-        ValueListenableBuilder(
-          valueListenable: _sidebarWidth,
-          builder: (_, value, __) {
-            return Container(
-              width: value,
-              height: double.infinity,
-              color: AppColor.black,
-              child: ResultConsolePage(outputStream: _vm.compileResultStream),
+                // Output sidebar
+                ValueListenableBuilder(
+                  valueListenable: _sidebarWidth,
+                  builder: (_, value, __) {
+                    return Stack(
+                      children: [
+                        Container(
+                          width: value,
+                          height: double.infinity,
+                          color: AppColor.black,
+                          child: ResultConsolePage(
+                            outputStream: _vm.compileResultStream,
+                          ),
+                        ),
+                        if (isDragging)
+                          Positioned.fill(
+                            child: Container(
+                              color: AppColor.mainGreyLighter.withValues(
+                                alpha: 0.2,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             );
           },
         ),
-      ],
+      ),
     );
   }
 }
