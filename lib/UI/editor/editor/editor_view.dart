@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -28,7 +29,9 @@ class _EditorViewState extends State<EditorView> {
 
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);
   final ValueNotifier<double> _sidebarWidth = ValueNotifier(300);
+  final ValueNotifier<double> _bottomBarHeight = ValueNotifier(300);
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
+  final ValueNotifier<bool> _showAI = ValueNotifier(false);
 
   @override
   void initState() {
@@ -90,6 +93,17 @@ class _EditorViewState extends State<EditorView> {
             _vm.dropEditorFocus();
           },
         ),
+        const SizedBox(width: 8),
+        FloatingProgressButton(
+          inProgress: _vm.saveProgress,
+          heroTag: 'aiBtn',
+          tooltip: 'AI boost',
+          mini: true,
+          icon: const Icon(Icons.accessible_forward),
+          onPressed: () async {
+            _showAI.value = !_showAI.value;
+          },
+        ),
       ],
     );
   }
@@ -148,6 +162,32 @@ class _EditorViewState extends State<EditorView> {
     );
   }
 
+  Widget _buildAIView() {
+    return ValueListenableBuilder(
+      valueListenable: _bottomBarHeight,
+      builder: (_, value, __) {
+        return Stack(
+          children: [
+            Container(
+              height: value,
+              width: double.infinity,
+              color: AppColor.black,
+              child: AiHelperPage(),
+            ),
+            ValueListenableBuilder(
+              valueListenable: _isDragging,
+              builder: (_, isDragging, __) {
+                if (!isDragging) return SizedBox();
+
+                return Positioned.fill(child: _buildDragOverlay());
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildResizeSeparator() {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -164,6 +204,31 @@ class _EditorViewState extends State<EditorView> {
           builder: (_, isDragging, __) {
             return Container(
               width: 6,
+              color: isDragging ? Colors.grey : AppColor.mainGreyLighter,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResizeSeparatorHorizontal() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragUpdate: (details) {
+        _bottomBarHeight.value -= details.delta.dy;
+        _bottomBarHeight.value = _bottomBarHeight.value.clamp(200, 800);
+      },
+      onVerticalDragStart: (_) => _isDragging.value = true,
+      onVerticalDragEnd: (_) => _isDragging.value = false,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.resizeRow,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _isDragging,
+          builder: (_, isDragging, __) {
+            return Container(
+              height: 6,
+              width: double.infinity,
               color: isDragging ? Colors.grey : AppColor.mainGreyLighter,
             );
           },
@@ -190,14 +255,28 @@ class _EditorViewState extends State<EditorView> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(child: _buildEditor()),
-
-        _buildResizeSeparator(),
-
-        // Output sidebar
-        _buildResultView(),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(child: _buildEditor()),
+              _buildResizeSeparator(),
+              _buildResultView(),
+            ],
+          ),
+        ),
+        ValueListenableBuilder(
+            valueListenable: _showAI,
+            builder: (_, show, __) {
+              if (!show) return SizedBox();
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [_buildResizeSeparatorHorizontal(),
+                  _buildAIView(),],
+              );
+            }
+        ),
       ],
     );
   }
