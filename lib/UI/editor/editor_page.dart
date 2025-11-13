@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view.dart';
 import 'package:dartpad_lite/UI/editor/tab_view/editor_tab.dart';
 import 'package:dartpad_lite/UI/editor/welcome/welcome_page.dart';
@@ -12,19 +13,21 @@ class EditorPage extends StatefulWidget {
   final LanguageRepoInterface languageRepo;
   final ImportFileServiceInterface importFileService;
   final FileServiceInterface fileService;
+  final OpenPageManagerInterface openPageManager;
 
   const EditorPage({
     super.key,
     required this.fileService,
     required this.importFileService,
     required this.languageRepo,
+    required this.openPageManager,
   });
   @override
   State<EditorPage> createState() => _EditorPageState();
 }
 
 class _EditorPageState extends State<EditorPage> {
-  late final EditorPageVMInterface _vm = EditorPageVM();
+  late final EditorPageVMInterface _vm = EditorPageVM(widget.openPageManager);
 
   @override
   Widget build(BuildContext context) {

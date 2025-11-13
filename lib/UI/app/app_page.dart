@@ -78,6 +78,7 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
               fileService: _vm.fileService,
               importFileService: _vm.importFileService,
               languageRepo: _vm.languageRepo,
+              openPageManager: _vm.openPageManager,
             );
             break;
           case 'Settings':
@@ -110,6 +111,7 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
       vm: _vm,
       navigatorKey: _navigatorKey,
       observer: _observer,
+      openPageManager: _vm.openPageManager,
       child: Scaffold(
         backgroundColor: AppColor.mainGrey,
         body: DropTarget(

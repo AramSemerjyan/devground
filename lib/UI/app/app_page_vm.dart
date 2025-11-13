@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,6 +20,7 @@ class AppPageVM {
   late final ImportFileServiceInterface importFileService = ImportFileService(
     languageRepo,
   );
+  late final openPageManager = OpenPageManager();
 
   late final lspBridge;
 

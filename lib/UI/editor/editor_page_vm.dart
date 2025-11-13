@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/services/event_service.dart';
@@ -15,29 +16,13 @@ abstract class EditorPageVMInterface {
 }
 
 class EditorPageVM implements EditorPageVMInterface {
+  final OpenPageManagerInterface openPageManager;
+
   @override
-  ValueNotifier<(List<ImportedFile>, int)> onPagesUpdate = ValueNotifier((
-    [],
-    -1,
-  ));
+  ValueNotifier<(List<ImportedFile>, int)> get onPagesUpdate =>
+      openPageManager.onPagesUpdate;
 
-  EditorPageVM() {
-    _setListeners();
-  }
-
-  void _setListeners() {
-    EventService.instance.stream
-        .where((event) => event.type == EventType.importedFile)
-        .listen((event) {
-          final updatedPages = [
-            ...onPagesUpdate.value.$1,
-            event.data as ImportedFile,
-          ];
-          final selectedPage = updatedPages.length - 1;
-
-          onPagesUpdate.value = (updatedPages, selectedPage);
-        });
-  }
+  EditorPageVM(this.openPageManager);
 
   @override
   Future<void> onSelect(int pageIndex) async {

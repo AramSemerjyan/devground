@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:flutter/material.dart';
 
 import 'app_page_vm.dart';
@@ -6,12 +7,14 @@ import 'app_route_observer.dart';
 class AppPageScope extends InheritedWidget {
   final AppPageVM vm;
   final AppRouteObserver observer;
+  final OpenPageManagerInterface openPageManager;
   final GlobalKey<NavigatorState> navigatorKey;
 
   const AppPageScope({
     required this.vm,
     required this.navigatorKey,
     required this.observer,
+    required this.openPageManager,
     required super.child,
     super.key,
   });
