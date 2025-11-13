@@ -10,6 +10,8 @@ abstract class EditorPageVMInterface {
 
   Future<void> onSelect(int pageIndex);
   Future<void> onClose(int pageIndex);
+  Future<void> onCloseOthers(int pageIndex);
+  Future<void> onCloseAll();
 }
 
 class EditorPageVM implements EditorPageVMInterface {
@@ -76,5 +78,33 @@ class EditorPageVM implements EditorPageVMInterface {
     EventService.event(type: EventType.languageChanged, data: language);
 
     onPagesUpdate.value = (updatedPages, newSelectedIndex);
+  }
+
+  @override
+  Future<void> onCloseOthers(int pageIndex) async {
+    final (pages, _) = onPagesUpdate.value;
+    if (pages.isEmpty || pageIndex < 0 || pageIndex >= pages.length) return;
+
+    final selectedFile = pages[pageIndex];
+    _updatePages([selectedFile], 0);
+  }
+
+  @override
+  Future<void> onCloseAll() async {
+    onPagesUpdate.value = ([], -1);
+
+    // Optionally reset language context if needed
+    EventService.event(type: EventType.languageChanged, data: null);
+  }
+
+  void _updatePages(List<ImportedFile> updatedPages, int selectedIndex) {
+    onPagesUpdate.value = (updatedPages, selectedIndex);
+
+    if (selectedIndex >= 0 && updatedPages.isNotEmpty) {
+      EventService.event(
+        type: EventType.languageChanged,
+        data: updatedPages[selectedIndex].language,
+      );
+    }
   }
 }

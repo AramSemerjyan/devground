@@ -54,6 +54,7 @@ class _EditorViewState extends State<EditorView> {
 
   Widget _buildButtons() {
     return Row(
+      spacing: 8,
       children: [
         FloatingProgressButton(
           inProgress: _vm.runProgress,
@@ -67,7 +68,6 @@ class _EditorViewState extends State<EditorView> {
             _vm.runCode();
           },
         ),
-        const SizedBox(width: 8),
         FloatingProgressButton(
           inProgress: _vm.formatProgress,
           heroTag: 'formatBtn',
@@ -78,7 +78,6 @@ class _EditorViewState extends State<EditorView> {
             _vm.formatCode();
           },
         ),
-        const SizedBox(width: 8),
         FloatingProgressButton(
           inProgress: _vm.saveProgress,
           heroTag: 'saveBtn',
@@ -96,7 +95,6 @@ class _EditorViewState extends State<EditorView> {
             _vm.dropEditorFocus();
           },
         ),
-        const SizedBox(width: 8),
         FloatingProgressButton(
           inProgress: _vm.saveProgress,
           heroTag: 'aiBtn',

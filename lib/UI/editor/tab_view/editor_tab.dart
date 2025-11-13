@@ -58,6 +58,8 @@ class EditorTabView extends StatelessWidget {
   final int selectedTab;
   final Function(int)? onSelect;
   final Function(int)? onClose;
+  final Function(int)? onCloseOthers;
+  final VoidCallback? onCloseAll;
 
   const EditorTabView({
     super.key,
@@ -65,7 +67,62 @@ class EditorTabView extends StatelessWidget {
     this.selectedTab = 0,
     this.onSelect,
     this.onClose,
+    this.onCloseAll,
+    this.onCloseOthers,
   });
+
+  void _showContextMenu(
+    BuildContext context,
+    TapDownDetails details,
+    int index,
+  ) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final result = await showMenu<String>(
+      context: context,
+      color: AppColor.mainGreyDark,
+      position: RelativeRect.fromLTRB(
+        details.globalPosition.dx,
+        details.globalPosition.dy,
+        overlay.size.width - details.globalPosition.dx,
+        overlay.size.height - details.globalPosition.dy,
+      ),
+      items: [
+        const PopupMenuItem(
+          value: 'close',
+          child: Text(
+            'Close',
+            style: TextStyle(color: AppColor.mainGreyLighter),
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'close_others',
+          child: Text(
+            'close_others',
+            style: TextStyle(color: AppColor.mainGreyLighter),
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'close_all',
+          child: Text(
+            'close_all',
+            style: TextStyle(color: AppColor.mainGreyLighter),
+          ),
+        ),
+      ],
+    );
+
+    switch (result) {
+      case 'close':
+        onClose?.call(index);
+        break;
+      case 'close_others':
+        onCloseOthers?.call(index);
+        break;
+      case 'close_all':
+        onCloseAll?.call();
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,11 +137,15 @@ class EditorTabView extends StatelessWidget {
         itemCount: files.length,
         separatorBuilder: (_, __) => const SizedBox(width: 3),
         itemBuilder: (_, i) {
-          return EditorTab(
-            file: files[i],
-            onTap: () => onSelect?.call(i),
-            onClose: () => onClose?.call(i),
-            isSelected: i == selectedTab,
+          return GestureDetector(
+            onSecondaryTapDown: (details) =>
+                _showContextMenu(context, details, i),
+            child: EditorTab(
+              file: files[i],
+              onTap: () => onSelect?.call(i),
+              onClose: () => onClose?.call(i),
+              isSelected: i == selectedTab,
+            ),
           );
         },
       ),

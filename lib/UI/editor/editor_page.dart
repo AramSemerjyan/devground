@@ -67,6 +67,12 @@ class _EditorPageState extends State<EditorPage> {
                   onClose: (i) {
                     _vm.onClose(i);
                   },
+                  onCloseAll: () {
+                    _vm.onCloseAll();
+                  },
+                  onCloseOthers: (i) {
+                    _vm.onCloseOthers(i);
+                  },
                 ),
               ),
           ],
