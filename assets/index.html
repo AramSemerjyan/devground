@@ -95,16 +95,16 @@
                 console.error(e);
             }
         };
-        window.runEditorCode = function() {
-            if (!window.editor) return;
-            const code = window.editor.getValue();
-            sendToFlutter({ type: 'run', code });
-        };
+<!--        window.runEditorCode = function() {-->
+<!--            if (!window.editor) return;-->
+<!--            const code = window.editor.getValue();-->
+<!--            sendToFlutter({ type: 'run', code });-->
+<!--        };-->
 
-        window.formatEditorCode = function() {
-            if (!window.editor) return;
-            sendToFlutter({ type: 'format', code: window.editor.getValue() });
-        };
+<!--        window.formatEditorCode = function() {-->
+<!--            if (!window.editor) return;-->
+<!--            sendToFlutter({ type: 'format', code: window.editor.getValue() });-->
+<!--        };-->
     </script>
     <script src="https://unpkg.com/vscode-ws-jsonrpc/dist/browser.js"></script>
     <script src="https://unpkg.com/monaco-languageclient/lib/monaco-languageclient.js"></script>

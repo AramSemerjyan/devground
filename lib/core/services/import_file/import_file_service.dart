@@ -1,21 +1,20 @@
 import 'dart:io';
 
-import 'package:dartpad_lite/services/import_file/imported_file.dart';
-import 'package:dartpad_lite/services/monaco_bridge_service/monaco_bridge_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:path/path.dart';
 
 import '../event_service.dart';
+import 'imported_file.dart';
 
 abstract class ImportFileServiceInterface {
   Future<void> importFile({required File file});
+  Future<void> importImportedFile({required ImportedFile importedFile});
 }
 
 class ImportFileService implements ImportFileServiceInterface {
   final LanguageRepoInterface _languageRepo;
-  final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
 
-  ImportFileService(this._languageRepo, this._monacoWebBridgeService);
+  ImportFileService(this._languageRepo);
 
   @override
   Future<void> importFile({required File file}) async {
@@ -35,6 +34,7 @@ class ImportFileService implements ImportFileServiceInterface {
         final content = await file.readAsString();
 
         final importedFile = ImportedFile(
+          name: file.uri.pathSegments.last,
           language: matchedLanguage,
           code: content,
         );
@@ -50,5 +50,11 @@ class ImportFileService implements ImportFileServiceInterface {
     } catch (e) {
       EventService.instance.emit(Event.error(title: e.toString()));
     }
+  }
+
+  Future<void> importImportedFile({required ImportedFile importedFile}) async {
+    EventService.instance.emit(
+      Event(type: EventType.importedFile, data: importedFile),
+    );
   }
 }

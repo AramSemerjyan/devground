@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../core/services/event_service.dart';
 import '../../storage/supported_language.dart';
 
 abstract class SettingsPageVMInterface {

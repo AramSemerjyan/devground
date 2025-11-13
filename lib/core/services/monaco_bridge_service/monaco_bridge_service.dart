@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../event_service.dart';
+
 abstract class MonacoWebBridgeServiceInterface {
   WebViewController get controller;
-
-  Function(String)? onRunCode;
-  Function(String)? onFormatCode;
 
   Future<void> setUp();
   Future<void> formatCode();
@@ -78,20 +76,12 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
         });
   }
 
-  @override
-  Function(String)? onRunCode;
-
-  @override
-  Function(String)? onFormatCode;
-
   Future<void> handleEditorMessage(Map<String, dynamic> msg) async {
     final type = msg['type'] as String?;
     if (type == 'run') {
       final code = msg['code'] as String? ?? '';
-      onRunCode?.call(code);
     } else if (type == 'format') {
       final code = msg['code'] as String? ?? '';
-      onFormatCode?.call(code);
     } else {
       sendStatus('Unknown message type: $type');
     }

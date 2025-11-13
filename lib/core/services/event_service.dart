@@ -70,7 +70,7 @@ class EventService {
     );
   }
 
-  static event({required EventType type, String? data, String? title}) {
+  static event({required EventType type, dynamic data, String? title}) {
     print('EVENT: $type');
     EventService.instance.emit(Event(type: type, title: title, data: data));
   }

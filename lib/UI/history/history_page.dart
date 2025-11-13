@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dartpad_lite/UI/history/history_page_vm.dart';
-import 'package:dartpad_lite/services/import_file/import_file_service.dart';
-import 'package:dartpad_lite/services/save_file/file_service.dart';
+import 'package:dartpad_lite/UI/history/history_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/services/import_file/import_file_service.dart';
+import '../../core/services/save_file/file_service.dart';
 import '../../utils/app_colors.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -28,6 +28,8 @@ class _HistoryPageState extends State<HistoryPage> {
     widget.importFileService,
   );
 
+  late final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -35,86 +37,67 @@ class _HistoryPageState extends State<HistoryPage> {
     _vm.fetchHistory();
   }
 
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      autofocus: true,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Search by file name',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        filled: true,
+        fillColor: Colors.grey[850],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      onChanged: (text) {
+        _vm.onSearch(query: text);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(backgroundColor: AppColor.mainGrey),
-      backgroundColor: AppColor.mainGreyDarker,
+      backgroundColor: AppColor.mainGreyDark,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ValueListenableBuilder<List<File>>(
-          valueListenable: _vm.onFilesUpdate,
-          builder: (_, files, __) {
-            return ListView.builder(
-              itemCount: files.length,
-              itemBuilder: (context, index) {
-                final file = files[index];
-                final fileName = file.uri.pathSegments.last;
-                final filePath = file.path;
-                final modified = DateFormat(
-                  'yyyy-MM-dd HH:mm:ss',
-                ).format(file.lastModifiedSync());
-
-                return Card(
-                  color: AppColor.mainGrey,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: ListTile(
-                    title: Text(
-                      fileName,
-                      style: TextStyle(color: Colors.grey[400]),
+        child: Column(
+          children: [
+            _buildSearchField(),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ValueListenableBuilder<List<File>>(
+                valueListenable: _vm.onFilesUpdate,
+                builder: (_, files, __) {
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: Column(
+                        children: files.map((file) {
+                          return HistoryTile(
+                            file: file,
+                            onSelect: (file) {
+                              _vm.onSelect(file: file);
+                              if (context.mounted) Navigator.of(context).pop();
+                            },
+                            onDelete: (file) => _vm.deleteFile(file: file),
+                            onReveal: (file) => _vm.onReveal(file: file),
+                          );
+                        }).toList(),
+                      ),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          filePath,
-                          style: TextStyle(color: AppColor.mainGreyLighter),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Last saved: $modified',
-                          style: TextStyle(
-                            color: AppColor.mainGreyLighter,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_forever,
-                            color: AppColor.error,
-                          ),
-                          onPressed: () {
-                            _vm.deleteFile(file: file);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.folder,
-                            color: AppColor.mainGreyLighter,
-                          ),
-                          onPressed: () {
-                            _vm.onReveal(file: file);
-                          },
-                        ),
-                      ],
-                    ),
-                    onTap: () async {
-                      await _vm.onSelect(file: file);
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
-                  ),
-                );
-              },
-            );
-          },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

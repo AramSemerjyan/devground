@@ -1,148 +1,80 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/services/monaco_bridge_service/monaco_bridge_service.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../services/compiler/compiler_interface.dart';
-import '../../services/event_service.dart';
-import '../../services/save_file/file_service.dart';
-import '../../storage/supported_language.dart';
+import '../../core/services/event_service.dart';
+import '../../core/services/import_file/imported_file.dart';
 
 abstract class EditorPageVMInterface {
-  WebViewController get controller;
-  MonacoWebBridgeServiceInterface get bridge;
+  ValueNotifier<(List<ImportedFile>, int)> get onPagesUpdate;
 
-  Stream<String> get compileResultStream;
-
-  ValueNotifier<bool> get runProgress;
-  ValueNotifier<bool> get formatProgress;
-  ValueNotifier<bool> get saveProgress;
-
-  Future<void> formatCode();
-  Future<void> runCode();
-  Future<void> save({String? name});
-  Future<void> dropEditorFocus();
+  Future<void> onSelect(int pageIndex);
+  Future<void> onClose(int pageIndex);
 }
 
 class EditorPageVM implements EditorPageVMInterface {
-  final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
-  final CompilerInterface _compiler;
-  final FileServiceInterface _saveFileService;
-
   @override
-  MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
+  ValueNotifier<(List<ImportedFile>, int)> onPagesUpdate = ValueNotifier((
+    [],
+    -1,
+  ));
 
-  @override
-  get controller => _monacoWebBridgeService.controller;
-
-  @override
-  Stream<String> get compileResultStream => _outputController.stream;
-
-  @override
-  ValueNotifier<bool> runProgress = ValueNotifier(false);
-  @override
-  ValueNotifier<bool> formatProgress = ValueNotifier(false);
-  @override
-  ValueNotifier<bool> saveProgress = ValueNotifier(false);
-
-  final _outputController = StreamController<String>.broadcast();
-  final _output = StringBuffer();
-
-  EditorPageVM(
-    this._monacoWebBridgeService,
-    this._compiler,
-    this._saveFileService,
-  ) {
+  EditorPageVM() {
     _setListeners();
-
-    _monacoWebBridgeService.onRunCode = (code) {
-      _runCode(code);
-    };
-    _monacoWebBridgeService.onFormatCode = (code) {
-      _formatCode(code);
-    };
-  }
-
-  Future<void> _runCode(String code) async {
-    _output.clear();
-    _outputController.sink.add('');
-
-    try {
-      final result = await _compiler.runCode(code);
-
-      if (result.hasError) {
-        _sendOutput(result.data);
-        EventService.instance.emit(Event.error(title: 'Error'));
-      } else {
-        _sendOutput(result.data);
-        EventService.instance.emit(Event.success(title: 'Success'));
-      }
-    } catch (e) {
-      EventService.instance.emit(Event.error(title: e.toString()));
-    }
-
-    runProgress.value = false;
-  }
-
-  Future<void> _formatCode(String code) async {
-    try {
-      final result = await _compiler.formatCode(code);
-
-      if (result.hasError) {
-        EventService.instance.emit(Event.error(title: 'Error'));
-      } else {
-        _monacoWebBridgeService.setCode(code: result.data);
-      }
-    } catch (e) {
-      EventService.instance.emit(Event.error(title: e.toString()));
-    }
-
-    formatProgress.value = false;
-  }
-
-  Future<void> _sendOutput(String s) async {
-    _output.write(s);
-    _outputController.sink.add(_output.toString());
   }
 
   void _setListeners() {
     EventService.instance.stream
-        .where((e) => e.type == EventType.languageChanged)
-        .listen((event) async {
-          final lang = event.data as SupportedLanguage?;
+        .where((event) => event.type == EventType.importedFile)
+        .listen((event) {
+          final updatedPages = [
+            ...onPagesUpdate.value.$1,
+            event.data as ImportedFile,
+          ];
+          final selectedPage = updatedPages.length - 1;
 
-          if (lang != null) _monacoWebBridgeService.setLanguage(language: lang);
+          onPagesUpdate.value = (updatedPages, selectedPage);
         });
   }
 
   @override
-  Future<void> formatCode() async {
-    if (formatProgress.value) return;
-    formatProgress.value = true;
-    await _monacoWebBridgeService.formatCode();
+  Future<void> onSelect(int pageIndex) async {
+    if (pageIndex == onPagesUpdate.value.$2) return;
+
+    onPagesUpdate.value = (onPagesUpdate.value.$1, pageIndex);
+
+    EventService.event(
+      type: EventType.languageChanged,
+      data: onPagesUpdate.value.$1[onPagesUpdate.value.$2].language,
+    );
   }
 
   @override
-  Future<void> runCode() async {
-    if (runProgress.value) return;
-    runProgress.value = true;
-    await _monacoWebBridgeService.runCode();
-  }
+  Future<void> onClose(int pageIndex) async {
+    final (pages, selectedIndex) = onPagesUpdate.value;
 
-  @override
-  Future<void> save({String? name}) async {
-    if (saveProgress.value) return;
-    saveProgress.value = true;
+    final updatedPages = List<ImportedFile>.from(pages)..removeAt(pageIndex);
 
-    final code = await _monacoWebBridgeService.getValue();
-    await _saveFileService.saveMonacoCodeToFile(raw: code, fileName: name);
+    int newSelectedIndex = selectedIndex;
 
-    saveProgress.value = false;
-  }
+    if (updatedPages.isEmpty) {
+      newSelectedIndex = -1; // no pages left
+    } else if (pageIndex == selectedIndex) {
+      // removed the selected tab → pick nearby one
+      if (pageIndex >= updatedPages.length) {
+        newSelectedIndex = updatedPages.length - 1; // pick previous
+      } else {
+        newSelectedIndex = pageIndex; // pick the one that replaced it
+      }
+    } else if (pageIndex < selectedIndex) {
+      // removed a tab before the selected one → shift left
+      newSelectedIndex = selectedIndex - 1;
+    }
 
-  @override
-  Future<void> dropEditorFocus() {
-    return _monacoWebBridgeService.dropFocus();
+    final language = updatedPages[newSelectedIndex].language;
+
+    EventService.event(type: EventType.languageChanged, data: language);
+
+    onPagesUpdate.value = (updatedPages, newSelectedIndex);
   }
 }

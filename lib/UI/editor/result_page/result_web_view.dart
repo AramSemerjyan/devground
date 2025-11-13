@@ -1,15 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../services/event_service.dart';
+import '../../../core/services/event_service.dart';
 
 class ResultWebView extends StatefulWidget {
-  final String filePath;
+  final Stream<String> outputStream;
 
-  const ResultWebView({super.key, required this.filePath});
+  const ResultWebView({super.key, required this.outputStream});
 
   @override
   State<ResultWebView> createState() => _ResultWebViewState();
@@ -30,7 +32,11 @@ class _ResultWebViewState extends State<ResultWebView> {
       },
     );
 
+  final List<StreamSubscription> _subscriptions = [];
+
   final ValueNotifier<bool> _showNavBar = ValueNotifier(false);
+
+  String homePath = '';
 
   Future<void> handleWebMessage(Map<String, dynamic> msg) async {
     final action = msg['action'] as String?;
@@ -43,7 +49,7 @@ class _ResultWebViewState extends State<ResultWebView> {
     return Container(
       height: 40,
       width: double.infinity,
-      color: AppColor.mainGreyDarker.withValues(alpha: 0.8),
+      color: AppColor.mainGreyDark.withValues(alpha: 0.8),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
@@ -95,30 +101,54 @@ class _ResultWebViewState extends State<ResultWebView> {
   void initState() {
     super.initState();
 
-    webViewController.setNavigationDelegate(
-      NavigationDelegate(
-        onNavigationRequest: (request) {
-          _showNavBar.value = request.url != 'file://${widget.filePath}';
+    final sub = widget.outputStream.where((path) => path.isNotEmpty).listen((
+      path,
+    ) {
+      homePath = path;
 
-          return NavigationDecision.navigate;
-        },
-        onPageFinished: (url) async {
-          await webViewController.runJavaScript('''
+      webViewController.setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (request) {
+            _showNavBar.value = request.url != 'file://$path';
+
+            return NavigationDecision.navigate;
+          },
+          onPageFinished: (url) async {
+            await webViewController.runJavaScript('''
               document.addEventListener('click', function() {
                 ResultChannel.postMessage(JSON.stringify({'action': 'clicked'}));
               });
             ''');
-        },
-      ),
-    );
+          },
+        ),
+      );
+
+      webViewController.loadFile(path);
+    });
+
+    _subscriptions.add(sub);
+
+    rootBundle.loadString('assets/blank_html.html').then((html) {
+      webViewController.loadHtmlString(html);
+    });
+  }
+
+  @override
+  void dispose() {
+    for (var subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
+
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant ResultWebView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.filePath.isNotEmpty) {
-      webViewController.loadFile(widget.filePath);
+    if (homePath.isNotEmpty) {
+      webViewController.loadFile(homePath);
     }
   }
 

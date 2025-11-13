@@ -1,12 +1,14 @@
-import 'package:dartpad_lite/services/compiler/c_compiler.dart';
-import 'package:dartpad_lite/services/compiler/cpp_compiler.dart';
-import 'package:dartpad_lite/services/compiler/dart_compiler.dart';
-import 'package:dartpad_lite/services/compiler/html_compiler.dart';
-import 'package:dartpad_lite/services/compiler/js_compiler.dart';
-import 'package:dartpad_lite/services/compiler/py_compiler.dart';
-import 'package:dartpad_lite/services/compiler/shell_compiler.dart';
-import 'package:dartpad_lite/services/compiler/swift_compiler.dart';
-import 'package:dartpad_lite/storage/supported_language.dart';
+import 'package:dartpad_lite/core/services/compiler/py_compiler.dart';
+import 'package:dartpad_lite/core/services/compiler/shell_compiler.dart';
+import 'package:dartpad_lite/core/services/compiler/swift_compiler.dart';
+import 'package:dartpad_lite/core/services/compiler/xml_compiler.dart';
+
+import '../../../storage/supported_language.dart';
+import 'c_compiler.dart';
+import 'cpp_compiler.dart';
+import 'dart_compiler.dart';
+import 'html_compiler.dart';
+import 'js_compiler.dart';
 
 class CompilerResult {
   final bool hasError;
@@ -22,7 +24,12 @@ abstract class CompilerInterface {
 }
 
 class Compiler implements CompilerInterface {
+  final SupportedLanguage language;
   CompilerInterface? _selectedCompiler;
+
+  Compiler({required this.language}) {
+    _setUp();
+  }
 
   @override
   Future<CompilerResult> formatCode(String code) {
@@ -42,7 +49,7 @@ class Compiler implements CompilerInterface {
     return _selectedCompiler!.runCode(code);
   }
 
-  void setCompilerForLanguage({required SupportedLanguage language}) {
+  void _setUp() {
     final sdkPath = language.sdkPath;
 
     if (sdkPath == null && language.needSDKPath) {
@@ -68,6 +75,8 @@ class Compiler implements CompilerInterface {
         _selectedCompiler = PythonCompiler(sdkPath!);
       case SupportedLanguageType.swift:
         _selectedCompiler = SwiftCompiler(sdkPath!);
+      case SupportedLanguageType.xml:
+        _selectedCompiler = XMLCompiler();
       default:
         _selectedCompiler = null;
     }

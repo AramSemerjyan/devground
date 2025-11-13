@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/bottom_tool_bar_vm.dart';
-import 'package:dartpad_lite/services/event_service.dart';
 import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/services/event_service.dart';
 import '../../command_palette/command_palette.dart';
 
 class BottomToolBar extends StatefulWidget {

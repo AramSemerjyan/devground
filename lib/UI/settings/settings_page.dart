@@ -117,7 +117,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(backgroundColor: AppColor.mainGrey),
-      backgroundColor: AppColor.mainGreyDarker,
+      backgroundColor: AppColor.mainGreyDark,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
