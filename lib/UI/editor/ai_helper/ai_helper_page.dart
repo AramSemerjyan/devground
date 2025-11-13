@@ -1,62 +1,169 @@
-import 'dart:convert';
-
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/ai_chat_bubble.dart';
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/chat_bubble.dart';
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
+import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
+import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../core/services/event_service.dart';
+import 'ai_herlper_vm.dart';
+import 'ui/bubble/message_segment.dart';
 
 class AiHelperPage extends StatefulWidget {
-  const AiHelperPage({super.key});
+  final MonacoWebBridgeServiceInterface monacoWebBridgeService;
+
+  const AiHelperPage({super.key, required this.monacoWebBridgeService});
 
   @override
   State<AiHelperPage> createState() => _AiHelperPageState();
 }
 
 class _AiHelperPageState extends State<AiHelperPage> {
-  late final _controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..addJavaScriptChannel(
-      'ResultChannel',
-      onMessageReceived: (message) {
-        try {
-          final msg = jsonDecode(message.message) as Map<String, dynamic>;
-          handleWebMessage(msg);
-        } catch (e) {
-          EventService.error(title: e.toString());
-        }
-      },
-    );
+  late final AIHelperVMInterface _vm = AIHelperVM(
+    widget.monacoWebBridgeService,
+  );
 
-  Future<void> handleWebMessage(Map<String, dynamic> msg) async {
-    final action = msg['action'] as String?;
-    if (action == 'clicked') {
-      EventService.event(type: EventType.monacoDropFocus);
-    }
-  }
+  final TextEditingController _controller = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-
-    _controller.loadRequest(
-      Uri.parse('https://chatgpt.com/?hints=search&ref=ext'),
-    );
-
-    _controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageFinished: (url) async {
-          await _controller.runJavaScript('''
-              document.addEventListener('click', function() {
-                ResultChannel.postMessage(JSON.stringify({'action': 'clicked'}));
-              });
-            ''');
-        },
-      ),
-    );
+  void _sendMessage() async {
+    _vm.generate(text: _controller.text.trim());
+    _controller.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(controller: _controller);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Gemini Chat',
+          style: TextStyle(color: AppColor.mainGreyLighter),
+        ),
+        backgroundColor: AppColor.mainGrey,
+      ),
+      backgroundColor: AppColor.mainGreyDark,
+      body: Column(
+        children: [
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: _vm.onMessagesUpdate,
+              builder: (_, messages, __) {
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = messages[index];
+
+                    if (msg.isUser) {
+                      return UseChatBubble(text: msg.text);
+                    } else {
+                      final segments = MessageSegment.parseAiResponse(msg.text);
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColor.mainGrey,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: segments
+                              .map(
+                                (segment) => AiChatBubble(
+                                  segment: segment,
+                                  moveToEditor: (code) =>
+                                      _vm.moveToEditor(code: code),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: _vm.isLoading,
+            builder: (_, isLoading, __) {
+              if (!isLoading) return SizedBox();
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ThinkingText(
+                      text: 'Thinking',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColor.mainGreyLighter,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          Row(
+            spacing: 5,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _controller,
+                    style: TextStyle(color: AppColor.mainGreyLighter),
+                    onSubmitted: (_) => _sendMessage(),
+                    decoration: const InputDecoration(
+                      hintText: 'Type your message...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              ValueListenableBuilder<bool>(
+                valueListenable: _vm.readFromEditor,
+                builder: (_, value, __) {
+                  return Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: value
+                          ? AppColor.mainGreyDarker.withValues(alpha: 0.3)
+                          : AppColor.mainGrey,
+                      borderRadius: BorderRadius.all(Radius.circular(3)),
+                    ),
+                    child: GestureDetector(
+                      onTap: () => _vm.readFromEditor.value = !value,
+                      child: Tooltip(
+                        message: 'Use editor code',
+                        child: Icon(
+                          Icons.edit_note,
+                          color: AppColor.mainGreyLighter,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Container(
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: AppColor.mainGrey,
+                  borderRadius: BorderRadius.all(Radius.circular(3)),
+                ),
+                child: GestureDetector(
+                  onTap: _sendMessage,
+                  child: Tooltip(
+                    message: 'Send message',
+                    child: Icon(Icons.send, color: AppColor.mainGreyLighter),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

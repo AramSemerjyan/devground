@@ -11,6 +11,8 @@ import '../../../core/services/monaco_bridge_service/monaco_bridge_service.dart'
 import '../../../core/services/save_file/file_service.dart';
 
 abstract class EditorViewVMInterface {
+  MonacoWebBridgeServiceInterface get bridge;
+
   WebViewController get controller;
 
   SupportedLanguage get language;
@@ -34,6 +36,9 @@ class EditorViewVM implements EditorViewVMInterface {
 
   late final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
   late final CompilerInterface _compiler;
+
+  @override
+  MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
 
   @override
   SupportedLanguage get language => _file.language;

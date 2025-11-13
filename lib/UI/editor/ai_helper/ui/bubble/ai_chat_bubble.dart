@@ -1,0 +1,81 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'message_segment.dart';
+
+class AiChatBubble extends StatelessWidget {
+  final Function(String code)? moveToEditor;
+  final MessageSegment segment;
+
+  const AiChatBubble({super.key, required this.segment, this.moveToEditor});
+
+  @override
+  Widget build(BuildContext context) {
+    if (segment.isCode) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Stack(
+          children: [
+            SelectableText(
+              segment.text,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                color: Colors.greenAccent,
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Row(
+                spacing: 10,
+                children: [
+                  Tooltip(
+                    message: 'Copy',
+                    child: InkWell(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: segment.text));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Code copied to clipboard'),
+                          ),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.copy,
+                        size: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                  Tooltip(
+                    message: 'Replace editor code',
+                    child: InkWell(
+                      onTap: () {
+                        moveToEditor?.call(segment.text);
+                      },
+                      child: const Icon(
+                        Icons.move_up_sharp,
+                        size: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return SelectableText(
+        segment.text,
+        style: const TextStyle(color: Colors.white),
+      );
+    }
+  }
+}

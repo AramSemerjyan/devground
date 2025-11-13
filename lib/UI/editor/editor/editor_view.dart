@@ -172,7 +172,7 @@ class _EditorViewState extends State<EditorView> {
               height: value,
               width: double.infinity,
               color: AppColor.black,
-              child: AiHelperPage(),
+              child: AiHelperPage(monacoWebBridgeService: _vm.bridge),
             ),
             ValueListenableBuilder(
               valueListenable: _isDragging,
@@ -267,15 +267,14 @@ class _EditorViewState extends State<EditorView> {
           ),
         ),
         ValueListenableBuilder(
-            valueListenable: _showAI,
-            builder: (_, show, __) {
-              if (!show) return SizedBox();
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [_buildResizeSeparatorHorizontal(),
-                  _buildAIView(),],
-              );
-            }
+          valueListenable: _showAI,
+          builder: (_, show, __) {
+            if (!show) return SizedBox();
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [_buildResizeSeparatorHorizontal(), _buildAIView()],
+            );
+          },
         ),
       ],
     );
