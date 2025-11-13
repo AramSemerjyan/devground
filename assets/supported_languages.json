@@ -145,5 +145,31 @@
     "snippet": "<root>\n  <element>Value</element>\n</root>",
     "supported": "supported",
     "need_sdk_path": false
+  },
+  {
+    "key": "txt",
+    "name": "Text File",
+    "extension": ".txt",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "",
+    "supported": "supported",
+    "need_sdk_path": false
+  },
+  {
+    "key": "log",
+    "name": "Log File",
+    "extension": ".log",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "",
+    "supported": "supported",
+    "need_sdk_path": false
   }
 ]

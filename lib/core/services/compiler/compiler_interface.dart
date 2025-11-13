@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/core/services/compiler/default_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/py_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/shell_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/swift_compiler.dart';
@@ -78,7 +79,7 @@ class Compiler implements CompilerInterface {
       case SupportedLanguageType.xml:
         _selectedCompiler = XMLCompiler();
       default:
-        _selectedCompiler = null;
+        _selectedCompiler = DefaultCompiler(language: language);
     }
   }
 

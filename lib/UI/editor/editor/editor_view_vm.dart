@@ -12,6 +12,7 @@ import '../../../core/services/save_file/file_service.dart';
 
 abstract class EditorViewVMInterface {
   MonacoWebBridgeServiceInterface get bridge;
+  ImportedFile get file;
 
   WebViewController get controller;
 
@@ -36,6 +37,9 @@ class EditorViewVM implements EditorViewVMInterface {
 
   late final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
   late final CompilerInterface _compiler;
+
+  @override
+  ImportedFile get file => _file;
 
   @override
   MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;

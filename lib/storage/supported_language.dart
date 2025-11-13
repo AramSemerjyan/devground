@@ -11,6 +11,8 @@ enum SupportedLanguageType {
   json('json'),
   xml('xml'),
   html('html'),
+  txt('txt'),
+  log('log'),
   css('css');
 
   final String value;

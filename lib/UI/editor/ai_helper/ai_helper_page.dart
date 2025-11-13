@@ -34,7 +34,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Gemini Chat',
+          'Ask Gemini',
           style: TextStyle(color: AppColor.mainGreyLighter),
         ),
         backgroundColor: AppColor.mainGrey,

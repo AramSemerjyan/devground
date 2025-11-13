@@ -86,7 +86,10 @@ class _EditorViewState extends State<EditorView> {
           mini: true,
           icon: const Icon(Icons.save),
           onPressed: () async {
-            final name = await CommandPalette.showRename(context);
+            final name = await CommandPalette.showRename(
+              context,
+              initialValue: _vm.file.name,
+            );
 
             if (name != null) _vm.save(name: name);
 

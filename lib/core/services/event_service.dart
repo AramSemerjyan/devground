@@ -10,6 +10,7 @@ enum EventType {
   success,
   warning,
   sdkSetUp,
+  languageChangedForNewFile,
   languageChanged,
   sdkPathUpdated,
   importedFile,

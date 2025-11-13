@@ -62,6 +62,20 @@ class AppPageVM {
         });
 
     EventService.instance.stream
+        .where((event) => event.type == EventType.languageChangedForNewFile)
+        .listen((event) {
+          final data = event.data as SupportedLanguage?;
+
+          if (data != null) {
+            _setLanguage(data);
+
+            importFileService.importImportedFile(
+              importedFile: ImportedFile.newFile(language: data),
+            );
+          }
+        });
+
+    EventService.instance.stream
         .where((event) => event.type == EventType.importedFile)
         .listen((event) async {
           final importedFile = event.data as ImportedFile;

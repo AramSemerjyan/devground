@@ -32,7 +32,7 @@ class BottomToolBarVM implements BottomToolBarVMInterface {
   Future<void> selectLanguage({required SupportedLanguage language}) async {
     await _languageRepo.setSelectedLanguage(key: language.key);
     EventService.instance.emit(
-      Event(type: EventType.languageChanged, data: language),
+      Event(type: EventType.languageChangedForNewFile, data: language),
     );
   }
 
