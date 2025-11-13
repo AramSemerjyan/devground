@@ -79,7 +79,12 @@ class _WelcomePageState extends State<WelcomePage> {
           Expanded(
             child: Container(
               color: AppColor.mainGreyDark,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
+              padding: const EdgeInsets.only(
+                top: 40,
+                right: 40,
+                left: 40,
+                bottom: 20,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -100,6 +105,7 @@ class _WelcomePageState extends State<WelcomePage> {
                       },
                     ),
                   ),
+                  const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Text(

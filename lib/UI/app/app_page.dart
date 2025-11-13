@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:dartpad_lite/UI/app/app_page_vm.dart';
 import 'package:dartpad_lite/UI/app/app_pages.dart';
-import 'package:dartpad_lite/UI/app/route_observer.dart';
+import 'package:dartpad_lite/UI/app/app_route_observer.dart';
+import 'package:dartpad_lite/UI/app/app_scope.dart';
 import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
 import 'package:dartpad_lite/UI/editor/editor_page.dart';
 import 'package:dartpad_lite/UI/history/history_page.dart';
@@ -35,6 +36,16 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
 
     _vm.setUp();
     WidgetsBinding.instance.addObserver(this);
+
+    EventService.instance.stream
+        .where((event) => event.type == EventType.importedFile)
+        .listen((event) {
+          if (_observer.currentRoute != AppPages.editor.value) {
+            _navigatorKey.currentState?.pushReplacementNamed(
+              AppPages.editor.value,
+            );
+          }
+        });
   }
 
   @override
@@ -95,57 +106,62 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.mainGrey,
-      body: DropTarget(
-        onDragEntered: (_) => CommandPalette.showFileImport(context),
-        onDragExited: (details) => CommandPalette.hide(),
-        onDragDone: (details) {
-          CommandPalette.hide();
+    return AppPageScope(
+      vm: _vm,
+      navigatorKey: _navigatorKey,
+      observer: _observer,
+      child: Scaffold(
+        backgroundColor: AppColor.mainGrey,
+        body: DropTarget(
+          onDragEntered: (_) => CommandPalette.showFileImport(context),
+          onDragExited: (details) => CommandPalette.hide(),
+          onDragDone: (details) {
+            CommandPalette.hide();
 
-          for (final file in details.files) {
-            if (file.path.isNotEmpty) {
-              _vm.importFileService.importFile(file: File(file.path));
+            for (final file in details.files) {
+              if (file.path.isNotEmpty) {
+                _vm.importFileService.importFile(file: File(file.path));
+              }
             }
-          }
-        },
-        child: ValueListenableBuilder(
-          valueListenable: _vm.inProgress,
-          builder: (_, value, __) {
-            if (value) {
-              return Center(
-                child: SizedBox(
-                  height: 50,
-                  width: 50,
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-
-            return Column(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      SideToolBar(navigatorKey: _navigatorKey),
-                      Container(
-                        width: 1,
-                        height: double.infinity,
-                        color: Color(0xff2b2b2b),
-                      ),
-                      Expanded(child: _buildMain()),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: double.infinity,
-                  height: 1,
-                  color: Color(0xff2b2b2b),
-                ),
-                BottomToolBar(languageRepo: _vm.languageRepo),
-              ],
-            );
           },
+          child: ValueListenableBuilder(
+            valueListenable: _vm.inProgress,
+            builder: (_, value, __) {
+              if (value) {
+                return Center(
+                  child: SizedBox(
+                    height: 50,
+                    width: 50,
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        SideToolBar(navigatorKey: _navigatorKey),
+                        Container(
+                          width: 1,
+                          height: double.infinity,
+                          color: Color(0xff2b2b2b),
+                        ),
+                        Expanded(child: _buildMain()),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 1,
+                    color: Color(0xff2b2b2b),
+                  ),
+                  BottomToolBar(languageRepo: _vm.languageRepo),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

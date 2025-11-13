@@ -70,15 +70,9 @@ class AppPageVM {
             Event(type: EventType.languageChanged, data: importedFile.language),
           );
 
-          await monacoWebBridgeService.setLanguage(
-            language: importedFile.language,
-          );
           await languageRepo.setSelectedLanguage(
             key: importedFile.language.key,
           );
-
-          await monacoWebBridgeService.setCode(code: importedFile.code);
-          await monacoWebBridgeService.dropFocus();
         });
 
     EventService.instance.stream

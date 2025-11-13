@@ -85,7 +85,8 @@ class _HistoryPageState extends State<HistoryPage> {
                             file: file,
                             onSelect: (file) {
                               _vm.onSelect(file: file);
-                              if (context.mounted) Navigator.of(context).pop();
+                              // AppPageScope.of(context).navigatorKey.currentState
+                              //     ?.pushReplacementNamed(AppPages.editor.value);
                             },
                             onDelete: (file) => _vm.deleteFile(file: file),
                             onReveal: (file) => _vm.onReveal(file: file),

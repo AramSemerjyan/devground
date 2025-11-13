@@ -19,4 +19,17 @@ enum AppPages {
         return Icons.settings;
     }
   }
+
+  static AppPages fromString(String name) {
+    switch (name) {
+      case 'Editor':
+        return AppPages.editor;
+      case 'History':
+        return AppPages.history;
+      case 'Settings':
+        return AppPages.settings;
+      default:
+        return AppPages.editor;
+    }
+  }
 }

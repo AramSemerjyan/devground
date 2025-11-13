@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:dartpad_lite/UI/app/app_pages.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
@@ -5,6 +8,9 @@ import '../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
 class AppRouteObserver extends NavigatorObserver {
   final MonacoWebBridgeServiceInterface monacoWebBridgeService;
   final List<Route<dynamic>> _routeStack = [];
+  final StreamController<AppPages> _onRouteChange = StreamController();
+
+  Stream<AppPages> get routeUpdated => _onRouteChange.stream;
 
   AppRouteObserver({required this.monacoWebBridgeService});
 
@@ -23,21 +29,12 @@ class AppRouteObserver extends NavigatorObserver {
   }
 
   @override
-  void didPop(Route route, Route? previousRoute) {
-    _routeStack.remove(route);
-    super.didPop(route, previousRoute);
-  }
-
-  @override
-  void didRemove(Route route, Route? previousRoute) {
-    _routeStack.remove(route);
-    super.didRemove(route, previousRoute);
-  }
-
-  @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     if (oldRoute != null) _routeStack.remove(oldRoute);
     if (newRoute != null) _routeStack.add(newRoute);
+
+    _onRouteChange.sink.add(AppPages.fromString(newRoute?.settings.name ?? ''));
+
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
   }
 }

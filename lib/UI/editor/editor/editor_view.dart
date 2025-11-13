@@ -163,7 +163,7 @@ class _EditorViewState extends State<EditorView> {
           valueListenable: _isDragging,
           builder: (_, isDragging, __) {
             return Container(
-              width: 4,
+              width: 6,
               color: isDragging ? Colors.grey : AppColor.mainGreyLighter,
             );
           },
@@ -182,8 +182,10 @@ class _EditorViewState extends State<EditorView> {
     );
   }
 
+  /// HTML views (Monaco or ResultWebView) mess up drag gesture
+  /// so we put container over it to prevent it
   Widget _buildDragOverlay() {
-    return Container(color: AppColor.mainGreyLighter.withValues(alpha: 0.2));
+    return Container(color: AppColor.mainGreyLighter.withValues(alpha: 0.01));
   }
 
   @override
