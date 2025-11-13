@@ -1,18 +1,21 @@
-import 'package:dartpad_lite/storage/supported_language.dart';
+import 'dart:convert';
+
 import 'package:uuid/uuid.dart';
 
 import 'compiler_interface.dart';
 
-class DefaultCompiler implements CompilerInterface {
-  final SupportedLanguage language;
-
+class JSONCompiler implements CompilerInterface {
   final uuid = const Uuid();
-
-  DefaultCompiler({required this.language});
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-    return CompilerResult(data: code);
+    try {
+      final jsonObject = jsonDecode(code);
+      const encoder = JsonEncoder.withIndent('  '); // 2 spaces
+      return CompilerResult(data: encoder.convert(jsonObject));
+    } catch (e) {
+      return CompilerResult(hasError: true, error: e);
+    }
   }
 
   @override

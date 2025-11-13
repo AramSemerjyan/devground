@@ -1,4 +1,5 @@
 import 'package:dartpad_lite/core/services/compiler/default_compiler.dart';
+import 'package:dartpad_lite/core/services/compiler/json_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/py_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/shell_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/swift_compiler.dart';
@@ -78,6 +79,8 @@ class Compiler implements CompilerInterface {
         _selectedCompiler = SwiftCompiler(sdkPath!);
       case SupportedLanguageType.xml:
         _selectedCompiler = XMLCompiler();
+      case SupportedLanguageType.json:
+        _selectedCompiler = JSONCompiler();
       default:
         _selectedCompiler = DefaultCompiler(language: language);
     }
