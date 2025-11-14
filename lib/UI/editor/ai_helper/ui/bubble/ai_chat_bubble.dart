@@ -24,7 +24,7 @@ class AiChatBubble extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 100),
               child: SelectableText(
-                segment.text,
+                segment.formattedCode,
                 style: const TextStyle(
                   fontFamily: 'monospace',
                   color: Colors.greenAccent,

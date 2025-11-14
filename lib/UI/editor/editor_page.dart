@@ -51,10 +51,17 @@ class _EditorPageState extends State<EditorPage> {
           children: [
             Padding(
               padding: EdgeInsets.only(top: files.length > 1 ? 40 : 0),
-              child: EditorView(
-                key: ObjectKey(file),
-                saveFileService: widget.fileService,
-                file: file,
+              child: IndexedStack(
+                index: selectedTab,
+                children: files
+                    .map(
+                      (file) => EditorView(
+                        key: ObjectKey(file),
+                        saveFileService: widget.fileService,
+                        file: file,
+                      ),
+                    )
+                    .toList(),
               ),
             ),
 
