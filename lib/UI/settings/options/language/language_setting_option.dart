@@ -32,18 +32,18 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
 
   @override
   Widget build(BuildContext context) {
-    return SettingOption(
-      title: 'Language',
-      height: 200,
-      child: FutureBuilder(
-        future: _vm.getSupportedLanguages(),
-        builder: (c, f) {
-          final data = f.data;
-          if (data == null) return const SizedBox();
+    return ValueListenableBuilder(
+      valueListenable: _vm.selectedLanguage,
+      builder: (_, selectedLanguage, __) {
+        return SettingOption(
+          title: 'Language',
+          height: selectedLanguage?.needSDKPath ?? false ? 200 : 100,
+          child: FutureBuilder(
+            future: _vm.getSupportedLanguages(),
+            builder: (c, f) {
+              final data = f.data;
+              if (data == null) return const SizedBox();
 
-          return ValueListenableBuilder(
-            valueListenable: _vm.selectedLanguage,
-            builder: (_, selected, __) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -71,7 +71,7 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
                     child: Row(
                       children: [
                         Text(
-                          selected?.name ?? 'Select language…',
+                          selectedLanguage?.name ?? 'Select language…',
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,
@@ -84,12 +84,14 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
                   ),
 
                   // Browse button
-                  if (selected?.needSDKPath ?? false) ...[
+                  if (selectedLanguage?.needSDKPath ?? false) ...[
                     const SizedBox(height: 16),
 
                     // Path hint
                     Text(
-                      selected?.sdkPath ?? selected?.path.hint ?? '',
+                      selectedLanguage?.sdkPath ??
+                          selectedLanguage?.path.hint ??
+                          '',
                       style: const TextStyle(
                         color: Colors.white38,
                         fontSize: 13,
@@ -110,9 +112,9 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
                 ],
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

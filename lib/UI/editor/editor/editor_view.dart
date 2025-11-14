@@ -204,8 +204,18 @@ class _EditorViewState extends State<EditorView> {
           valueListenable: _isDragging,
           builder: (_, isDragging, __) {
             return Container(
-              width: 6,
+              width: 4,
               color: isDragging ? Colors.grey : AppColor.mainGreyLighter,
+              child: Center(
+                child: Container(
+                  width: 3,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: AppColor.mainGrey,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+              ),
             );
           },
         ),
@@ -228,9 +238,19 @@ class _EditorViewState extends State<EditorView> {
           valueListenable: _isDragging,
           builder: (_, isDragging, __) {
             return Container(
-              height: 6,
+              height: 4,
               width: double.infinity,
               color: isDragging ? Colors.grey : AppColor.mainGreyLighter,
+              child: Center(
+                child: Container(
+                  width: 30,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: AppColor.mainGrey,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+              ),
             );
           },
         ),

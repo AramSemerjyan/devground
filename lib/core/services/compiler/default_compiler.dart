@@ -17,6 +17,9 @@ class DefaultCompiler implements CompilerInterface {
 
   @override
   Future<CompilerResult> runCode(String code) async {
-    return CompilerResult(hasError: true);
+    return CompilerResult(
+      hasError: true,
+      data: "Language doesn't contains compiler",
+    );
   }
 }
