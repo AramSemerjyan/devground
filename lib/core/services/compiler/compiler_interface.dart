@@ -5,7 +5,7 @@ import 'package:dartpad_lite/core/services/compiler/shell_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/swift_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/xml_compiler.dart';
 
-import '../../../storage/supported_language.dart';
+import '../../storage/supported_language.dart';
 import 'c_compiler.dart';
 import 'cpp_compiler.dart';
 import 'dart_compiler.dart';

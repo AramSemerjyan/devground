@@ -1,8 +1,9 @@
 import 'package:dartpad_lite/UI/editor/result_page/result_web_view.dart';
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../../../core/storage/supported_language.dart';
 
 class ResultView extends StatefulWidget {
   final SupportedLanguage language;
@@ -44,6 +45,9 @@ class _ResultViewState extends State<ResultView> {
       backgroundColor: AppColor.black,
       body: switch (widget.language.key) {
         SupportedLanguageType.html => ResultWebView(
+          outputStream: widget.outputStream,
+        ),
+        SupportedLanguageType.json => ResultWebView(
           outputStream: widget.outputStream,
         ),
         _ => _buildDefaultConsole(),

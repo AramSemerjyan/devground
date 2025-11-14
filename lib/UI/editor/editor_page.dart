@@ -2,11 +2,11 @@ import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view.dart';
 import 'package:dartpad_lite/UI/editor/tab_view/editor_tab.dart';
 import 'package:dartpad_lite/UI/editor/welcome/welcome_page.dart';
-import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/import_file/import_file_service.dart';
 import '../../core/services/save_file/file_service.dart';
+import '../../core/storage/language_repo.dart';
 import 'editor_page_vm.dart';
 
 class EditorPage extends StatefulWidget {

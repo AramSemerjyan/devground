@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../storage/supported_language.dart';
 import '../event_service.dart';
 
 abstract class MonacoWebBridgeServiceInterface {
@@ -19,11 +19,16 @@ abstract class MonacoWebBridgeServiceInterface {
   Future<void> reload();
   Future<void> dropFocus();
   Future<void> debug();
+
+  NavigationDecision Function(NavigationRequest)? onNavigationRequest;
 }
 
 class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
   @override
   late final WebViewController controller;
+
+  @override
+  NavigationDecision Function(NavigationRequest)? onNavigationRequest;
 
   @override
   Future<void> setUp() async {
@@ -34,6 +39,10 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (request) {
+            if (onNavigationRequest != null) {
+              return onNavigationRequest!.call(request);
+            }
+
             // Block all navigation except for the initial loaded HTML
             if (request.url.startsWith('data:text/html') ||
                 request.url == 'about:blank') {

@@ -1,10 +1,10 @@
 import 'package:dartpad_lite/UI/settings/settings_page_vm.dart';
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/language_repo.dart';
+import '../../core/storage/language_repo.dart';
+import '../../core/storage/supported_language.dart';
 import '../command_palette/command_palette.dart';
 
 class SettingsPage extends StatefulWidget {

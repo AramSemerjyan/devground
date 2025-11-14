@@ -1,6 +1,6 @@
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../storage/supported_language.dart';
 import 'compiler_interface.dart';
 
 class DefaultCompiler implements CompilerInterface {
@@ -17,19 +17,6 @@ class DefaultCompiler implements CompilerInterface {
 
   @override
   Future<CompilerResult> runCode(String code) async {
-    // try {
-    // final tmpDir = await getTemporaryDirectory();
-    // final id = uuid.v4();
-    // final file = File('${tmpDir.path}/snippet_fmt_$id.${language.extension}');
-    // await file.writeAsString(code);
-    //
-    // // Load the temporary file into WebView
-    // final uri = Uri.file(file.path).path;
-
-    //   return CompilerResult(data: code);
-    // } catch (e) {
     return CompilerResult(hasError: true);
   }
-
-  // }
 }

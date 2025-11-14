@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dartpad_lite/storage/supported_language.dart';
+import '../storage/supported_language.dart';
 
 class LspBridge {
   final SupportedLanguage language;

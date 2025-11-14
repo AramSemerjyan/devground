@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:dartpad_lite/storage/language_repo.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/services/event_service.dart';
-import '../../storage/supported_language.dart';
+import '../../core/storage/language_repo.dart';
+import '../../core/storage/supported_language.dart';
 
 abstract class SettingsPageVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;

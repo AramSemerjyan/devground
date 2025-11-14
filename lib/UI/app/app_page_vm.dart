@@ -1,6 +1,4 @@
 import 'package:dartpad_lite/UI/app/open_page_manager.dart';
-import 'package:dartpad_lite/storage/language_repo.dart';
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/services/event_service.dart';
@@ -8,6 +6,8 @@ import '../../core/services/import_file/import_file_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 import '../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../core/services/save_file/file_service.dart';
+import '../../core/storage/language_repo.dart';
+import '../../core/storage/supported_language.dart';
 
 enum SDKState { inProgress, ready, notReady }
 

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -9,6 +8,7 @@ import '../../../core/services/event_service.dart';
 import '../../../core/services/import_file/imported_file.dart';
 import '../../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../../core/services/save_file/file_service.dart';
+import '../../../core/storage/supported_language.dart';
 
 abstract class EditorViewVMInterface {
   MonacoWebBridgeServiceInterface get bridge;
@@ -69,6 +69,21 @@ class EditorViewVM implements EditorViewVMInterface {
   EditorViewVM(this._file, this._saveFileService) {
     _compiler = Compiler(language: _file.language);
     _monacoWebBridgeService = MonacoWebBridgeService();
+
+    _monacoWebBridgeService.onNavigationRequest = (request) {
+      // Block all navigation except for the initial loaded HTML
+      if (request.url.startsWith('data:text/html') ||
+          request.url == 'about:blank') {
+        return NavigationDecision.navigate;
+      }
+
+      if (language.key == SupportedLanguageType.json) {
+        _outputController.sink.add(request.url);
+      }
+
+      // Otherwise, prevent navigation
+      return NavigationDecision.prevent;
+    };
 
     _setUp();
   }

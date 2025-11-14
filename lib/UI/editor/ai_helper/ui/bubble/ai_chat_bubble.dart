@@ -21,11 +21,14 @@ class AiChatBubble extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            SelectableText(
-              segment.text,
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                color: Colors.greenAccent,
+            Padding(
+              padding: EdgeInsets.only(right: 100),
+              child: SelectableText(
+                segment.text,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  color: Colors.greenAccent,
+                ),
               ),
             ),
             Positioned(
@@ -56,7 +59,7 @@ class AiChatBubble extends StatelessWidget {
                     message: 'Replace editor code',
                     child: InkWell(
                       onTap: () {
-                        moveToEditor?.call(segment.text);
+                        moveToEditor?.call(segment.codeOnly);
                       },
                       child: const Icon(
                         Icons.move_up_sharp,

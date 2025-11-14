@@ -97,14 +97,14 @@ class EditorTabView extends StatelessWidget {
         const PopupMenuItem(
           value: 'close_others',
           child: Text(
-            'close_others',
+            'Close others',
             style: TextStyle(color: AppColor.mainGreyLighter),
           ),
         ),
         const PopupMenuItem(
           value: 'close_all',
           child: Text(
-            'close_all',
+            'Close all',
             style: TextStyle(color: AppColor.mainGreyLighter),
           ),
         ),

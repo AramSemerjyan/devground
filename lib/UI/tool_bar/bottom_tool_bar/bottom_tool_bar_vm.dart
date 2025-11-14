@@ -1,8 +1,8 @@
-import 'package:dartpad_lite/storage/language_repo.dart';
-import 'package:dartpad_lite/storage/supported_language.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../../core/services/event_service.dart';
+import '../../../core/storage/language_repo.dart';
+import '../../../core/storage/supported_language.dart';
 
 abstract class BottomToolBarVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
@@ -39,8 +39,10 @@ class BottomToolBarVM implements BottomToolBarVMInterface {
   void _setListeners() {
     EventService.instance.stream
         .where((e) => e.type == EventType.languageChanged)
-        .listen((event) {
-          selectedLanguage.value = (event.data as SupportedLanguage);
+        .map((event) => event.data as SupportedLanguage?)
+        .where((l) => l != null)
+        .listen((language) {
+          selectedLanguage.value = language;
         });
   }
 }

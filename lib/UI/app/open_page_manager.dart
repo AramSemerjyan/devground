@@ -24,8 +24,6 @@ class OpenPageManager implements OpenPageManagerInterface {
           ];
           final selectedPage = updatedPages.length - 1;
 
-          print(updatedPages.length);
-
           onPagesUpdate.value = (updatedPages, selectedPage);
         });
   }

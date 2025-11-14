@@ -1,4 +1,4 @@
-import 'package:dartpad_lite/storage/supported_language.dart';
+import '../../storage/supported_language.dart';
 
 class ImportedFile {
   final String name;

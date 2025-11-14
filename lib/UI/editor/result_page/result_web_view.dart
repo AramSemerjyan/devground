@@ -101,9 +101,8 @@ class _ResultWebViewState extends State<ResultWebView> {
   void initState() {
     super.initState();
 
-    final sub = widget.outputStream.where((path) => path.isNotEmpty).listen((
-      path,
-    ) {
+    final sub = widget.outputStream.listen((path) {
+      final isUrl = path.contains('https://') || path.contains('https://');
       homePath = path;
 
       webViewController.setNavigationDelegate(
@@ -123,7 +122,11 @@ class _ResultWebViewState extends State<ResultWebView> {
         ),
       );
 
-      webViewController.loadFile(path);
+      if (isUrl) {
+        webViewController.loadRequest(Uri.parse(path));
+      } else {
+        webViewController.loadFile(path);
+      }
     });
 
     _subscriptions.add(sub);
