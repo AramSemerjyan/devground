@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dartpad_lite/core/storage/sp_keys.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,9 +21,6 @@ abstract class LanguageRepoInterface {
 }
 
 class LanguageRepo implements LanguageRepoInterface {
-  static const _selectedSdkKey = 'selected_sdk';
-  static const _sdkPathKey = 'sdk_path';
-
   Map<SupportedLanguageType, SupportedLanguage>? _supportedLanguages;
   Map<SupportedLanguageType, String?> _sdkPaths = {};
   final ValueNotifier<SupportedLanguage?> _selectedLanguage = ValueNotifier(
@@ -41,7 +39,7 @@ class LanguageRepo implements LanguageRepoInterface {
   @override
   Future<void> setSelectedLanguage({required SupportedLanguageType key}) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_selectedSdkKey, key.value);
+    await prefs.setString(SPKeys.selectedSdkKey.value, key.value);
 
     getSelectedLanguage(key: key.value);
   }
@@ -52,7 +50,7 @@ class LanguageRepo implements LanguageRepoInterface {
     }
 
     final prefs = await SharedPreferences.getInstance();
-    final languageKey = prefs.getString(_selectedSdkKey);
+    final languageKey = prefs.getString(SPKeys.selectedSdkKey.value);
     _selectedLanguage.value =
         _supportedLanguages?[SupportedLanguageType.fromString(
           languageKey ?? key ?? 'dart',
@@ -64,7 +62,7 @@ class LanguageRepo implements LanguageRepoInterface {
   @override
   Future<Map<SupportedLanguageType, String?>> getSDKPaths() async {
     final prefs = await SharedPreferences.getInstance();
-    final sdkPathsString = prefs.getString(_sdkPathKey);
+    final sdkPathsString = prefs.getString(SPKeys.sdkPathKey.value);
 
     if (sdkPathsString == null) return {};
 
@@ -135,7 +133,7 @@ class LanguageRepo implements LanguageRepoInterface {
 
     // Save to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_sdkPathKey, encoded);
+    await prefs.setString(SPKeys.sdkPathKey.value, encoded);
 
     // Update in-memory language
     SupportedLanguage? language = _supportedLanguages?[key];

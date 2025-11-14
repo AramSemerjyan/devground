@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:dartpad_lite/core/storage/cred_repo.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
-import '../../core/services/event_service.dart';
-import '../../core/storage/language_repo.dart';
-import '../../core/storage/supported_language.dart';
+import '../../../../core/services/event_service.dart';
+import '../../../../core/storage/language_repo.dart';
+import '../../../../core/storage/supported_language.dart';
 
-abstract class SettingsPageVMInterface {
+abstract class LanguageSettingOptionVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
   Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
@@ -15,12 +14,10 @@ abstract class SettingsPageVMInterface {
     required SupportedLanguage language,
     required String sdkPath,
   });
-  Future<void> setApiKey(String key);
 }
 
-class SettingsPageVM implements SettingsPageVMInterface {
+class LanguageSettingOptionVM {
   final LanguageRepoInterface _languageStorage;
-  final CredRepoInterface _credRepo = CredRepo();
 
   late final ValueNotifier<SupportedLanguage?> _selectedLanguage =
       ValueNotifier(_languageStorage.selectedLanguage.value);
@@ -28,7 +25,7 @@ class SettingsPageVM implements SettingsPageVMInterface {
   @override
   ValueNotifier<SupportedLanguage?> get selectedLanguage => _selectedLanguage;
 
-  SettingsPageVM(this._languageStorage);
+  LanguageSettingOptionVM(this._languageStorage);
 
   @override
   Future<Map<SupportedLanguageType, SupportedLanguage>>
@@ -67,14 +64,5 @@ class SettingsPageVM implements SettingsPageVMInterface {
     } catch (e) {
       EventService.instance.emit(Event.error(title: e.toString()));
     }
-  }
-
-  Future<String?> getApiKey() async {
-    return _credRepo.getAIApiKey();
-  }
-
-  @override
-  Future<void> setApiKey(String key) async {
-    _credRepo.setAIApiKey(key);
   }
 }

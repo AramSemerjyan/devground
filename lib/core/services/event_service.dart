@@ -77,17 +77,8 @@ class EventService {
   }
 
   Stream<Event> get stream => _controller.stream;
-  // async* {
-  //   // First send buffered events
-  //   for (final e in _buffer) {
-  //     yield e;
-  //   }
-  //   // Then forward new events
-  //   yield* _controller.stream;
-  // }
 
   void emit(Event event) {
-    // _buffer.add(event);
     _controller.add(event);
   }
 }

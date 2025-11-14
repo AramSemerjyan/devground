@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dartpad_lite/core/services/event_service.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ai_response.dart';
 
@@ -41,10 +42,6 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
     _dio = Dio(
       BaseOptions(
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': 'AIzaSyDbZsNwbliBc7ZbqEH4nLvlH5PoDhTG_GA',
-        },
       ),
     );
   }
@@ -55,6 +52,20 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
   @override
   Future<AIResponse?> generateContent({required String text}) async {
     try {
+      final apiKey = (await SharedPreferences.getInstance()).getString(
+        'ai_api_key',
+      );
+      if (apiKey == null) {
+        EventService.error(title: 'Missing API key');
+
+        return null;
+      }
+
+      final header = {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      };
+
       final response = await _dio.post(
         'gemini-2.0-flash:generateContent',
         data: jsonEncode({
@@ -66,6 +77,7 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
             },
           ],
         }),
+        options: Options(headers: header),
       );
 
       if (response.statusCode == 200) {

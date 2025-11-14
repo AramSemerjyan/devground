@@ -1,4 +1,3 @@
-import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/ai_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'ai_herlper_vm.dart';
 import 'ui/bubble/message_segment.dart';
+import 'ui/response_parser/gpt_markdown.dart';
 
 class AiHelperPage extends StatefulWidget {
   final MonacoWebBridgeServiceInterface monacoWebBridgeService;
@@ -64,17 +64,14 @@ class _AiHelperPageState extends State<AiHelperPage> {
                           color: AppColor.mainGrey,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: segments
-                              .map(
-                                (segment) => AiChatBubble(
-                                  segment: segment,
-                                  moveToEditor: (code) =>
-                                      _vm.moveToEditor(code: code),
-                                ),
-                              )
-                              .toList(),
+                        child: GptMarkdown(
+                          msg.text,
+                          onCodeReplaceTap: (code) {
+                            _vm.moveToEditor(code: code);
+                          },
+                          style: const TextStyle(
+                            color: AppColor.mainGreyLighter,
+                          ),
                         ),
                       );
                     }

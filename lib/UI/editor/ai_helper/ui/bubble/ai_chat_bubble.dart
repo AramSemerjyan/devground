@@ -1,6 +1,8 @@
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/response_parser/gpt_markdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../../utils/app_colors.dart';
 import 'message_segment.dart';
 
 class AiChatBubble extends StatelessWidget {
@@ -75,6 +77,10 @@ class AiChatBubble extends StatelessWidget {
         ),
       );
     } else {
+      return GptMarkdown(
+        segment.text,
+        style: const TextStyle(color: AppColor.mainGreyLighter),
+      );
       return SelectableText(
         segment.text,
         style: const TextStyle(color: Colors.white),
