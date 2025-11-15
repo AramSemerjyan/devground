@@ -5,7 +5,6 @@ import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import 'ai_helper_vm.dart';
-import 'ui/bubble/message_segment.dart';
 import 'ui/response_parser/gpt_markdown.dart';
 
 class AiHelperPage extends StatefulWidget {
@@ -34,7 +33,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Ask Gemini',
+          'Pair programming',
           style: TextStyle(color: AppColor.mainGreyLighter),
         ),
         backgroundColor: AppColor.mainGrey,
@@ -55,8 +54,6 @@ class _AiHelperPageState extends State<AiHelperPage> {
                     if (msg.isUser) {
                       return UseChatBubble(text: msg.text);
                     } else {
-                      final segments = MessageSegment.parseAiResponse(msg.text);
-
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.all(8),

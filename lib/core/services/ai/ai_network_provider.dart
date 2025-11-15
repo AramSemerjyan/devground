@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dartpad_lite/core/services/ai/ai_mock.dart';
+import 'package:dartpad_lite/core/services/ai/ai_provider_info.dart';
 import 'package:dio/dio.dart';
 
 import 'ai_provider.dart';
@@ -27,6 +28,9 @@ class AINetworkProvider implements AIProviderInterface {
     ]
   }'
   ''';
+
+  @override
+  AIProviderInfo get providerInfo => AIProviderInfo(name: 'gemini-2.0-flash');
 
   AINetworkProvider(this._apiKey) {
     _dio = Dio(

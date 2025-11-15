@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartpad_lite/UI/common/looping_icon_animation.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
+import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/tool_bar_container.dart';
 import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/tool_bar_vm.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -142,17 +143,24 @@ class _BottomToolBarState extends State<BottomToolBar> {
             );
         }
 
-        return Row(
-          spacing: 10,
-          children: [
-            stateWidget,
-            LoopingIconAnimation(
-              icons: [
-                Icon(Icons.accessible, color: Colors.white54, size: 18),
-                Icon(Icons.accessible_forward, color: Colors.white54, size: 18),
-              ],
-            ),
-          ],
+        return Tooltip(
+          message: _vm.aiProviderInfo.name,
+          child: Row(
+            spacing: 10,
+            children: [
+              stateWidget,
+              LoopingIconAnimation(
+                icons: [
+                  Icon(Icons.accessible, color: Colors.white54, size: 18),
+                  Icon(
+                    Icons.accessible_forward,
+                    color: Colors.white54,
+                    size: 18,
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
@@ -189,17 +197,18 @@ class _BottomToolBarState extends State<BottomToolBar> {
               _setUpTimer(duration);
             }
 
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.linear,
-              height: 20,
-              width: double.infinity,
-              color: color,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
+            return ToolBarContainer(
+              pulsing: aiMode,
+              mainColor: AppColor.mainGrey,
+              pulsingStart: AppColor.aiBlue,
+              pulsingEnd: AppColor.blue,
+              overrideColor: color,
+              overrideDuration: status?.duration,
               child: Row(
                 spacing: 15,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const SizedBox(width: 15),
                   Expanded(
                     child: AnimatedDefaultTextStyle(
                       curve: Curves.linear,

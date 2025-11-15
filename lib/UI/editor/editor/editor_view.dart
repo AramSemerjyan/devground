@@ -105,10 +105,9 @@ class _EditorViewState extends State<EditorView> {
           onPressed: () async {
             _showAI.value = !_showAI.value;
 
-            EventService.emit(
-              type: EventType.aiModeChanged,
-              data: _showAI.value,
-            );
+            if (!_showAI.value) {
+              EventService.emit(type: EventType.aiModeChanged, data: false);
+            }
           },
         ),
       ],

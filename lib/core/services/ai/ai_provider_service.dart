@@ -2,12 +2,30 @@ import 'package:dartpad_lite/core/services/ai/ai_local_provider.dart';
 import 'package:dartpad_lite/core/services/ai/ai_network_provider.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider.dart';
 
-class AIProviderFactory {
-  static AIProviderInterface localProvider({required String modelPath}) {
-    return AILocalProvider(modelPath);
+abstract class AiProviderServiceInterface {
+  AIProviderInterface get provider;
+
+  Future<void> loadFromFile({required String modelPath});
+  Future<void> loadRemote({required String apiKey});
+}
+
+class AIProviderService implements AiProviderServiceInterface {
+  @override
+  late AIProviderInterface _provider;
+
+  @override
+  AIProviderInterface get provider => _provider;
+
+  AIProviderService._internal();
+  static final AIProviderService instance = AIProviderService._internal();
+
+  @override
+  Future<void> loadFromFile({required String modelPath}) async {
+    _provider = AILocalProvider(modelPath);
   }
 
-  static AIProviderInterface remoteProvider({required String apiKey}) {
-    return AINetworkProvider(apiKey);
+  @override
+  Future<void> loadRemote({required String apiKey}) async {
+    _provider = AINetworkProvider(apiKey);
   }
 }

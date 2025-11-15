@@ -1,6 +1,5 @@
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_vm.dart';
-import 'package:dartpad_lite/core/services/ai/ai_provider.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_error.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_service.dart';
 import 'package:dartpad_lite/core/services/ai/ai_response.dart';
@@ -24,7 +23,8 @@ abstract class AIHelperVMInterface {
 class AIHelperVM implements AIHelperVMInterface {
   final AIRepoInterface aiRepoInterface = AIRepo();
   final MonacoWebBridgeServiceInterface monacoWebBridgeService;
-  late final AIProviderInterface _aiProvider;
+  late final AiProviderServiceInterface _aiProviderService =
+      AIProviderService.instance;
 
   final List<AIHelperChatMessage> _chatMessages = [];
 
@@ -50,13 +50,15 @@ class AIHelperVM implements AIHelperVMInterface {
       switch (aiType) {
         case AIType.local:
           final path = await aiRepoInterface.getModelPath();
-          _aiProvider = AIProviderFactory.localProvider(modelPath: path ?? '');
+          _aiProviderService.loadFromFile(modelPath: path ?? '');
           break;
         case AIType.remote:
           final key = await aiRepoInterface.getApiKey();
-          _aiProvider = AIProviderFactory.remoteProvider(apiKey: key ?? '');
+          _aiProviderService.loadRemote(apiKey: key ?? '');
           break;
       }
+
+      EventService.emit(type: EventType.aiModeChanged, data: true);
     } on AIProviderError catch (e, s) {
       EventService.error(
         msg: e.toString(),
@@ -96,7 +98,7 @@ class AIHelperVM implements AIHelperVMInterface {
       //
       // return;
 
-      final aiResponse = await _aiProvider.generateContent(
+      final aiResponse = await _aiProviderService.provider.generateContent(
         text: userText,
         mock: true,
       );
