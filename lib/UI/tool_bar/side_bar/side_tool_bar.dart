@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dartpad_lite/UI/app/app_pages.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_bar/side_bar_button.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 
@@ -90,6 +91,11 @@ class _SideToolBarState extends State<SideToolBar> {
                     isSelected: page == selectedTab,
                     onTap: () {
                       if (page == selectedTab) return;
+
+                      EventService.emit(
+                        type: EventType.aiModeChanged,
+                        data: false,
+                      );
 
                       widget.navigatorKey.currentState?.pushReplacementNamed(
                         page.value,
