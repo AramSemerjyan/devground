@@ -1,8 +1,12 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/core/services/logger/app_logger.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'app_error.dart';
+import 'logger/app_logger.dart';
+import 'logger/console_logger.dart';
 
 enum EventType {
   sdkSetUp,
@@ -47,7 +51,7 @@ enum StatusType {
 class StatusEvent {
   final StatusType type;
   final String? msg;
-  final Error? error;
+  final AppError? error;
   final Duration? duration;
 
   StatusEvent({required this.type, this.msg, this.error, this.duration});
@@ -56,7 +60,11 @@ class StatusEvent {
     return StatusEvent(type: StatusType.success, msg: msg, duration: duration);
   }
 
-  factory StatusEvent.error({String? msg, Error? error, Duration? duration}) {
+  factory StatusEvent.error({
+    String? msg,
+    AppError? error,
+    Duration? duration,
+  }) {
     return StatusEvent(
       type: StatusType.error,
       msg: msg,
@@ -75,7 +83,13 @@ class StatusEvent {
 }
 
 class EventService {
-  final AppLoggerInterface logger = AppLogger();
+  late final AppLoggerInterface logger = AppLogger([
+    if (kDebugMode) ConsoleLogger(),
+
+    /// TODO: implement
+    // RemoteLogger();
+    // FileLogger();
+  ]);
   final StreamController<Event> _controller = StreamController.broadcast();
 
   EventService._internal();
@@ -116,7 +130,7 @@ class EventService {
     dynamic data,
     Duration? duration,
     String? msg,
-    Error? error,
+    AppError? error,
   }) {
     _send(
       Event(
@@ -171,9 +185,7 @@ class EventService {
   }
 
   static void _send(Event event) {
-    /// TODO: implement logger logic
-    EventService.instance.logger.log();
-
+    EventService.instance.logger.log(event);
     EventService.instance._controller.add(event);
   }
 }

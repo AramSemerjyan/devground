@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../core/services/event_service.dart';
+import '../../core/services/event_service/event_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 
 abstract class OpenPageManagerInterface {

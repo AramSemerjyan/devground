@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../../core/services/event_service.dart';
+import '../../../../core/services/event_service/app_error.dart';
+import '../../../../core/services/event_service/event_service.dart';
 import '../../../../core/storage/language_repo.dart';
 import '../../../../core/storage/supported_language.dart';
 
@@ -60,8 +61,11 @@ class LanguageSettingOptionVM {
       );
       _selectedLanguage.value = updatedLang;
       EventService.emit(type: EventType.sdkPathUpdated, data: updatedLang);
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
     }
   }
 }

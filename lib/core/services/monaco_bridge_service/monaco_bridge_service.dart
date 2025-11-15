@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../storage/supported_language.dart';
-import '../event_service.dart';
+import '../event_service/event_service.dart';
 
 abstract class MonacoWebBridgeServiceInterface {
   WebViewController get controller;

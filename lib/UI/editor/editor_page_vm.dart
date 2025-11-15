@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../core/services/event_service.dart';
+import '../../core/services/event_service/event_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 
 abstract class EditorPageVMInterface {

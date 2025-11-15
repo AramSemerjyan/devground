@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../core/services/event_service.dart';
+import '../../../core/services/event_service/app_error.dart';
+import '../../../core/services/event_service/event_service.dart';
 
 class ResultWebView extends StatefulWidget {
   final Stream<String> outputStream;
@@ -26,8 +27,11 @@ class _ResultWebViewState extends State<ResultWebView> {
         try {
           final msg = jsonDecode(message.message) as Map<String, dynamic>;
           handleWebMessage(msg);
-        } catch (e) {
-          EventService.error(msg: e.toString());
+        } catch (e, s) {
+          EventService.error(
+            msg: e.toString(),
+            error: AppError(object: e, stackTrace: s),
+          );
         }
       },
     );

@@ -4,7 +4,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:process_run/shell.dart';
 
 import '../../storage/language_repo.dart';
-import '../event_service.dart';
+import '../event_service/app_error.dart';
+import '../event_service/event_service.dart';
 
 abstract class FileServiceInterface {
   Future<List<File>> getHistoryFiles();
@@ -40,8 +41,11 @@ class FileService implements FileServiceInterface {
 
       EventService.success(msg: 'Saved ${file.path}');
       return file;
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
       return null;
     }
   }
@@ -66,8 +70,11 @@ class FileService implements FileServiceInterface {
       );
 
       return files;
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
       return [];
     }
   }
@@ -81,8 +88,11 @@ class FileService implements FileServiceInterface {
         return true;
       }
       return false;
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
       return false;
     }
   }

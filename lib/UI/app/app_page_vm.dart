@@ -1,7 +1,8 @@
 import 'package:dartpad_lite/UI/app/open_page_manager.dart';
+import 'package:dartpad_lite/core/services/event_service/app_error.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../core/services/event_service.dart';
+import '../../core/services/event_service/event_service.dart';
 import '../../core/services/import_file/import_file_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 import '../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
@@ -109,8 +110,11 @@ class AppPageVM {
       case LanguageSupport.supported:
         try {
           EventService.success(msg: 'Ready');
-        } catch (e) {
-          EventService.error(msg: e.toString());
+        } catch (e, s) {
+          EventService.error(
+            msg: e.toString(),
+            error: AppError(object: e, stackTrace: s),
+          );
         }
         break;
       default:

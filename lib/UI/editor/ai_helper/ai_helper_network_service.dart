@@ -1,10 +1,11 @@
 import 'dart:convert';
 
-import 'package:dartpad_lite/core/services/event_service.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/ai/ai_response.dart';
+import '../../../core/services/event_service/app_error.dart';
 
 class AIHelperChatMessage {
   final String text;
@@ -91,8 +92,11 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
 
         return null;
       }
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
       return null;
     }
   }

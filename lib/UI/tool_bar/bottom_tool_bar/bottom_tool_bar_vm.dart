@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../../core/services/event_service.dart';
+import '../../../core/services/event_service/event_service.dart';
 import '../../../core/storage/language_repo.dart';
 import '../../../core/storage/supported_language.dart';
 

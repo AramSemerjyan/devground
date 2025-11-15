@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/services/compiler/compiler_interface.dart';
-import '../../../core/services/event_service.dart';
+import '../../../core/services/event_service/app_error.dart';
+import '../../../core/services/event_service/event_service.dart';
 import '../../../core/services/import_file/imported_file.dart';
 import '../../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../../core/services/save_file/file_service.dart';
@@ -108,8 +109,11 @@ class EditorViewVM implements EditorViewVMInterface {
         _sendOutput(result.data);
         EventService.success(msg: 'Success');
       }
-    } catch (e) {
-      EventService.error(msg: 'Error');
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
     }
 
     runProgress.value = false;
@@ -129,8 +133,11 @@ class EditorViewVM implements EditorViewVMInterface {
       } else {
         _monacoWebBridgeService.setCode(code: result.data);
       }
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
     }
 
     formatProgress.value = false;

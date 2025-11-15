@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 import '../../storage/language_repo.dart';
-import '../event_service.dart';
+import '../event_service/app_error.dart';
+import '../event_service/event_service.dart';
 import 'imported_file.dart';
 
 abstract class ImportFileServiceInterface {
@@ -47,8 +48,11 @@ class ImportFileService implements ImportFileServiceInterface {
       } else {
         EventService.warning(msg: 'Unsupported file type');
       }
-    } catch (e) {
-      EventService.error(msg: e.toString());
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
     }
   }
 

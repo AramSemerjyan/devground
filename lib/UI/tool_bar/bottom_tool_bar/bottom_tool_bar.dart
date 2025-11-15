@@ -4,7 +4,7 @@ import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/bottom_tool_bar_vm.dart
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/services/event_service.dart';
+import '../../../core/services/event_service/event_service.dart';
 import '../../../core/storage/language_repo.dart';
 import '../../../core/storage/supported_language.dart';
 import '../../command_palette/command_palette.dart';
@@ -22,15 +22,27 @@ class _BottomToolBarState extends State<BottomToolBar> {
   late final BottomToolBarVMInterface _vm = BottomToolBarVM(
     widget.languageRepo,
   );
+  final ValueNotifier<Event?> _onEvent = ValueNotifier(null);
+
   Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    EventService.instance.stream.where((e) => e.status != null).listen((event) {
+      _onEvent.value = event;
+    });
+  }
 
   void _setUpTimer(Duration duration) {
     _timer?.cancel();
     _timer = null;
 
     _timer = Timer(duration, () {
-      EventService.idle();
+      _onEvent.value = Event(status: StatusEvent.idle());
 
+      _timer?.cancel();
       _timer = null;
     });
   }
@@ -89,10 +101,10 @@ class _BottomToolBarState extends State<BottomToolBar> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: EventService.instance.stream.where((e) => e.status != null),
-      builder: (c, s) {
-        final data = s.data;
+    return ValueListenableBuilder(
+      valueListenable: _onEvent,
+      builder: (_, event, __) {
+        final data = event;
 
         if (data == null) {
           return Container(

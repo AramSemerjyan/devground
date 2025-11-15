@@ -13,7 +13,7 @@ import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/services/event_service.dart';
+import '../../core/services/event_service/event_service.dart';
 import '../tool_bar/bottom_tool_bar/bottom_tool_bar.dart';
 
 class AppPage extends StatefulWidget {
