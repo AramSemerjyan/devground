@@ -1,18 +1,20 @@
-import 'package:dartpad_lite/UI/settings/options/api_key/api_key_setting_option_vm.dart';
+import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_vm.dart';
 import 'package:dartpad_lite/UI/settings/options/setting_option.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ApiKeySettingOption extends StatefulWidget {
-  const ApiKeySettingOption({super.key});
+import '../setting_section.dart';
+
+class AISettingSection extends StatefulWidget {
+  const AISettingSection({super.key});
 
   @override
-  State<ApiKeySettingOption> createState() => _ApiKeySettingOptionState();
+  State<AISettingSection> createState() => _AISettingSectionState();
 }
 
-class _ApiKeySettingOptionState extends State<ApiKeySettingOption> {
-  late final _vm = ApiKeySettingOptionVM();
+class _AISettingSectionState extends State<AISettingSection> {
+  late final _vm = AISettingVM();
 
   bool _showApiKey = false;
 
@@ -23,8 +25,7 @@ class _ApiKeySettingOptionState extends State<ApiKeySettingOption> {
     _vm.getApiKey();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildAPIOption() {
     return SettingOption(
       title: 'Gemini API key',
       height: 170,
@@ -99,5 +100,10 @@ class _ApiKeySettingOptionState extends State<ApiKeySettingOption> {
         ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SettingSection(title: 'AI', children: [_buildAPIOption()]);
   }
 }

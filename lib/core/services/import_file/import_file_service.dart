@@ -8,7 +8,7 @@ import 'imported_file.dart';
 
 abstract class ImportFileServiceInterface {
   Future<void> importFile({required File file});
-  Future<void> importImportedFile({required ImportedFile importedFile});
+  Future<void> importAppFile({required AppFile importedFile});
 }
 
 class ImportFileService implements ImportFileServiceInterface {
@@ -33,28 +33,31 @@ class ImportFileService implements ImportFileServiceInterface {
         // Read file content
         final content = await file.readAsString();
 
-        final importedFile = ImportedFile(
+        final importedFile = AppFile(
           name: file.uri.pathSegments.last,
           language: matchedLanguage,
           code: content,
         );
 
-        EventService.instance.emit(
-          Event(type: EventType.importedFile, data: importedFile),
+        EventService.success(
+          type: EventType.importedFile,
+          data: importedFile,
+          msg: 'Successfully imported',
         );
       } else {
-        EventService.instance.emit(
-          Event.warning(title: 'Unsupported file type'),
-        );
+        EventService.warning(msg: 'Unsupported file type');
       }
     } catch (e) {
-      EventService.instance.emit(Event.error(title: e.toString()));
+      EventService.error(msg: e.toString());
     }
   }
 
-  Future<void> importImportedFile({required ImportedFile importedFile}) async {
-    EventService.instance.emit(
-      Event(type: EventType.importedFile, data: importedFile),
+  @override
+  Future<void> importAppFile({required AppFile importedFile}) async {
+    EventService.success(
+      type: EventType.importedFile,
+      data: importedFile,
+      msg: 'Successfully imported',
     );
   }
 }

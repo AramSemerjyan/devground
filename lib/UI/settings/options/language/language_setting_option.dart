@@ -1,7 +1,7 @@
 import 'package:dartpad_lite/UI/settings/options/language/language_setting_option_vm.dart';
 import 'package:dartpad_lite/UI/settings/options/setting_option.dart';
+import 'package:dartpad_lite/UI/settings/widget/path_selector.dart';
 import 'package:dartpad_lite/core/storage/language_repo.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/storage/supported_language.dart';
@@ -18,15 +18,9 @@ class LanguageSettingOption extends StatefulWidget {
 class _LanguageSettingOptionState extends State<LanguageSettingOption> {
   late final _vm = LanguageSettingOptionVM(widget.languageRepo);
 
-  final TextEditingController _pathController = TextEditingController();
-
-  void _selectDirectory(SupportedLanguage? language) async {
-    if (language == null) return;
-
-    final selectedDirectory = await FilePicker.platform.getDirectoryPath();
-    if (selectedDirectory != null) {
-      await _vm.setSDKPath(language: language, sdkPath: selectedDirectory);
-      _pathController.text = selectedDirectory;
+  void _selectDirectory(String? path) async {
+    if (path != null) {
+      await _vm.setSDKPath(sdkPath: path);
     }
   }
 
@@ -85,28 +79,12 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
 
                   // Browse button
                   if (selectedLanguage?.needSDKPath ?? false) ...[
-                    const SizedBox(height: 16),
-
-                    // Path hint
-                    Text(
-                      selectedLanguage?.sdkPath ??
-                          selectedLanguage?.path.hint ??
-                          '',
-                      style: const TextStyle(
-                        color: Colors.white38,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: () =>
-                          _selectDirectory(_vm.selectedLanguage.value),
-                      icon: const Icon(Icons.folder_open),
-                      label: const Text("Select SDK Folder"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0E639C),
-                        foregroundColor: Colors.white,
-                      ),
+                    PathSelector(
+                      path:
+                          selectedLanguage?.sdkPath ??
+                          selectedLanguage?.path.hint,
+                      label: "Select SDK Folder",
+                      onPathSelect: _selectDirectory,
                     ),
                   ],
                 ],

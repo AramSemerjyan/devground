@@ -33,8 +33,8 @@ class WelcomePageVM implements WelcomePageVMInterface {
     final selectedLanguage = languageRepo.selectedLanguage.value;
 
     if (selectedLanguage != null) {
-      await importFileService.importImportedFile(
-        importedFile: ImportedFile.newFile(language: selectedLanguage),
+      await importFileService.importAppFile(
+        importedFile: AppFile.newFile(language: selectedLanguage),
       );
     }
   }

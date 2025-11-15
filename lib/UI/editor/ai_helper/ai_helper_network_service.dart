@@ -56,7 +56,7 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
         'ai_api_key',
       );
       if (apiKey == null) {
-        EventService.error(title: 'Missing API key');
+        EventService.error(msg: 'Missing API key');
 
         return null;
       }
@@ -86,13 +86,13 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
         return aiResponse;
       } else {
         EventService.error(
-          title: 'Failed to generate content: ${response.statusCode}',
+          msg: 'Failed to generate content: ${response.statusCode}',
         );
 
         return null;
       }
     } catch (e) {
-      EventService.error(title: e.toString());
+      EventService.error(msg: e.toString());
       return null;
     }
   }

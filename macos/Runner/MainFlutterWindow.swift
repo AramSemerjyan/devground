@@ -1,13 +1,9 @@
 import Cocoa
 import FlutterMacOS
-//import multi_window_macos
 import desktop_multi_window
 
 class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
-//    MultiWindowMacosPlugin.registerGeneratedPlugins = RegisterGeneratedPlugins
-      
-//      let flutterViewController = MultiWindowViewController()
       let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
     self.contentViewController = flutterViewController

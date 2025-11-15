@@ -4,7 +4,7 @@ import '../../../core/services/import_file/imported_file.dart';
 import '../../../utils/app_colors.dart';
 
 class EditorTab extends StatelessWidget {
-  final ImportedFile file;
+  final AppFile file;
   final bool isSelected;
   final VoidCallback? onTap;
   final VoidCallback? onClose;
@@ -54,7 +54,7 @@ class EditorTab extends StatelessWidget {
 }
 
 class EditorTabView extends StatelessWidget {
-  final List<ImportedFile> files;
+  final List<AppFile> files;
   final int selectedTab;
   final Function(int)? onSelect;
   final Function(int)? onClose;

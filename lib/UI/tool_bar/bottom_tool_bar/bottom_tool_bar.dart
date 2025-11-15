@@ -29,7 +29,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
     _timer = null;
 
     _timer = Timer(duration, () {
-      EventService.instance.emit(Event(type: EventType.idle));
+      EventService.idle();
 
       _timer = null;
     });
@@ -90,7 +90,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: EventService.instance.stream,
+      stream: EventService.instance.stream.where((e) => e.status != null),
       builder: (c, s) {
         final data = s.data;
 
@@ -102,7 +102,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
           );
         }
 
-        final duration = data.duration;
+        final duration = data.status!.duration;
         if (duration != null) {
           _setUpTimer(duration);
         }
@@ -112,7 +112,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
           curve: Curves.linear,
           height: 20,
           width: double.infinity,
-          color: data.type.color,
+          color: data.status?.type.color,
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -125,7 +125,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
                     fontWeight: FontWeight.normal,
                   ),
                   duration: const Duration(milliseconds: 100),
-                  child: Text(data.title ?? ''),
+                  child: Text(data.status?.msg ?? ''),
                 ),
               ),
               const Spacer(),

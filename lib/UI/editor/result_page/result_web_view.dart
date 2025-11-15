@@ -27,7 +27,7 @@ class _ResultWebViewState extends State<ResultWebView> {
           final msg = jsonDecode(message.message) as Map<String, dynamic>;
           handleWebMessage(msg);
         } catch (e) {
-          EventService.error(title: e.toString());
+          EventService.error(msg: e.toString());
         }
       },
     );
@@ -41,7 +41,7 @@ class _ResultWebViewState extends State<ResultWebView> {
   Future<void> handleWebMessage(Map<String, dynamic> msg) async {
     final action = msg['action'] as String?;
     if (action == 'clicked') {
-      EventService.event(type: EventType.monacoDropFocus);
+      EventService.emit(type: EventType.monacoDropFocus);
     }
   }
 

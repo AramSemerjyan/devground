@@ -12,7 +12,7 @@ import '../../../core/storage/supported_language.dart';
 
 abstract class EditorViewVMInterface {
   MonacoWebBridgeServiceInterface get bridge;
-  ImportedFile get file;
+  AppFile get file;
 
   WebViewController get controller;
 
@@ -32,14 +32,14 @@ abstract class EditorViewVMInterface {
 }
 
 class EditorViewVM implements EditorViewVMInterface {
-  final ImportedFile _file;
+  final AppFile _file;
   final FileServiceInterface _saveFileService;
 
   late final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
   late final CompilerInterface _compiler;
 
   @override
-  ImportedFile get file => _file;
+  AppFile get file => _file;
 
   @override
   MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
@@ -103,13 +103,13 @@ class EditorViewVM implements EditorViewVMInterface {
 
       if (result.hasError) {
         _sendOutput(result.data);
-        EventService.instance.emit(Event.error(title: 'Error'));
+        EventService.error(msg: 'Error');
       } else {
         _sendOutput(result.data);
-        EventService.instance.emit(Event.success(title: 'Success'));
+        EventService.success(msg: 'Success');
       }
     } catch (e) {
-      EventService.instance.emit(Event.error(title: e.toString()));
+      EventService.error(msg: 'Error');
     }
 
     runProgress.value = false;
@@ -125,12 +125,12 @@ class EditorViewVM implements EditorViewVMInterface {
       final result = await _compiler.formatCode(code);
 
       if (result.hasError) {
-        EventService.instance.emit(Event.error(title: 'Error'));
+        EventService.error(msg: 'Error');
       } else {
         _monacoWebBridgeService.setCode(code: result.data);
       }
     } catch (e) {
-      EventService.instance.emit(Event.error(title: e.toString()));
+      EventService.error(msg: e.toString());
     }
 
     formatProgress.value = false;

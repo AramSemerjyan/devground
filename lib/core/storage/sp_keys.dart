@@ -1,4 +1,5 @@
 enum SPKeys {
+  aiType('ai_type'),
   aiApiKey('ai_api_key'),
   selectedSdkKey('selected_sdk'),
   sdkPathKey('sdk_path');

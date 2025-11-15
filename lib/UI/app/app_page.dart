@@ -59,9 +59,12 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.inactive:
-        EventService.event(type: EventType.monacoDropFocus);
+        EventService.emit(type: EventType.onAppInactive);
         break;
+      case AppLifecycleState.resumed:
+        EventService.emit(type: EventType.onAppResume);
       default:
+        break;
     }
   }
 

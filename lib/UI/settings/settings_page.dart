@@ -1,5 +1,6 @@
-import 'package:dartpad_lite/UI/settings/options/api_key/api_key_setting_option.dart';
+import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_section.dart';
 import 'package:dartpad_lite/UI/settings/options/language/language_setting_option.dart';
+import 'package:dartpad_lite/UI/settings/options/setting_section.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -29,10 +30,16 @@ class _SettingsPageState extends State<SettingsPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          spacing: 40,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LanguageSettingOption(languageRepo: widget.languageRepo),
-            ApiKeySettingOption(),
+            SettingSection(
+              title: 'General',
+              children: [
+                LanguageSettingOption(languageRepo: widget.languageRepo),
+              ],
+            ),
+            AISettingSection(),
           ],
         ),
       ),

@@ -4,15 +4,12 @@ import '../../core/services/event_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 
 abstract class OpenPageManagerInterface {
-  ValueNotifier<(List<ImportedFile>, int)> get onPagesUpdate;
+  ValueNotifier<(List<AppFile>, int)> get onPagesUpdate;
 }
 
 class OpenPageManager implements OpenPageManagerInterface {
   @override
-  ValueNotifier<(List<ImportedFile>, int)> onPagesUpdate = ValueNotifier((
-    [],
-    -1,
-  ));
+  ValueNotifier<(List<AppFile>, int)> onPagesUpdate = ValueNotifier(([], -1));
 
   OpenPageManager() {
     EventService.instance.stream
@@ -20,7 +17,7 @@ class OpenPageManager implements OpenPageManagerInterface {
         .listen((event) {
           final updatedPages = [
             ...onPagesUpdate.value.$1,
-            event.data as ImportedFile,
+            event.data as AppFile,
           ];
           final selectedPage = updatedPages.length - 1;
 

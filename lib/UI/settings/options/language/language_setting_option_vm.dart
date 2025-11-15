@@ -34,20 +34,21 @@ class LanguageSettingOptionVM {
   }
 
   @override
-  Future<void> setSDKPath({
-    required SupportedLanguage language,
-    required String sdkPath,
-  }) async {
+  Future<void> setSDKPath({required String sdkPath}) async {
+    final language = _selectedLanguage.value;
+
+    if (language == null) return;
+
     sdkPath = sdkPath.trim();
     if (sdkPath.isEmpty) {
-      EventService.instance.emit(Event.error(title: 'Path cannot be empty.'));
+      EventService.error(msg: 'Path cannot be empty.');
       return;
     }
 
     if (language.path.validation.isNotEmpty) {
       final flutterBin = File('$sdkPath${language.path.validation}');
       if (!await flutterBin.exists()) {
-        EventService.instance.emit(Event.error(title: 'Invalid SDK path.'));
+        EventService.error(msg: 'Invalid SDK path.');
         return;
       }
     }
@@ -58,11 +59,9 @@ class LanguageSettingOptionVM {
         path: sdkPath,
       );
       _selectedLanguage.value = updatedLang;
-      EventService.instance.emit(
-        Event(type: EventType.sdkPathUpdated, data: updatedLang),
-      );
+      EventService.emit(type: EventType.sdkPathUpdated, data: updatedLang);
     } catch (e) {
-      EventService.instance.emit(Event.error(title: e.toString()));
+      EventService.error(msg: e.toString());
     }
   }
 }

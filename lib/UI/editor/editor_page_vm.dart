@@ -7,7 +7,7 @@ import '../../core/services/event_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 
 abstract class EditorPageVMInterface {
-  ValueNotifier<(List<ImportedFile>, int)> get onPagesUpdate;
+  ValueNotifier<(List<AppFile>, int)> get onPagesUpdate;
 
   Future<void> onSelect(int pageIndex);
   Future<void> onClose(int pageIndex);
@@ -19,7 +19,7 @@ class EditorPageVM implements EditorPageVMInterface {
   final OpenPageManagerInterface openPageManager;
 
   @override
-  ValueNotifier<(List<ImportedFile>, int)> get onPagesUpdate =>
+  ValueNotifier<(List<AppFile>, int)> get onPagesUpdate =>
       openPageManager.onPagesUpdate;
 
   EditorPageVM(this.openPageManager);
@@ -30,7 +30,7 @@ class EditorPageVM implements EditorPageVMInterface {
 
     onPagesUpdate.value = (onPagesUpdate.value.$1, pageIndex);
 
-    EventService.event(
+    EventService.emit(
       type: EventType.languageChanged,
       data: onPagesUpdate.value.$1[onPagesUpdate.value.$2].language,
     );
@@ -40,7 +40,7 @@ class EditorPageVM implements EditorPageVMInterface {
   Future<void> onClose(int pageIndex) async {
     final (pages, selectedIndex) = onPagesUpdate.value;
 
-    final updatedPages = List<ImportedFile>.from(pages)..removeAt(pageIndex);
+    final updatedPages = List<AppFile>.from(pages)..removeAt(pageIndex);
 
     int newSelectedIndex = selectedIndex;
 
@@ -60,7 +60,7 @@ class EditorPageVM implements EditorPageVMInterface {
 
     final language = updatedPages[newSelectedIndex].language;
 
-    EventService.event(type: EventType.languageChanged, data: language);
+    EventService.emit(type: EventType.languageChanged, data: language);
 
     onPagesUpdate.value = (updatedPages, newSelectedIndex);
   }
@@ -79,14 +79,14 @@ class EditorPageVM implements EditorPageVMInterface {
     onPagesUpdate.value = ([], -1);
 
     // Optionally reset language context if needed
-    EventService.event(type: EventType.languageChanged, data: null);
+    EventService.emit(type: EventType.languageChanged, data: null);
   }
 
-  void _updatePages(List<ImportedFile> updatedPages, int selectedIndex) {
+  void _updatePages(List<AppFile> updatedPages, int selectedIndex) {
     onPagesUpdate.value = (updatedPages, selectedIndex);
 
     if (selectedIndex >= 0 && updatedPages.isNotEmpty) {
-      EventService.event(
+      EventService.emit(
         type: EventType.languageChanged,
         data: updatedPages[selectedIndex].language,
       );

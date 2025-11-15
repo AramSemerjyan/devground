@@ -11,7 +11,7 @@ import '../../common/floating_progress_button.dart';
 import '../result_page/result_console_view.dart';
 
 class EditorView extends StatefulWidget {
-  final ImportedFile file;
+  final AppFile file;
   final FileServiceInterface saveFileService;
 
   const EditorView({

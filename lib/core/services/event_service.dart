@@ -1,30 +1,42 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/core/services/logger/app_logger.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
-enum AppPage { editor }
-
 enum EventType {
-  error,
-  success,
-  warning,
   sdkSetUp,
   languageChangedForNewFile,
   languageChanged,
   sdkPathUpdated,
   importedFile,
   monacoDropFocus,
+
+  onAppInactive,
+  onAppResume,
+}
+
+class Event {
+  final EventType? type;
+  final StatusEvent? status;
+  final dynamic data;
+
+  Event({this.type, this.data, this.status});
+}
+
+enum StatusType {
+  error,
+  success,
+  warning,
   idle;
 
   Color get color {
     switch (this) {
-      case EventType.sdkSetUp:
-      case EventType.error:
+      case StatusType.error:
         return AppColor.error;
-      case EventType.success:
+      case StatusType.success:
         return AppColor.success;
-      case EventType.warning:
+      case StatusType.warning:
         return AppColor.warning;
       default:
         return AppColor.mainGrey;
@@ -32,53 +44,136 @@ enum EventType {
   }
 }
 
-class Event {
-  final EventType type;
+class StatusEvent {
+  final StatusType type;
+  final String? msg;
+  final Error? error;
   final Duration? duration;
-  final String? title;
-  final dynamic data;
 
-  Event({required this.type, this.title, this.data, this.duration});
+  StatusEvent({required this.type, this.msg, this.error, this.duration});
 
-  factory Event.success({String? msg, String? title}) {
-    return Event(
-      type: EventType.success,
-      data: msg,
-      title: title,
-      duration: const Duration(seconds: 1),
+  factory StatusEvent.success({String? msg, Duration? duration}) {
+    return StatusEvent(type: StatusType.success, msg: msg, duration: duration);
+  }
+
+  factory StatusEvent.error({String? msg, Error? error, Duration? duration}) {
+    return StatusEvent(
+      type: StatusType.error,
+      msg: msg,
+      error: error,
+      duration: duration,
     );
   }
 
-  factory Event.error({String? msg, String? title}) {
-    return Event(type: EventType.error, data: msg, title: title);
+  factory StatusEvent.warning({String? msg, Duration? duration}) {
+    return StatusEvent(type: StatusType.warning, msg: msg, duration: duration);
   }
 
-  factory Event.warning({String? msg, String? title}) {
-    return Event(type: EventType.warning, data: msg, title: title);
+  factory StatusEvent.idle({String? msg, Duration? duration}) {
+    return StatusEvent(type: StatusType.idle, msg: msg, duration: duration);
   }
 }
 
 class EventService {
+  final AppLoggerInterface logger = AppLogger();
   final StreamController<Event> _controller = StreamController.broadcast();
-  final List<Event> _buffer = [];
 
   EventService._internal();
   static final EventService instance = EventService._internal();
 
-  static void error({String? msg, String? title}) {
-    EventService.instance.emit(
-      Event(type: EventType.error, data: msg, title: title),
+  Stream<Event> get stream => _controller.stream;
+
+  static void emit({
+    required EventType type,
+    StatusEvent? status,
+    dynamic data,
+    Duration? duration,
+  }) {
+    _send(Event(type: type, status: status, data: data));
+  }
+
+  static void success({
+    EventType? type,
+    dynamic data,
+    Duration? duration,
+    String? msg,
+  }) {
+    _send(
+      Event(
+        type: type,
+        data: data,
+        status: StatusEvent(
+          type: StatusType.success,
+          msg: msg,
+          duration: duration ?? Duration(seconds: 1),
+        ),
+      ),
     );
   }
 
-  static event({required EventType type, dynamic data, String? title}) {
-    print('EVENT: $type');
-    EventService.instance.emit(Event(type: type, title: title, data: data));
+  static void error({
+    EventType? type,
+    dynamic data,
+    Duration? duration,
+    String? msg,
+    Error? error,
+  }) {
+    _send(
+      Event(
+        type: type,
+        data: data,
+        status: StatusEvent(
+          type: StatusType.error,
+          msg: msg,
+          error: error,
+          duration: duration ?? Duration(seconds: 1),
+        ),
+      ),
+    );
   }
 
-  Stream<Event> get stream => _controller.stream;
+  static void warning({
+    EventType? type,
+    dynamic data,
+    Duration? duration,
+    String? msg,
+  }) {
+    _send(
+      Event(
+        type: type,
+        data: data,
+        status: StatusEvent(
+          type: StatusType.warning,
+          msg: msg,
+          duration: duration ?? Duration(seconds: 1),
+        ),
+      ),
+    );
+  }
 
-  void emit(Event event) {
-    _controller.add(event);
+  static void idle({
+    EventType? type,
+    dynamic data,
+    Duration? duration,
+    String? msg,
+  }) {
+    _send(
+      Event(
+        type: type,
+        data: data,
+        status: StatusEvent(
+          type: StatusType.idle,
+          msg: msg,
+          duration: duration ?? Duration(seconds: 1),
+        ),
+      ),
+    );
+  }
+
+  static void _send(Event event) {
+    /// TODO: implement logger logic
+    EventService.instance.logger.log();
+
+    EventService.instance._controller.add(event);
   }
 }

@@ -29,9 +29,7 @@ class AppPageVM {
   void setUp() async {
     inProgress.value = true;
 
-    EventService.instance.emit(
-      Event(type: EventType.idle, title: 'Initializing...'),
-    );
+    EventService.idle(msg: 'Initializing...');
 
     _setListeners();
 
@@ -40,9 +38,7 @@ class AppPageVM {
     final language = await languageRepo.getSelectedLanguage();
 
     if (language != null) {
-      EventService.instance.emit(
-        Event(type: EventType.languageChanged, data: language),
-      );
+      EventService.emit(type: EventType.languageChanged, data: language);
 
       // lspBridge = LspBridge(8081, language);
       // await lspBridge.start();
@@ -71,8 +67,8 @@ class AppPageVM {
           if (data != null) {
             _setLanguage(data);
 
-            importFileService.importImportedFile(
-              importedFile: ImportedFile.newFile(language: data),
+            importFileService.importAppFile(
+              importedFile: AppFile.newFile(language: data),
             );
           }
         });
@@ -80,10 +76,11 @@ class AppPageVM {
     EventService.instance.stream
         .where((event) => event.type == EventType.importedFile)
         .listen((event) async {
-          final importedFile = event.data as ImportedFile;
+          final importedFile = event.data as AppFile;
 
-          EventService.instance.emit(
-            Event(type: EventType.languageChanged, data: importedFile.language),
+          EventService.emit(
+            type: EventType.languageChanged,
+            data: importedFile.language,
           );
 
           await languageRepo.setSelectedLanguage(
@@ -99,7 +96,7 @@ class AppPageVM {
 
           if (selectedLanguage == updatedLanguage) {
             _setLanguage(updatedLanguage);
-            EventService.instance.emit(Event.success(title: 'Success'));
+            EventService.success(msg: 'Success');
           }
         });
   }
@@ -107,23 +104,17 @@ class AppPageVM {
   void _setLanguage(SupportedLanguage language) {
     switch (language.supported) {
       case LanguageSupport.upcoming:
-        EventService.instance.emit(
-          Event(type: EventType.warning, title: 'Upcoming support'),
-        );
+        EventService.warning(msg: 'Upcoming support');
         break;
       case LanguageSupport.supported:
         try {
-          EventService.instance.emit(Event.success(title: 'Ready'));
+          EventService.success(msg: 'Ready');
         } catch (e) {
-          EventService.instance.emit(
-            Event(type: EventType.error, title: e.toString()),
-          );
+          EventService.error(msg: e.toString());
         }
         break;
       default:
-        EventService.instance.emit(
-          Event(type: EventType.error, title: 'Not supported'),
-        );
+        EventService.error(msg: 'Not supported');
     }
   }
 }
