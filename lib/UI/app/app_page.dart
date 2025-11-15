@@ -14,16 +14,16 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/event_service/event_service.dart';
-import '../tool_bar/bottom_tool_bar/bottom_tool_bar.dart';
+import '../tool_bar/bottom_tool_bar/tool_bar.dart';
 
-class AppPage extends StatefulWidget {
-  const AppPage({super.key});
+class AppMainPage extends StatefulWidget {
+  const AppMainPage({super.key});
 
   @override
-  State<AppPage> createState() => _AppPageState();
+  State<AppMainPage> createState() => _AppMainPageState();
 }
 
-class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
+class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
   late final _observer = AppRouteObserver(
     monacoWebBridgeService: _vm.monacoWebBridgeService,
@@ -81,7 +81,7 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
               fileService: _vm.fileService,
               importFileService: _vm.importFileService,
               languageRepo: _vm.languageRepo,
-              openPageManager: _vm.openPageManager,
+              pagesService: _vm.pagesService,
             );
             break;
           case 'Settings':
@@ -114,7 +114,7 @@ class _AppPageState extends State<AppPage> with WidgetsBindingObserver {
       vm: _vm,
       navigatorKey: _navigatorKey,
       observer: _observer,
-      openPageManager: _vm.openPageManager,
+      pagesService: _vm.pagesService,
       child: Scaffold(
         backgroundColor: AppColor.mainGrey,
         body: DropTarget(

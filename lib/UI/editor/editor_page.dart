@@ -1,7 +1,7 @@
-import 'package:dartpad_lite/UI/app/open_page_manager.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view.dart';
 import 'package:dartpad_lite/UI/editor/tab_view/editor_tab.dart';
 import 'package:dartpad_lite/UI/editor/welcome/welcome_page.dart';
+import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/import_file/import_file_service.dart';
@@ -13,31 +13,31 @@ class EditorPage extends StatefulWidget {
   final LanguageRepoInterface languageRepo;
   final ImportFileServiceInterface importFileService;
   final FileServiceInterface fileService;
-  final OpenPageManagerInterface openPageManager;
+  final PagesServiceInterface pagesService;
 
   const EditorPage({
     super.key,
     required this.fileService,
     required this.importFileService,
     required this.languageRepo,
-    required this.openPageManager,
+    required this.pagesService,
   });
   @override
   State<EditorPage> createState() => _EditorPageState();
 }
 
 class _EditorPageState extends State<EditorPage> {
-  late final EditorPageVMInterface _vm = EditorPageVM(widget.openPageManager);
+  late final EditorPageVMInterface _vm = EditorPageVM(widget.pagesService);
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: _vm.onPagesUpdate,
-      builder: (_, pages, __) {
-        final files = pages.$1;
-        final selectedTab = pages.$2;
+      builder: (_, update, __) {
+        final pages = update.$1;
+        final selectedTab = update.$2;
 
-        if (files.isEmpty) {
+        if (pages.isEmpty) {
           return WelcomePage(
             fileService: widget.fileService,
             importFileService: widget.importFileService,
@@ -45,31 +45,29 @@ class _EditorPageState extends State<EditorPage> {
           );
         }
 
-        final file = files[selectedTab];
-
         return Stack(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: files.length > 1 ? 40 : 0),
+              padding: EdgeInsets.only(top: pages.length > 1 ? 40 : 0),
               child: IndexedStack(
                 index: selectedTab,
-                children: files
+                children: pages
                     .map(
-                      (file) => EditorView(
-                        key: ObjectKey(file),
+                      (page) => EditorView(
+                        key: ObjectKey(page.file),
                         saveFileService: widget.fileService,
-                        file: file,
+                        file: page.file,
                       ),
                     )
                     .toList(),
               ),
             ),
 
-            if (files.length > 1)
+            if (pages.length > 1)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: EditorTabView(
-                  files: files,
+                  pages: pages,
                   selectedTab: selectedTab,
                   onSelect: (i) {
                     _vm.onSelect(i);

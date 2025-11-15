@@ -1,17 +1,17 @@
+import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/services/import_file/imported_file.dart';
 import '../../../utils/app_colors.dart';
 
 class EditorTab extends StatelessWidget {
-  final AppFile file;
+  final AppPage page;
   final bool isSelected;
   final VoidCallback? onTap;
   final VoidCallback? onClose;
 
   const EditorTab({
     super.key,
-    required this.file,
+    required this.page,
     this.onClose,
     this.onTap,
     this.isSelected = false,
@@ -33,7 +33,10 @@ class EditorTab extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(file.name, style: TextStyle(color: AppColor.mainGreyLighter)),
+            Text(
+              page.file.name,
+              style: TextStyle(color: AppColor.mainGreyLighter),
+            ),
             const SizedBox(width: 10),
 
             InkWell(
@@ -54,7 +57,7 @@ class EditorTab extends StatelessWidget {
 }
 
 class EditorTabView extends StatelessWidget {
-  final List<AppFile> files;
+  final List<AppPage> pages;
   final int selectedTab;
   final Function(int)? onSelect;
   final Function(int)? onClose;
@@ -63,7 +66,7 @@ class EditorTabView extends StatelessWidget {
 
   const EditorTabView({
     super.key,
-    this.files = const [],
+    this.pages = const [],
     this.selectedTab = 0,
     this.onSelect,
     this.onClose,
@@ -126,7 +129,7 @@ class EditorTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (files.isEmpty) return SizedBox();
+    if (pages.isEmpty) return SizedBox();
 
     return Container(
       color: AppColor.mainGrey,
@@ -134,14 +137,14 @@ class EditorTabView extends StatelessWidget {
       width: double.infinity,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: files.length,
+        itemCount: pages.length,
         separatorBuilder: (_, __) => const SizedBox(width: 3),
         itemBuilder: (_, i) {
           return GestureDetector(
             onSecondaryTapDown: (details) =>
                 _showContextMenu(context, details, i),
             child: EditorTab(
-              file: files[i],
+              page: pages[i],
               onTap: () => onSelect?.call(i),
               onClose: () => onClose?.call(i),
               isSelected: i == selectedTab,

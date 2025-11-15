@@ -15,4 +15,5 @@ abstract class AppColor {
 
   static const blue = Color(0xFF0E639C);
   static const lightBlue = Color(0xffeadefe);
+  static const aiBlue = Color(0xff33A1E0);
 }

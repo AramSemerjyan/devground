@@ -1,4 +1,4 @@
-import 'package:dartpad_lite/UI/app/open_page_manager.dart';
+import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:dartpad_lite/core/services/event_service/app_error.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -21,7 +21,7 @@ class AppPageVM {
   late final ImportFileServiceInterface importFileService = ImportFileService(
     languageRepo,
   );
-  late final openPageManager = OpenPageManager();
+  late final PagesServiceInterface pagesService = PagesService();
 
   late final lspBridge;
 

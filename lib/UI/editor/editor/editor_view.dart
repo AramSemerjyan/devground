@@ -1,5 +1,6 @@
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -103,6 +104,11 @@ class _EditorViewState extends State<EditorView> {
           icon: const Icon(Icons.accessible_forward),
           onPressed: () async {
             _showAI.value = !_showAI.value;
+
+            EventService.emit(
+              type: EventType.aiModeChanged,
+              data: _showAI.value,
+            );
           },
         ),
       ],

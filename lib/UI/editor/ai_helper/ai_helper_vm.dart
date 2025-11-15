@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_vm.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_error.dart';
@@ -75,6 +76,8 @@ class AIHelperVM implements AIHelperVMInterface {
 
     isLoading.value = true;
 
+    EventService.emit(type: EventType.aiStateChanged, data: AIState.thinking);
+
     try {
       String userText = text;
 
@@ -93,7 +96,10 @@ class AIHelperVM implements AIHelperVMInterface {
       //
       // return;
 
-      final aiResponse = await _aiProvider.generateContent(text: userText);
+      final aiResponse = await _aiProvider.generateContent(
+        text: userText,
+        mock: true,
+      );
       if (aiResponse != null) {
         final response = AIResponse.fromJson(aiResponse.data);
 
@@ -119,6 +125,7 @@ class AIHelperVM implements AIHelperVMInterface {
       onMessagesUpdate.value = _chatMessages.toList();
     }
 
+    EventService.emit(type: EventType.aiStateChanged, data: AIState.done);
     isLoading.value = false;
   }
 

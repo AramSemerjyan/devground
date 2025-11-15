@@ -10,6 +10,6 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Dev Playground', home: const AppPage());
+    return MaterialApp(title: 'Dev Playground', home: const AppMainPage());
   }
 }

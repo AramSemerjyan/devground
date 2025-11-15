@@ -15,6 +15,8 @@ enum EventType {
   sdkPathUpdated,
   importedFile,
   monacoDropFocus,
+  aiModeChanged,
+  aiStateChanged,
 
   onAppInactive,
   onAppResume,
