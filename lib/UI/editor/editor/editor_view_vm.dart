@@ -72,7 +72,6 @@ class EditorViewVM implements EditorViewVMInterface {
     _monacoWebBridgeService = MonacoWebBridgeService();
 
     _monacoWebBridgeService.onNavigationRequest = (request) {
-      // Block all navigation except for the initial loaded HTML
       if (request.url.startsWith('data:text/html') ||
           request.url == 'about:blank') {
         return NavigationDecision.navigate;
@@ -82,7 +81,6 @@ class EditorViewVM implements EditorViewVMInterface {
         _outputController.sink.add(request.url);
       }
 
-      // Otherwise, prevent navigation
       return NavigationDecision.prevent;
     };
 

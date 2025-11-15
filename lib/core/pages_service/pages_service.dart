@@ -26,7 +26,7 @@ class PagesService implements PagesServiceInterface {
           ];
           final selectedPage = updatedPages.length - 1;
 
-          onPagesUpdate.value = (updatedPages, selectedPage);
+          _updatePages(updatedPages, selectedPage);
         });
   }
 
@@ -50,18 +50,14 @@ class PagesService implements PagesServiceInterface {
       newSelectedIndex = selectedIndex - 1;
     }
 
-    final language = updatedPages[newSelectedIndex].file.language;
-
-    EventService.emit(type: EventType.languageChanged, data: language);
-
-    onPagesUpdate.value = (updatedPages, newSelectedIndex);
+    _updatePages(updatedPages, newSelectedIndex);
   }
 
   @override
   Future<void> onCloseAll() async {
     onPagesUpdate.value = ([], -1);
 
-    EventService.emit(type: EventType.languageChanged, data: null);
+    _updatePages([], 0);
   }
 
   @override
@@ -75,6 +71,8 @@ class PagesService implements PagesServiceInterface {
 
   void _updatePages(List<AppPage> updatedPages, int selectedIndex) {
     onPagesUpdate.value = (updatedPages, selectedIndex);
+
+    EventService.emit(type: EventType.aiModeChanged, data: false);
 
     if (selectedIndex >= 0 && updatedPages.isNotEmpty) {
       EventService.emit(
