@@ -4,6 +4,7 @@ import 'package:dartpad_lite/core/services/compiler/py_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/shell_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/swift_compiler.dart';
 import 'package:dartpad_lite/core/services/compiler/xml_compiler.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 
 import '../../storage/supported_language.dart';
 import 'c_compiler.dart';
@@ -54,9 +55,25 @@ class Compiler implements CompilerInterface {
   void _setUp() {
     final sdkPath = language.sdkPath;
 
+    print(language.key);
+
     if (sdkPath == null && language.needSDKPath) {
       _selectedCompiler = null;
-      throw Exception('SDK path missing');
+
+      if (language.supported == LanguageSupport.upcoming) {
+        EventService.warning(
+          msg: 'Upcoming',
+          duration: const Duration(seconds: 2),
+        );
+
+        return;
+      } else {
+        EventService.error(
+          msg: 'SDK path missing',
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
     }
 
     switch (language.key) {
@@ -65,22 +82,31 @@ class Compiler implements CompilerInterface {
         break;
       case SupportedLanguageType.shell:
         _selectedCompiler = ShellCompiler(sdkPath!);
+        break;
       case SupportedLanguageType.html:
         _selectedCompiler = HTMLCompiler();
+        break;
       case SupportedLanguageType.js:
         _selectedCompiler = JsCompiler();
+        break;
       case SupportedLanguageType.c:
         _selectedCompiler = CCompiler(sdkPath!);
+        break;
       case SupportedLanguageType.cpp:
         _selectedCompiler = CPPCompiler(sdkPath!);
+        break;
       case SupportedLanguageType.python:
         _selectedCompiler = PythonCompiler(sdkPath!);
+        break;
       case SupportedLanguageType.swift:
         _selectedCompiler = SwiftCompiler(sdkPath!);
+        break;
       case SupportedLanguageType.xml:
         _selectedCompiler = XMLCompiler();
+        break;
       case SupportedLanguageType.json:
         _selectedCompiler = JSONCompiler();
+        break;
       default:
         _selectedCompiler = DefaultCompiler(language: language);
     }

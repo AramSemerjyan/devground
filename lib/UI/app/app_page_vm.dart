@@ -13,7 +13,6 @@ import '../../core/storage/supported_language.dart';
 enum SDKState { inProgress, ready, notReady }
 
 class AppPageVM {
-  // late final Compiler compiler = Compiler();
   late final LanguageRepo languageRepo = LanguageRepo();
   late final FileServiceInterface fileService = FileService(languageRepo);
   final MonacoWebBridgeServiceInterface monacoWebBridgeService =

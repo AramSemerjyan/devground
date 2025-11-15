@@ -1,21 +1,29 @@
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
 
 class AppPage {
-  AppFile file;
-  String? edited;
-  bool? isEdited;
-  bool? isAIBoosted;
+  final AppFile file;
+  final int index;
+  final String? edited;
+  final bool? isEdited;
+  final bool? isAIBoosted;
 
   AppPage({
     required this.file,
+    required this.index,
     this.edited,
     this.isEdited = false,
     this.isAIBoosted = false,
   });
 
-  AppPage copy({String? edited, bool? isEdited, bool? isAIBoosted}) {
+  AppPage copy({
+    int? index,
+    String? edited,
+    bool? isEdited,
+    bool? isAIBoosted,
+  }) {
     return AppPage(
       file: file,
+      index: index ?? this.index,
       edited: edited ?? this.edited,
       isEdited: isEdited ?? this.isEdited,
       isAIBoosted: isAIBoosted ?? this.isAIBoosted,

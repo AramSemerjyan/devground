@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/core/pages_service/app_page.dart';
+import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -30,23 +32,25 @@ abstract class EditorViewVMInterface {
   Future<void> runCode();
   Future<void> save({String? name});
   Future<void> dropEditorFocus();
+  Future<void> onAIBoosModeChange({required bool state});
 }
 
 class EditorViewVM implements EditorViewVMInterface {
-  final AppFile _file;
+  final AppPage _page;
   final FileServiceInterface _saveFileService;
+  late final PagesServiceInterface _pagesService;
 
   late final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
   late final CompilerInterface _compiler;
 
   @override
-  AppFile get file => _file;
+  AppFile get file => _page.file;
 
   @override
   MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
 
   @override
-  SupportedLanguage get language => _file.language;
+  SupportedLanguage get language => _page.file.language;
 
   @override
   get controller => _monacoWebBridgeService.controller;
@@ -67,8 +71,8 @@ class EditorViewVM implements EditorViewVMInterface {
   final _outputController = StreamController<String>.broadcast();
   final _output = StringBuffer();
 
-  EditorViewVM(this._file, this._saveFileService) {
-    _compiler = Compiler(language: _file.language);
+  EditorViewVM(this._page, this._saveFileService, this._pagesService) {
+    _compiler = Compiler(language: _page.file.language);
     _monacoWebBridgeService = MonacoWebBridgeService();
 
     _monacoWebBridgeService.onNavigationRequest = (request) {
@@ -161,14 +165,27 @@ class EditorViewVM implements EditorViewVMInterface {
 
   void _setUp() async {
     settingUp.value = true;
-    await _monacoWebBridgeService.setUp();
-    await _monacoWebBridgeService.setLanguage(language: _file.language);
-    await _monacoWebBridgeService.setCode(code: _file.code);
+    try {
+      await _monacoWebBridgeService.setUp();
+      await _monacoWebBridgeService.setLanguage(language: _page.file.language);
+      await _monacoWebBridgeService.setCode(code: _page.file.code);
+    } catch (e, s) {
+      EventService.error(
+        error: AppError(object: e, stackTrace: s),
+        msg: e.toString(),
+      );
+    }
     settingUp.value = false;
   }
 
   Future<void> _sendOutput(String s) async {
     _output.write(s);
     _outputController.sink.add(_output.toString());
+  }
+
+  @override
+  Future<void> onAIBoosModeChange({required bool state}) async {
+    final updatedPage = _page.copy(isAIBoosted: state);
+    _pagesService.updatePage(page: updatedPage);
   }
 }

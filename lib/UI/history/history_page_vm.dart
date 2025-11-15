@@ -54,7 +54,9 @@ class HistoryPageVM implements HistoryPageVMInterface {
   Future<void> onSearch({String? query}) async {
     if (query != null && query.isNotEmpty) {
       onFilesUpdate.value = _fetchedHistory
-          .where((file) => file.name.contains(query))
+          .where(
+            (file) => file.name.toLowerCase().contains(query.toLowerCase()),
+          )
           .toList();
     } else {
       onFilesUpdate.value = _fetchedHistory;

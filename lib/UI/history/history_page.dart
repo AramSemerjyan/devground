@@ -43,8 +43,8 @@ class _HistoryPageState extends State<HistoryPage> {
       autofocus: true,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        hintText: 'Search by file name',
-        hintStyle: TextStyle(color: Colors.grey[400]),
+        hintText: 'Search by file name or extension',
+        hintStyle: TextStyle(color: Colors.grey[600]),
         filled: true,
         fillColor: Colors.grey[850],
         border: OutlineInputBorder(

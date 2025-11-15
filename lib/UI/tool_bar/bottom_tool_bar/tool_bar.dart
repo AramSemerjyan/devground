@@ -223,6 +223,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
                   const Spacer(),
                   if (aiMode) _buildAI(),
                   _buildLanguageSelection(),
+                  const SizedBox(width: 15),
                 ],
               ),
             );

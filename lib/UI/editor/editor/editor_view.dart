@@ -1,10 +1,10 @@
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
-import 'package:dartpad_lite/core/services/event_service/event_service.dart';
+import 'package:dartpad_lite/core/pages_service/app_page.dart';
+import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../core/services/import_file/imported_file.dart';
 import '../../../core/services/save_file/file_service.dart';
 import '../../../utils/app_colors.dart';
 import '../../command_palette/command_palette.dart';
@@ -12,21 +12,28 @@ import '../../common/floating_progress_button.dart';
 import '../result_page/result_console_view.dart';
 
 class EditorView extends StatefulWidget {
-  final AppFile file;
+  final AppPage page;
   final FileServiceInterface saveFileService;
+  final PagesServiceInterface pagesService;
 
   const EditorView({
     super.key,
+    required this.pagesService,
     required this.saveFileService,
-    required this.file,
+    required this.page,
   });
 
   @override
   State<EditorView> createState() => _EditorViewState();
 }
 
-class _EditorViewState extends State<EditorView> {
-  late final _vm = EditorViewVM(widget.file, widget.saveFileService);
+class _EditorViewState extends State<EditorView>
+    with AutomaticKeepAliveClientMixin {
+  late final _vm = EditorViewVM(
+    widget.page,
+    widget.saveFileService,
+    widget.pagesService,
+  );
 
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);
   final ValueNotifier<double> _sidebarWidth = ValueNotifier(300);
@@ -101,13 +108,19 @@ class _EditorViewState extends State<EditorView> {
           heroTag: 'aiBtn',
           tooltip: 'AI boost',
           mini: true,
-          icon: const Icon(Icons.accessible_forward),
+          icon: ValueListenableBuilder(
+            valueListenable: _showAI,
+            builder: (_, show, __) {
+              if (!show) {
+                return Icon(Icons.accessible);
+              }
+              return Icon(Icons.accessible_forward);
+            },
+          ),
           onPressed: () async {
             _showAI.value = !_showAI.value;
 
-            if (!_showAI.value) {
-              EventService.emit(type: EventType.aiModeChanged, data: false);
-            }
+            _vm.onAIBoosModeChange(state: _showAI.value);
           },
         ),
       ],
@@ -281,6 +294,7 @@ class _EditorViewState extends State<EditorView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(
       children: [
         Expanded(
@@ -305,4 +319,7 @@ class _EditorViewState extends State<EditorView> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

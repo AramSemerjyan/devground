@@ -7,6 +7,9 @@ import '../services/import_file/imported_file.dart';
 abstract class PagesServiceInterface {
   ValueNotifier<(List<AppPage>, int)> get onPagesUpdate;
 
+  Future<AppPage> getSelectedPage();
+  Future<void> updatePage({required AppPage page});
+
   Future<void> onClose(int index);
   Future<void> onCloseAll();
   Future<void> onCloseOthers(int pageIndex);
@@ -20,14 +23,38 @@ class PagesService implements PagesServiceInterface {
     EventService.instance.stream
         .where((event) => event.type == EventType.importedFile)
         .listen((event) {
-          final updatedPages = [
-            ...onPagesUpdate.value.$1,
-            AppPage(file: event.data as AppFile),
-          ];
-          final selectedPage = updatedPages.length - 1;
+          final (pages, selected) = onPagesUpdate.value;
 
-          _updatePages(updatedPages, selectedPage);
+          final newPage = AppPage(
+            file: event.data as AppFile,
+            index: pages.length,
+          );
+
+          final updatedPages = [...pages, newPage];
+          final reindexedPages = _reindex(updatedPages);
+
+          _updatePages(reindexedPages, reindexedPages.length - 1);
         });
+  }
+
+  // ----------------------
+  // MARK: Interface
+  // ----------------------
+
+  @override
+  Future<AppPage> getSelectedPage() async {
+    final (pages, selected) = onPagesUpdate.value;
+    return pages[selected];
+  }
+
+  @override
+  Future<void> updatePage({required AppPage page}) async {
+    final (pages, selected) = onPagesUpdate.value;
+    final updatedPages = List<AppPage>.from(pages);
+
+    updatedPages[page.index] = page;
+
+    _updatePages(updatedPages, selected);
   }
 
   @override
@@ -35,38 +62,47 @@ class PagesService implements PagesServiceInterface {
     final (pages, selectedIndex) = onPagesUpdate.value;
 
     final updatedPages = List<AppPage>.from(pages)..removeAt(index);
+    final reindexedPages = _reindex(updatedPages);
 
-    int newSelectedIndex = selectedIndex;
+    int newSelected = selectedIndex;
 
-    if (updatedPages.isEmpty) {
-      newSelectedIndex = -1;
+    if (reindexedPages.isEmpty) {
+      newSelected = -1;
     } else if (index == selectedIndex) {
-      if (index >= updatedPages.length) {
-        newSelectedIndex = updatedPages.length - 1;
-      } else {
-        newSelectedIndex = index;
-      }
+      newSelected = index >= reindexedPages.length
+          ? reindexedPages.length - 1
+          : index;
     } else if (index < selectedIndex) {
-      newSelectedIndex = selectedIndex - 1;
+      newSelected = selectedIndex - 1;
     }
 
-    _updatePages(updatedPages, newSelectedIndex);
+    _updatePages(reindexedPages, newSelected);
   }
 
   @override
   Future<void> onCloseAll() async {
-    onPagesUpdate.value = ([], -1);
-
-    _updatePages([], 0);
+    _updatePages([], -1);
   }
 
   @override
   Future<void> onCloseOthers(int pageIndex) async {
-    final (pages, _) = onPagesUpdate.value;
-    if (pages.isEmpty || pageIndex < 0 || pageIndex >= pages.length) return;
+    final (pages, selected) = onPagesUpdate.value;
 
-    final selectedFile = pages[pageIndex];
-    _updatePages([selectedFile], 0);
+    if (pages.isEmpty || pageIndex < 0 || pageIndex >= pages.length) {
+      return;
+    }
+
+    final selectedPage = pages[pageIndex].copy(index: 0);
+
+    _updatePages([selectedPage], 0);
+  }
+
+  // ----------------------
+  // MARK: Helpers
+  // ----------------------
+
+  List<AppPage> _reindex(List<AppPage> pages) {
+    return [for (int i = 0; i < pages.length; i++) pages[i].copy(index: i)];
   }
 
   void _updatePages(List<AppPage> updatedPages, int selectedIndex) {
