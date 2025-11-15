@@ -1,26 +1,16 @@
 import 'dart:convert';
 
-import 'package:dartpad_lite/core/services/event_service.dart';
+import 'package:dartpad_lite/core/services/ai/ai_mock.dart';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/services/ai/ai_response.dart';
+import 'ai_provider.dart';
+import 'ai_provider_error.dart';
 
-class AIHelperChatMessage {
-  final String text;
-  final bool isUser;
-
-  AIHelperChatMessage({required this.text, required this.isUser});
-}
-
-abstract class AIHelperNetworkServiceInterface {
-  Future<AIResponse?> generateContent({required String text});
-}
-
-class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
+class AINetworkProvider implements AIProviderInterface {
+  final String _apiKey;
   late final Dio _dio;
 
-  final request = '''
+  late final request = '''
   curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
   -H 'Content-Type: application/json' \
   -H 'X-goog-api-key: AIzaSyDbZsNwbliBc7ZbqEH4nLvlH5PoDhTG_GA' \
@@ -38,7 +28,7 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
   }'
   ''';
 
-  AiHelperNetworkService() {
+  AINetworkProvider(this._apiKey) {
     _dio = Dio(
       BaseOptions(
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/',
@@ -50,20 +40,36 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
   /// [model] example: 'gemini-2.5-flash'
   /// [text] is the prompt to generate content for
   @override
-  Future<AIResponse?> generateContent({required String text}) async {
-    try {
-      final apiKey = (await SharedPreferences.getInstance()).getString(
-        'ai_api_key',
+  Future<AIProviderResponse> generateContent({
+    required String text,
+    bool mock = false,
+  }) async {
+    if (mock) {
+      // response.candidates.first.content.parts.first.text
+      await Future.delayed(const Duration(seconds: 1));
+      return AIProviderResponse(
+        data: {
+          'candidates': [
+            {
+              'content': {
+                'parts': [
+                  {'text': withCodeResponse},
+                ],
+              },
+            },
+          ],
+        },
       );
-      if (apiKey == null) {
-        EventService.error(msg: 'Missing API key');
+    }
 
-        return null;
+    try {
+      if (_apiKey.isEmpty) {
+        throw AIMissingApiKeyError();
       }
 
       final header = {
         'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
+        'x-goog-api-key': _apiKey,
       };
 
       final response = await _dio.post(
@@ -81,19 +87,14 @@ class AiHelperNetworkService implements AIHelperNetworkServiceInterface {
       );
 
       if (response.statusCode == 200) {
-        final aiResponse = AIResponse.fromJson(response.data);
-
-        return aiResponse;
+        return AIProviderResponse(data: response.data);
       } else {
-        EventService.error(
-          msg: 'Failed to generate content: ${response.statusCode}',
+        throw AIRequestFailedError(
+          'Failed to generate content: ${response.statusCode}',
         );
-
-        return null;
       }
     } catch (e) {
-      EventService.error(msg: e.toString());
-      return null;
+      throw AIRequestFailedError(e.toString());
     }
   }
 }

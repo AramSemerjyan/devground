@@ -2,8 +2,6 @@ import 'package:dartpad_lite/core/services/event_service.dart';
 import 'package:dartpad_lite/core/storage/ai_repo.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/storage/cred_repo.dart';
-
 enum AIType {
   local('local'),
   remote('remote');
@@ -14,10 +12,10 @@ enum AIType {
 
   static AIType fromString(String? value) {
     switch (value) {
-      case 'remote':
-        return AIType.remote;
-      default:
+      case 'local':
         return AIType.local;
+      default:
+        return AIType.remote;
     }
   }
 }
@@ -32,7 +30,6 @@ abstract class AISettingVMInterface {
 
 class AISettingVM implements AISettingVMInterface {
   final AIRepoInterface _aiRepo = AIRepo();
-  final CredRepoInterface _credRepo = CredRepo();
 
   @override
   final TextEditingController apiKeyController = TextEditingController();
@@ -40,19 +37,19 @@ class AISettingVM implements AISettingVMInterface {
   final ValueNotifier<bool> saveButtonEnabled = ValueNotifier(false);
 
   Future<void> fetchSettings() async {
-    final type = AIType.fromString(await _aiRepo.getAIType());
+    final type = await _aiRepo.getType();
   }
 
   @override
   Future<void> getApiKey() async {
-    final apiKey = await _credRepo.getAIApiKey();
+    final apiKey = await _aiRepo.getApiKey();
 
     apiKeyController.text = apiKey ?? '';
   }
 
   @override
   Future<void> setApiKey(String key) async {
-    await _credRepo.setAIApiKey(key);
+    await _aiRepo.setApiKey(key);
 
     EventService.success(msg: 'API Set');
   }

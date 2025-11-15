@@ -1,21 +1,51 @@
+import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_vm.dart';
 import 'package:dartpad_lite/core/storage/sp_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class AIRepoInterface {
-  Future<String?> getAIType();
-  Future<void> setAIType(String key);
+  Future<AIType> getType();
+  Future<void> setType(String key);
+  Future<String?> getApiKey();
+  Future<void> setApiKey(String key);
+  Future<String?> getModelPath();
+  Future<void> setModelPath(String path);
 }
 
 class AIRepo implements AIRepoInterface {
   @override
-  Future<String?> getAIType() async {
+  Future<AIType> getType() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(SPKeys.aiType.value);
+    final type = prefs.getString(SPAIKeys.type.value);
+    return AIType.fromString(type);
   }
 
   @override
-  Future<void> setAIType(String key) async {
+  Future<void> setType(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SPKeys.aiType.value, key);
+    await prefs.setString(SPAIKeys.type.value, key);
+  }
+
+  @override
+  Future<String?> getApiKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(SPAIKeys.apiKey.value);
+  }
+
+  @override
+  Future<void> setApiKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(SPAIKeys.apiKey.value, key);
+  }
+
+  @override
+  Future<String?> getModelPath() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(SPAIKeys.modelPath.value);
+  }
+
+  @override
+  Future<void> setModelPath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(SPAIKeys.modelPath.value, path);
   }
 }

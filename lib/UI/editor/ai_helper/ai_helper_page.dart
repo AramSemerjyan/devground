@@ -4,7 +4,7 @@ import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_s
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
-import 'ai_herlper_vm.dart';
+import 'ai_helper_vm.dart';
 import 'ui/bubble/message_segment.dart';
 import 'ui/response_parser/gpt_markdown.dart';
 

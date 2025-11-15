@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dartpad_lite/core/storage/cred_repo.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/services/event_service.dart';
@@ -15,12 +14,10 @@ abstract class SettingsPageVMInterface {
     required SupportedLanguage language,
     required String sdkPath,
   });
-  Future<void> setApiKey(String key);
 }
 
 class SettingsPageVM implements SettingsPageVMInterface {
   final LanguageRepoInterface _languageStorage;
-  final CredRepoInterface _credRepo = CredRepo();
 
   late final ValueNotifier<SupportedLanguage?> _selectedLanguage =
       ValueNotifier(_languageStorage.selectedLanguage.value);
@@ -65,14 +62,5 @@ class SettingsPageVM implements SettingsPageVMInterface {
     } catch (e) {
       EventService.error(msg: e.toString());
     }
-  }
-
-  Future<String?> getApiKey() async {
-    return _credRepo.getAIApiKey();
-  }
-
-  @override
-  Future<void> setApiKey(String key) async {
-    _credRepo.setAIApiKey(key);
   }
 }
