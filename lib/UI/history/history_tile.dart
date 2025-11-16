@@ -31,9 +31,18 @@ class HistoryTile extends StatelessWidget {
           children: [
             Text(file.path, style: TextStyle(color: AppColor.mainGreyLighter)),
             const SizedBox(height: 4),
-            Text(
-              'Last saved: ${file.updatedDate}',
-              style: TextStyle(color: AppColor.mainGreyLighter, fontSize: 12),
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    'Last saved: ${file.updatedDate}',
+                    style: TextStyle(
+                      color: AppColor.mainGreyLighter,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -41,15 +50,15 @@ class HistoryTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.delete_forever, color: AppColor.error),
-              onPressed: () {
-                onDelete?.call(file);
-              },
-            ),
-            IconButton(
               icon: const Icon(Icons.folder, color: AppColor.mainGreyLighter),
               onPressed: () {
                 onReveal?.call(file);
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_forever, color: AppColor.error),
+              onPressed: () {
+                onDelete?.call(file);
               },
             ),
           ],

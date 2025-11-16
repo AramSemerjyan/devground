@@ -1,5 +1,4 @@
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
-import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_vm.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_error.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_service.dart';
 import 'package:dartpad_lite/core/services/ai/ai_response.dart';
@@ -9,6 +8,7 @@ import 'package:dartpad_lite/core/storage/ai_repo.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../../core/services/event_service/app_error.dart';
+import '../../settings/options/ai_section/ai_setting_vm.dart';
 import 'ai_helper_network_service.dart';
 
 abstract class AIHelperVMInterface {
@@ -50,11 +50,11 @@ class AIHelperVM implements AIHelperVMInterface {
       switch (aiType) {
         case AIType.local:
           final path = await aiRepoInterface.getModelPath();
-          _aiProviderService.loadFromFile(modelPath: path ?? '');
+          await _aiProviderService.loadFromFile(modelPath: path ?? '');
           break;
         case AIType.remote:
           final key = await aiRepoInterface.getApiKey();
-          _aiProviderService.loadRemote(apiKey: key ?? '');
+          await _aiProviderService.loadRemote(apiKey: key ?? '');
           break;
       }
 
@@ -100,7 +100,7 @@ class AIHelperVM implements AIHelperVMInterface {
 
       final aiResponse = await _aiProviderService.provider.generateContent(
         text: userText,
-        mock: true,
+        // mock: true,
       );
       if (aiResponse != null) {
         final response = AIResponse.fromJson(aiResponse.data);

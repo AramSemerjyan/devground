@@ -7,18 +7,12 @@ abstract class CommandPaletteItem {
   String get itemName;
 }
 
-/// A generic overlay command palette that can be called from anywhere.
 class CommandPalette {
   static OverlayEntry? _overlayEntry;
   static final TextEditingController _searchController =
       TextEditingController();
   static final TextEditingController _controller = TextEditingController();
 
-  /// Show the palette.
-  /// [context]: BuildContext to get the overlay.
-  /// [items]: List of items of type T.
-  /// [itemBuilder]: How to render each item in the list.
-  /// [onSelected]: Called when an item is selected.
   static void showOption<T extends CommandPaletteItem>({
     required BuildContext context,
     required List<T> items,

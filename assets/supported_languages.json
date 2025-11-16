@@ -3,7 +3,7 @@
     "key": "dart",
     "name": "Dart SDK",
     "extension": ".dart",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dart/dart-original.svg",
     "path": {
       "validation": "/bin/flutter",
       "hint": "/Users/your_username/flutter"
@@ -16,7 +16,7 @@
     "key": "shell",
     "name": "Shell",
     "extension": ".sh",
-    "icon": "",
+    "icon": "https://img.icons8.com/ios/50/000000/console.png",
     "sdk_path": "/bin",
     "path": {
       "validation": "/bash",
@@ -30,7 +30,7 @@
     "key": "c",
     "name": "C",
     "extension": ".c",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg",
     "sdk_path": "/usr/bin",
     "path": {
       "validation": "/gcc",
@@ -44,7 +44,7 @@
     "key": "cpp",
     "name": "C++",
     "extension": ".cpp",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg",
     "sdk_path": "/usr/bin",
     "path": {
       "validation": "/g++",
@@ -58,7 +58,7 @@
     "key": "py",
     "name": "Python",
     "extension": ".py",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
     "path": {
       "validation": "/python3",
       "hint": "/usr/local/bin/python3"
@@ -71,7 +71,7 @@
     "key": "swift",
     "name": "Swift",
     "extension": ".swift",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg",
     "sdk_path": "/usr/bin",
     "path": {
       "validation": "/swift",
@@ -85,7 +85,7 @@
     "key": "js",
     "name": "JavaScript",
     "extension": ".js",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",
     "path": {
       "validation": "/node",
       "hint": "/usr/local/bin/node"
@@ -98,7 +98,7 @@
     "key": "html",
     "name": "HTML",
     "extension": ".html",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg",
     "path": {
       "validation": "",
       "hint": ""
@@ -111,7 +111,7 @@
     "key": "css",
     "name": "CSS",
     "extension": ".css",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg",
     "path": {
       "validation": "",
       "hint": ""
@@ -124,7 +124,7 @@
     "key": "json",
     "name": "JSON",
     "extension": ".json",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/json/json-original.svg",
     "path": {
       "validation": "",
       "hint": ""
@@ -137,7 +137,7 @@
     "key": "xml",
     "name": "XML",
     "extension": ".xml",
-    "icon": "",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xml/xml-original.svg",
     "path": {
       "validation": "",
       "hint": ""

@@ -1,6 +1,7 @@
-import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_vm.dart';
 import 'package:dartpad_lite/core/storage/sp_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../UI/settings/options/ai_section/ai_setting_vm.dart';
 
 abstract class AIRepoInterface {
   Future<AIType> getType();

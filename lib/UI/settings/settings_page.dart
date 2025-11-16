@@ -1,10 +1,10 @@
-import 'package:dartpad_lite/UI/settings/options/api_key/ai_setting_section.dart';
 import 'package:dartpad_lite/UI/settings/options/language/language_setting_option.dart';
 import 'package:dartpad_lite/UI/settings/options/setting_section.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/storage/language_repo.dart';
+import 'options/ai_section/ai_setting_section.dart';
 
 class SettingsPage extends StatefulWidget {
   final LanguageRepoInterface languageRepo;

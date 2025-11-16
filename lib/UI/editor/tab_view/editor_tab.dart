@@ -1,5 +1,6 @@
 import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../utils/app_colors.dart';
 import '../../common/Animations /ai_mode_animation.dart';
@@ -35,7 +36,14 @@ class EditorTab extends StatelessWidget {
           spacing: 10,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (page.isAIBoosted ?? false) AIModeAnimation(),
+            if (page.isAIBoosted ?? false)
+              AIModeAnimation(color: AppColor.aiBlue),
+            if (page.file.language.icon.isNotEmpty)
+              SizedBox(
+                height: 15,
+                width: 15,
+                child: SvgPicture.network(page.file.language.icon),
+              ),
             Text(
               page.file.name,
               style: TextStyle(color: AppColor.mainGreyLighter),

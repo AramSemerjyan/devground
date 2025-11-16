@@ -98,6 +98,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
                   );
                 },
                 child: Row(
+                  spacing: 5,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
