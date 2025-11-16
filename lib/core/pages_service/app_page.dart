@@ -1,6 +1,7 @@
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
 
 class AppPage {
+  late final String id;
   final AppFile file;
   final int index;
   final String? edited;
@@ -8,6 +9,7 @@ class AppPage {
   final bool? isAIBoosted;
 
   AppPage({
+    required this.id,
     required this.file,
     required this.index,
     this.edited,
@@ -22,6 +24,7 @@ class AppPage {
     bool? isAIBoosted,
   }) {
     return AppPage(
+      id: id,
       file: file,
       index: index ?? this.index,
       edited: edited ?? this.edited,

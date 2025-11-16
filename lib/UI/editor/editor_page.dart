@@ -54,7 +54,7 @@ class _EditorPageState extends State<EditorPage> {
                 children: pages
                     .map(
                       (page) => EditorView(
-                        key: ValueKey(page.file.name),
+                        key: ValueKey(page.id),
                         saveFileService: widget.fileService,
                         pagesService: widget.pagesService,
                         page: page,

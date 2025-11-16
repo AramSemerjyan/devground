@@ -22,6 +22,14 @@ class AppRouteObserver extends NavigatorObserver {
   }
 
   @override
+  void didPop(Route route, Route? previousRoute) {
+    _onRouteChange.sink.add(
+      AppPages.fromString(previousRoute?.settings.name ?? ''),
+    );
+    super.didPop(route, previousRoute);
+  }
+
+  @override
   void didPush(Route route, Route? previousRoute) async {
     _routeStack.add(route);
     await monacoWebBridgeService.dropFocus();

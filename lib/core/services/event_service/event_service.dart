@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:dartpad_lite/utils/app_colors.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'app_error.dart';
 import 'logger/app_logger.dart';
-import 'logger/console_logger.dart';
 
 enum EventType {
   sdkSetUp,
@@ -86,7 +84,7 @@ class StatusEvent {
 
 class EventService {
   late final AppLoggerInterface logger = AppLogger([
-    if (kDebugMode) ConsoleLogger(),
+    // if (kDebugMode) ConsoleLogger(),
 
     /// TODO: implement
     // RemoteLogger();

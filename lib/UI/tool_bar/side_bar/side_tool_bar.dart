@@ -51,6 +51,19 @@ class _SideToolBarState extends State<SideToolBar> {
     super.dispose();
   }
 
+  void _navigate(AppPages page) {
+    if (page == AppPages.editor) {
+      widget.navigatorKey.currentState?.popUntil(
+        (route) => route.settings.name == AppPages.editor.value,
+      );
+    } else {
+      widget.navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        page.value,
+        (route) => route.settings.name == AppPages.editor.value,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -97,9 +110,7 @@ class _SideToolBarState extends State<SideToolBar> {
                         data: false,
                       );
 
-                      widget.navigatorKey.currentState?.pushReplacementNamed(
-                        page.value,
-                      );
+                      _navigate(page);
                       _selectedPage.value = page;
                     },
                   );

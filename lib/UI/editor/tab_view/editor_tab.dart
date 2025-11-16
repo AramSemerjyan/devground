@@ -19,27 +19,26 @@ class EditorTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? AppColor.mainGreyDarker : AppColor.mainGreyDark,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(10),
             topRight: Radius.circular(10),
           ),
         ),
         child: Row(
+          spacing: 10,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               page.file.name,
               style: TextStyle(color: AppColor.mainGreyLighter),
             ),
-            const SizedBox(width: 10),
-
-            InkWell(
+            GestureDetector(
               onTap: () {
                 onClose?.call();
               },

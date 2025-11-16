@@ -41,8 +41,8 @@ class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
         .where((event) => event.type == EventType.importedFile)
         .listen((event) {
           if (_observer.currentRoute != AppPages.editor.value) {
-            _navigatorKey.currentState?.pushReplacementNamed(
-              AppPages.editor.value,
+            _navigatorKey.currentState?.popUntil(
+              (route) => route.settings.name == AppPages.editor.value,
             );
           }
         });
@@ -78,6 +78,7 @@ class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
         switch (settings.name) {
           case 'Editor':
             builder = (context) => EditorPage(
+              key: ValueKey(AppPages.editor.value),
               fileService: _vm.fileService,
               importFileService: _vm.importFileService,
               languageRepo: _vm.languageRepo,

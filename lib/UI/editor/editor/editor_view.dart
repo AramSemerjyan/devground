@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:dartpad_lite/core/pages_service/app_page.dart';
@@ -27,8 +29,7 @@ class EditorView extends StatefulWidget {
   State<EditorView> createState() => _EditorViewState();
 }
 
-class _EditorViewState extends State<EditorView>
-    with AutomaticKeepAliveClientMixin {
+class _EditorViewState extends State<EditorView> {
   late final _vm = EditorViewVM(
     widget.page,
     widget.saveFileService,
@@ -41,13 +42,21 @@ class _EditorViewState extends State<EditorView>
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
   final ValueNotifier<bool> _showAI = ValueNotifier(false);
 
+  late final StreamSubscription _subscription;
+
   @override
   void initState() {
     super.initState();
 
-    _vm.compileResultStream.listen((_) {
+    _subscription = _vm.compileResultStream.listen((_) {
       _inProgress.value = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -294,7 +303,6 @@ class _EditorViewState extends State<EditorView>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Column(
       children: [
         Expanded(
@@ -319,7 +327,4 @@ class _EditorViewState extends State<EditorView>
       ],
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

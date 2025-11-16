@@ -59,6 +59,12 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(backgroundColor: AppColor.mainGrey),
@@ -85,8 +91,6 @@ class _HistoryPageState extends State<HistoryPage> {
                             file: file,
                             onSelect: (file) {
                               _vm.onSelect(file: file);
-                              // AppPageScope.of(context).navigatorKey.currentState
-                              //     ?.pushReplacementNamed(AppPages.editor.value);
                             },
                             onDelete: (file) => _vm.deleteFile(file: file),
                             onReveal: (file) => _vm.onReveal(file: file),

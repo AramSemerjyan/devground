@@ -1,5 +1,6 @@
 import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 
 import '../services/event_service/event_service.dart';
 import '../services/import_file/imported_file.dart';
@@ -19,23 +20,13 @@ class PagesService implements PagesServiceInterface {
   @override
   ValueNotifier<(List<AppPage>, int)> onPagesUpdate = ValueNotifier(([], -1));
 
-  PagesService() {
-    EventService.instance.stream
-        .where((event) => event.type == EventType.importedFile)
-        .listen((event) {
-          final (pages, selected) = onPagesUpdate.value;
-
-          final newPage = AppPage(
-            file: event.data as AppFile,
-            index: pages.length,
-          );
-
-          final updatedPages = [...pages, newPage];
-          final reindexedPages = _reindex(updatedPages);
-
-          _updatePages(reindexedPages, reindexedPages.length - 1);
-        });
+  PagesService._internal() {
+    _setupListeners();
   }
+
+  static final PagesService _instance = PagesService._internal();
+
+  factory PagesService() => _instance;
 
   // ----------------------
   // MARK: Interface
@@ -100,6 +91,24 @@ class PagesService implements PagesServiceInterface {
   // ----------------------
   // MARK: Helpers
   // ----------------------
+  void _setupListeners() {
+    EventService.instance.stream
+        .where((event) => event.type == EventType.importedFile)
+        .listen((event) {
+          final (pages, selected) = onPagesUpdate.value;
+
+          final newPage = AppPage(
+            id: const Uuid().v4(),
+            file: event.data as AppFile,
+            index: pages.length,
+          );
+
+          final updatedPages = [...pages, newPage];
+          final reindexedPages = _reindex(updatedPages);
+
+          _updatePages(reindexedPages, reindexedPages.length - 1);
+        });
+  }
 
   List<AppPage> _reindex(List<AppPage> pages) {
     return [for (int i = 0; i < pages.length; i++) pages[i].copy(index: i)];
