@@ -30,9 +30,16 @@ class EditorPageVM implements EditorPageVMInterface {
 
     onPagesUpdate.value = (onPagesUpdate.value.$1, pageIndex);
 
+    final page = onPagesUpdate.value.$1[onPagesUpdate.value.$2];
+
     EventService.emit(
       type: EventType.languageChanged,
-      data: onPagesUpdate.value.$1[onPagesUpdate.value.$2].file.language,
+      data: page.file.language,
+    );
+
+    EventService.emit(
+      type: EventType.aiModeChanged,
+      data: page.isAIBoosted ?? false,
     );
   }
 

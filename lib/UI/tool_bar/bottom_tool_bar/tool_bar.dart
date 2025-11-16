@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/UI/common/looping_icon_animation.dart';
+import 'package:dartpad_lite/UI/common/Animations%20/ai_mode_animation.dart';
+import 'package:dartpad_lite/UI/common/system_info/system_info_view.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/tool_bar_container.dart';
@@ -148,17 +149,10 @@ class _BottomToolBarState extends State<BottomToolBar> {
           child: Row(
             spacing: 10,
             children: [
+              SystemInfoView(),
+              const SizedBox(width: 5),
               stateWidget,
-              LoopingIconAnimation(
-                icons: [
-                  Icon(Icons.accessible, color: Colors.white54, size: 18),
-                  Icon(
-                    Icons.accessible_forward,
-                    color: Colors.white54,
-                    size: 18,
-                  ),
-                ],
-              ),
+              AIModeAnimation(),
             ],
           ),
         );

@@ -2,6 +2,7 @@ import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../utils/app_colors.dart';
+import '../../common/Animations /ai_mode_animation.dart';
 
 class EditorTab extends StatelessWidget {
   final AppPage page;
@@ -34,6 +35,7 @@ class EditorTab extends StatelessWidget {
           spacing: 10,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (page.isAIBoosted ?? false) AIModeAnimation(),
             Text(
               page.file.name,
               style: TextStyle(color: AppColor.mainGreyLighter),
@@ -139,11 +141,13 @@ class EditorTabView extends StatelessWidget {
         itemCount: pages.length,
         separatorBuilder: (_, __) => const SizedBox(width: 3),
         itemBuilder: (_, i) {
+          final page = pages[i];
           return GestureDetector(
             onSecondaryTapDown: (details) =>
                 _showContextMenu(context, details, i),
             child: EditorTab(
-              page: pages[i],
+              key: ValueKey(page.id),
+              page: page,
               onTap: () => onSelect?.call(i),
               onClose: () => onClose?.call(i),
               isSelected: i == selectedTab,
