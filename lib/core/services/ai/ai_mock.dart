@@ -171,4 +171,16 @@ The final `result` is 14.  The backward iteration and the `prevValue` comparison
 class AIMockResponse implements AIResponse {
   @override
   String get responseText => withCodeResponse;
+
+  @override
+  bool get isDone => true;
+
+  @override
+  bool get isThinking => false;
+
+  @override
+  String get thinkingText => '';
+
+  @override
+  bool get shouldShowThink => throw UnimplementedError();
 }

@@ -1,11 +1,12 @@
-import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/chat_bubble.dart';
+import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/ai_chat_bubble.dart';
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/user_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import 'ai_helper_vm.dart';
-import 'ui/response_parser/gpt_markdown.dart';
 
 class AiHelperPage extends StatefulWidget {
   final MonacoWebBridgeServiceInterface monacoWebBridgeService;
@@ -48,54 +49,78 @@ class _AiHelperPageState extends State<AiHelperPage> {
                 return ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[index];
+                  itemBuilder: (c, index) {
+                    final msg = messages.toList()[index];
 
-                    if (msg.isUser) {
-                      return UseChatBubble(text: msg.text);
-                    } else {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColor.mainGrey,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: GptMarkdown(
-                          msg.text,
-                          onCodeReplaceTap: (code) {
-                            _vm.moveToEditor(code: code);
-                          },
-                          style: const TextStyle(
-                            color: AppColor.mainGreyLighter,
-                          ),
-                        ),
-                      );
-                    }
+                    return Column(
+                      key: ValueKey(msg.id),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        UseChatBubble(text: msg.userMessage.text),
+                        if (msg.response != null)
+                          AiChatBubble(message: msg.response!),
+                      ],
+                    );
                   },
                 );
               },
             ),
           ),
           ValueListenableBuilder(
-            valueListenable: _vm.isLoading,
-            builder: (_, isLoading, __) {
-              if (!isLoading) return SizedBox();
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    ThinkingText(
-                      text: 'Thinking',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColor.mainGreyLighter,
-                      ),
+            valueListenable: _vm.aiState,
+            builder: (_, state, __) {
+              if (state == AIState.idle || state == AIState.done) {
+                return SizedBox();
+              }
+
+              switch (state) {
+                case AIState.thinking:
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Row(
+                      spacing: 5,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.account_tree_outlined,
+                          size: 14,
+                          color: Colors.white54,
+                        ),
+                        ThinkingText(
+                          text: 'Thinking',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColor.mainGreyLighter,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
+                  );
+                case AIState.generating:
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Row(
+                      spacing: 5,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.generating_tokens_outlined,
+                          size: 14,
+                          color: Colors.white54,
+                        ),
+                        ThinkingText(
+                          text: 'Generating',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColor.mainGreyLighter,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                default:
+                  return const SizedBox();
+              }
             },
           ),
           Row(

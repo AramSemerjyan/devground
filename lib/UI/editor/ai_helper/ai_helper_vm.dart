@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_error.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_service.dart';
@@ -11,21 +13,55 @@ import '../../../core/services/ai/ai_response.dart';
 import '../../../core/services/event_service/app_error.dart';
 import '../../settings/options/ai_section/ai_setting_vm.dart';
 
-class AIHelperChatMessage {
+class AIUserChatMessage {
+  final String text;
+
+  AIUserChatMessage({this.text = ''});
+}
+
+class AIBotChatMessage {
   final String text;
   final bool isUser;
   final bool isDone;
+  final bool isThinking;
+  final bool shouldShowThink;
+  final StreamController<String>? chunkStream;
+  final StreamController<String>? thinkStream;
 
-  AIHelperChatMessage({
+  AIBotChatMessage({
     this.text = '',
     this.isUser = false,
     this.isDone = false,
+    this.isThinking = false,
+    this.shouldShowThink = false,
+    this.chunkStream,
+    this.thinkStream,
   });
 }
 
+class AIMessage {
+  final String id;
+  final AIUserChatMessage userMessage;
+  final AIBotChatMessage? response;
+
+  AIMessage({required this.id, required this.userMessage, this.response});
+
+  AIMessage copyWithResponse({required AIBotChatMessage botResponse}) {
+    return AIMessage(id: id, userMessage: userMessage, response: botResponse);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return id == (other as AIMessage).id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
 abstract class AIHelperVMInterface {
-  ValueNotifier<List<AIHelperChatMessage>> get onMessagesUpdate;
-  ValueNotifier<bool> get isLoading;
+  ValueNotifier<Set<AIMessage>> get onMessagesUpdate;
+  ValueNotifier<AIState> get aiState;
   ValueNotifier<bool> get readFromEditor;
 
   Future<void> generate({required String text});
@@ -38,18 +74,18 @@ class AIHelperVM implements AIHelperVMInterface {
   late final AiProviderServiceInterface _aiProviderService =
       AIProviderService.instance;
 
-  final List<AIHelperChatMessage> _chatMessages = [];
+  final Set<AIMessage> _chatMessages = {};
 
   final List<AIResponse> _aiResponses = [];
 
   @override
-  ValueNotifier<List<AIHelperChatMessage>> onMessagesUpdate = ValueNotifier([]);
+  ValueNotifier<Set<AIMessage>> onMessagesUpdate = ValueNotifier({});
 
   @override
   final ValueNotifier<bool> readFromEditor = ValueNotifier(false);
 
   @override
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<AIState> aiState = ValueNotifier(AIState.idle);
 
   AIHelperVM(this.monacoWebBridgeService) {
     _setUpAIProvider();
@@ -88,7 +124,9 @@ class AIHelperVM implements AIHelperVMInterface {
   Future<void> generate({required String text}) async {
     if (text.isEmpty) return Future.value();
 
-    isLoading.value = true;
+    if (aiState.value != AIState.idle) return;
+
+    aiState.value = AIState.loading;
 
     EventService.emit(type: EventType.aiStateChanged, data: AIState.thinking);
 
@@ -99,41 +137,99 @@ class AIHelperVM implements AIHelperVMInterface {
         final code = await monacoWebBridgeService.getValue();
         userText += '\n$code';
       }
-
-      _chatMessages.add(AIHelperChatMessage(text: userText, isUser: true));
-      onMessagesUpdate.value = _chatMessages.toList();
-
-      // _chatMessages.add(
-      //   AIHelperChatMessage(text: withCodeResponse, isUser: false),
-      // );
-      // onMessagesUpdate.value = _chatMessages.toList();
-      //
-      // return;
-
       final requestId = Uuid().v4();
 
+      AIMessage message = AIMessage(
+        id: requestId,
+        userMessage: AIUserChatMessage(text: userText),
+      );
+
+      _chatMessages.add(message);
+      onMessagesUpdate.value = _chatMessages.toSet();
+
+      String wholeResultText = '';
+      String wholeThinkText = '';
+
+      aiState.value = AIState.thinking;
+
       _aiProviderService.provider
-          .generateContent(
-            text: userText,
-            // mock: true,
-          )
+          .generateContent(text: userText)
           .listen((aiResponse) {
             if (aiResponse != null) {
               _aiResponses.add(aiResponse);
+              wholeResultText += aiResponse.responseText;
+              wholeThinkText += aiResponse.thinkingText;
 
-              final result = aiResponse.responseText;
-
-              if (result != null) {
-                _chatMessages.add(
-                  AIHelperChatMessage(text: result, isUser: false),
+              if (message.response == null) {
+                message = message.copyWithResponse(
+                  botResponse: AIBotChatMessage(
+                    text: wholeResultText,
+                    isUser: false,
+                    isThinking: aiResponse.isThinking,
+                    isDone: aiResponse.isDone,
+                    shouldShowThink: aiResponse.shouldShowThink,
+                    chunkStream: StreamController(),
+                    thinkStream: StreamController(),
+                  ),
                 );
-                onMessagesUpdate.value = _chatMessages.toList();
+
+                _chatMessages.remove(message);
+                _chatMessages.add(message);
+
+                onMessagesUpdate.value = _chatMessages.toSet();
+              }
+
+              if (message.response?.isThinking != aiResponse.isThinking) {
+                message = message.copyWithResponse(
+                  botResponse: AIBotChatMessage(
+                    text: wholeResultText,
+                    isUser: false,
+                    isThinking: aiResponse.isThinking,
+                    isDone: aiResponse.isDone,
+                    shouldShowThink: aiResponse.shouldShowThink,
+                    chunkStream: StreamController(),
+                    thinkStream: StreamController(),
+                  ),
+                );
+
+                _chatMessages.remove(message);
+                _chatMessages.add(message);
+
+                onMessagesUpdate.value = _chatMessages.toSet();
+              }
+
+              if (!aiResponse.isDone) {
+                if (aiResponse.isThinking) {
+                  message.response?.thinkStream?.sink.add(wholeThinkText);
+                } else {
+                  EventService.emit(
+                    type: EventType.aiStateChanged,
+                    data: AIState.generating,
+                  );
+                  aiState.value = AIState.generating;
+
+                  message.response?.chunkStream?.sink.add(wholeResultText);
+                }
+              } else {
+                message = message.copyWithResponse(
+                  botResponse: AIBotChatMessage(
+                    text: wholeResultText,
+                    isUser: false,
+                    isDone: true,
+                    shouldShowThink: aiResponse.shouldShowThink,
+                  ),
+                );
+
+                _chatMessages.remove(message);
+                _chatMessages.add(message);
+
+                onMessagesUpdate.value = _chatMessages.toSet();
 
                 EventService.emit(
                   type: EventType.aiStateChanged,
                   data: AIState.done,
                 );
-                isLoading.value = false;
+                aiState.value = AIState.idle;
               }
             } else {
               EventService.error(msg: 'No response');
@@ -142,15 +238,15 @@ class AIHelperVM implements AIHelperVMInterface {
                 type: EventType.aiStateChanged,
                 data: AIState.done,
               );
-              isLoading.value = false;
+              aiState.value = AIState.idle;
             }
           })
           .onError((error, stack) {
             EventService.emit(
               type: EventType.aiStateChanged,
-              data: AIState.done,
+              data: AIState.idle,
             );
-            isLoading.value = false;
+            aiState.value = AIState.idle;
 
             if (error is AIProviderError) {
               EventService.error(
@@ -159,9 +255,11 @@ class AIHelperVM implements AIHelperVMInterface {
               );
             } else {
               _chatMessages.add(
-                AIHelperChatMessage(text: 'Error: $error', isUser: false),
+                message.copyWithResponse(
+                  botResponse: AIBotChatMessage(text: 'Error: $error'),
+                ),
               );
-              onMessagesUpdate.value = _chatMessages.toList();
+              onMessagesUpdate.value = _chatMessages.toSet();
             }
           });
     } on AIProviderError catch (e, s) {
@@ -170,14 +268,17 @@ class AIHelperVM implements AIHelperVMInterface {
         error: AppError(object: e, stackTrace: s),
       );
 
-      EventService.emit(type: EventType.aiStateChanged, data: AIState.done);
-      isLoading.value = false;
-    } catch (e) {
-      _chatMessages.add(AIHelperChatMessage(text: 'Error: $e', isUser: false));
-      onMessagesUpdate.value = _chatMessages.toList();
+      EventService.emit(type: EventType.aiStateChanged, data: AIState.idle);
+      aiState.value = AIState.idle;
+    } catch (e, stackTrace) {
+      EventService.error(
+        error: AppError(object: e, stackTrace: stackTrace),
+        msg: 'Error: $e',
+      );
+      onMessagesUpdate.value = _chatMessages.toSet();
 
-      EventService.emit(type: EventType.aiStateChanged, data: AIState.done);
-      isLoading.value = false;
+      EventService.emit(type: EventType.aiStateChanged, data: AIState.idle);
+      aiState.value = AIState.idle;
     }
   }
 

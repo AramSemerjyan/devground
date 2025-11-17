@@ -1,1 +1,1 @@
-enum AIState { idle, thinking, done, error }
+enum AIState { idle, loading, thinking, generating, done, error }

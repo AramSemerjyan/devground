@@ -48,12 +48,16 @@ class AILocalProvider implements AIProviderInterface {
     await for (final token in tokenStream) {
       if (token == "__done__") {
         // Emit any leftover thinking content
-        if (thinkBuffer.isNotEmpty) {
-          yield AILocalResponse(think: thinkBuffer.toString(), result: null);
-        }
+        // if (thinkBuffer.isNotEmpty) {
+        //   yield AILocalResponse(
+        //     think: thinkBuffer.toString(),
+        //     result: null,
+        //     isDone: false,
+        //   );
+        // }
 
         // Emit final result
-        yield AILocalResponse(think: null, result: resultBuffer.toString());
+        yield AILocalResponse(isDone: true);
         break;
       }
 
@@ -70,9 +74,11 @@ class AILocalProvider implements AIProviderInterface {
         if (inThinkBlock) {
           // accumulate thinking tokens
           thinkBuffer.write(token);
+          yield AILocalResponse(think: token, isThinking: true);
         } else {
           // regular result tokens
           resultBuffer.write(token);
+          yield AILocalResponse(think: null, result: token);
         }
       }
     }

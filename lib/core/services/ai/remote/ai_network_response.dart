@@ -1,6 +1,8 @@
 import '../ai_response.dart';
 
 class AIRemoteResponse implements AIResponse {
+  @override
+  final bool isDone = true;
   final List<Candidate> candidates;
   final UsageMetadata usageMetadata;
   final String modelVersion;
@@ -62,6 +64,15 @@ class AIRemoteResponse implements AIResponse {
       responseId: "dummy-response-id",
     );
   }
+
+  @override
+  bool get isThinking => false;
+
+  @override
+  String get thinkingText => '';
+
+  @override
+  bool get shouldShowThink => false;
 }
 
 class Candidate {
