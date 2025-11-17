@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/UI/common/Animations%20/animated_buttons_appear.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
@@ -43,21 +44,35 @@ class _EditorViewState extends State<EditorView>
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
   final ValueNotifier<bool> _showAI = ValueNotifier(false);
 
-  late final StreamSubscription _subscription;
+  late final List<StreamSubscription> _subscriptions = [];
 
   @override
   void initState() {
     super.initState();
 
-    _subscription = _vm.compileResultStream.listen((_) {
-      _inProgress.value = false;
-    });
+    _subscriptions.add(
+      _vm.compileResultStream.listen((_) {
+        _inProgress.value = false;
+      }),
+    );
+
+    PagesService().onPagesUpdate.addListener(_onPageUpdate);
   }
 
   @override
   void dispose() {
-    _subscription.cancel();
+    for (final s in _subscriptions) {
+      s.cancel();
+    }
+    _subscriptions.clear();
+
+    PagesService().onPagesUpdate.removeListener(_onPageUpdate);
+
     super.dispose();
+  }
+
+  void _onPageUpdate() {
+    _vm.dropEditorFocus();
   }
 
   @override
@@ -71,15 +86,14 @@ class _EditorViewState extends State<EditorView>
   }
 
   Widget _buildButtons() {
-    return Row(
-      spacing: 8,
-      children: [
+    return AnimatedButtonsRow(
+      buttons: [
         FloatingProgressButton(
           inProgress: _vm.runProgress,
           heroTag: 'runBtn',
           tooltip: 'Run',
           mini: true,
-          icon: const Icon(Icons.play_arrow),
+          icon: const Icon(Icons.play_arrow_rounded),
           onPressed: () {
             if (_inProgress.value) return;
             _inProgress.value = true;

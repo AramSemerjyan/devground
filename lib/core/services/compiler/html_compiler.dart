@@ -10,14 +10,14 @@ class HTMLCompiler implements CompilerInterface {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-    try {
-      // Simple formatting: add line breaks and indentation for nested tags
-      // (You can use `html` package or prettier for more advanced formatting)
-      final formatted = code.replaceAll(RegExp(r'>\s*<'), '>\n<');
-      return CompilerResult(data: formatted);
-    } catch (e) {
-      return CompilerResult(hasError: true, error: e);
-    }
+    // try {
+    //   // Simple formatting: add line breaks and indentation for nested tags
+    //   // (You can use `html` package or prettier for more advanced formatting)
+    //   final formatted = code.replaceAll(RegExp(r'>\s*<'), '>\n<');
+    return CompilerResult(data: code);
+    // } catch (e) {
+    //   return CompilerResult(hasError: true, error: e);
+    // }
   }
 
   @override

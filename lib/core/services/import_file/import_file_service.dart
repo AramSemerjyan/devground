@@ -35,9 +35,9 @@ class ImportFileService implements ImportFileServiceInterface {
         final content = await file.readAsString();
 
         final importedFile = AppFile(
-          name: file.uri.pathSegments.last,
           language: matchedLanguage,
           code: content,
+          path: file.uri,
         );
 
         EventService.success(
