@@ -31,7 +31,7 @@ class _PathSelectorState extends State<PathSelector> {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 12,
       children: [
-        Text(
+        SelectableText(
           widget.path ?? '',
           style: const TextStyle(color: Colors.white38, fontSize: 13),
         ),

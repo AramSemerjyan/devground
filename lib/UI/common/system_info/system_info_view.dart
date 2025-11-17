@@ -65,7 +65,7 @@ class _SystemInfoViewState extends State<SystemInfoView> {
               message: 'RAM',
               child: _buildItem(
                 Icons.memory,
-                '${value.usedRam}Gb / ${value.freeRam}Gb',
+                'Used: ${value.usedRam}Gb / Free: ${value.freeRam}Gb',
               ),
             ),
           ],
