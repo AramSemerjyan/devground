@@ -28,6 +28,43 @@ class EditorPage extends StatefulWidget {
 
 class _EditorPageState extends State<EditorPage> {
   late final EditorPageVMInterface _vm = EditorPageVM(widget.pagesService);
+  final PageController _pageController = PageController();
+  final _editorCache = <String, EditorView>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _vm.onPagesUpdate.addListener(_handlePagesUpdate);
+  }
+
+  void _handlePagesUpdate() {
+    final pages = _vm.onPagesUpdate.value.$1;
+    final selectedTab = _vm.onPagesUpdate.value.$2;
+
+    // Update cache
+    for (final page in pages) {
+      _editorCache.putIfAbsent(
+        page.id,
+        () => EditorView(
+          key: ValueKey(page.id),
+          saveFileService: widget.fileService,
+          pagesService: widget.pagesService,
+          file: page.file,
+        ),
+      );
+    }
+
+    // Clean cache
+    final existingIds = pages.map((p) => p.id).toSet();
+    _editorCache.removeWhere((key, _) => !existingIds.contains(key));
+
+    // Animate to selected page
+    if (selectedTab >= 0 && selectedTab < pages.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _pageController.jumpToPage(selectedTab);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +72,6 @@ class _EditorPageState extends State<EditorPage> {
       valueListenable: _vm.onPagesUpdate,
       builder: (_, update, __) {
         final pages = update.$1;
-        final selectedTab = update.$2;
 
         if (pages.isEmpty) {
           return WelcomePage(
@@ -48,40 +84,26 @@ class _EditorPageState extends State<EditorPage> {
         return Stack(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: pages.length > 1 ? 40 : 0),
-              child: IndexedStack(
-                index: selectedTab,
-                children: pages
-                    .map(
-                      (page) => EditorView(
-                        key: ValueKey(page.id),
-                        saveFileService: widget.fileService,
-                        pagesService: widget.pagesService,
-                        page: page,
-                      ),
-                    )
-                    .toList(),
+              padding: EdgeInsets.only(top: pages.isNotEmpty ? 40 : 0),
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(), // Disable swipe
+                children: pages.map((page) => _editorCache[page.id]!).toList(),
               ),
             ),
-
-            if (pages.length > 1)
+            if (pages.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: EditorTabView(
                   pages: pages,
-                  selectedTab: selectedTab,
+                  selectedTab: _vm.onPagesUpdate.value.$2,
                   onSelect: (i) {
                     _vm.onSelect(i);
+                    _pageController.jumpToPage(i);
                   },
-                  onClose: (i) {
-                    _vm.onClose(i);
-                  },
-                  onCloseAll: () {
-                    _vm.onCloseAll();
-                  },
-                  onCloseOthers: (i) {
-                    _vm.onCloseOthers(i);
-                  },
+                  onClose: (i) => _vm.onClose(i),
+                  onCloseAll: () => _vm.onCloseAll(),
+                  onCloseOthers: (i) => _vm.onCloseOthers(i),
                 ),
               ),
           ],

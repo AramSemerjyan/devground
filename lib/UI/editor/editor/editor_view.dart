@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
-import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
+import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -14,7 +14,7 @@ import '../../common/floating_progress_button.dart';
 import '../result_page/result_console_view.dart';
 
 class EditorView extends StatefulWidget {
-  final AppPage page;
+  final AppFile file;
   final FileServiceInterface saveFileService;
   final PagesServiceInterface pagesService;
 
@@ -22,16 +22,17 @@ class EditorView extends StatefulWidget {
     super.key,
     required this.pagesService,
     required this.saveFileService,
-    required this.page,
+    required this.file,
   });
 
   @override
   State<EditorView> createState() => _EditorViewState();
 }
 
-class _EditorViewState extends State<EditorView> {
+class _EditorViewState extends State<EditorView>
+    with AutomaticKeepAliveClientMixin {
   late final _vm = EditorViewVM(
-    widget.page,
+    widget.file,
     widget.saveFileService,
     widget.pagesService,
   );
@@ -303,6 +304,7 @@ class _EditorViewState extends State<EditorView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(
       children: [
         Expanded(
@@ -327,4 +329,7 @@ class _EditorViewState extends State<EditorView> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

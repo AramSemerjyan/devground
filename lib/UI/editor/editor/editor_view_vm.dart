@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -36,7 +35,7 @@ abstract class EditorViewVMInterface {
 }
 
 class EditorViewVM implements EditorViewVMInterface {
-  final AppPage _page;
+  final AppFile _file;
   final FileServiceInterface _saveFileService;
   late final PagesServiceInterface _pagesService;
 
@@ -44,13 +43,13 @@ class EditorViewVM implements EditorViewVMInterface {
   late final CompilerInterface _compiler;
 
   @override
-  AppFile get file => _page.file;
+  AppFile get file => _file;
 
   @override
   MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
 
   @override
-  SupportedLanguage get language => _page.file.language;
+  SupportedLanguage get language => _file.language;
 
   @override
   get controller => _monacoWebBridgeService.controller;
@@ -71,8 +70,8 @@ class EditorViewVM implements EditorViewVMInterface {
   final _outputController = StreamController<String>.broadcast();
   final _output = StringBuffer();
 
-  EditorViewVM(this._page, this._saveFileService, this._pagesService) {
-    _compiler = Compiler(language: _page.file.language);
+  EditorViewVM(this._file, this._saveFileService, this._pagesService) {
+    _compiler = Compiler(language: file.language);
     _monacoWebBridgeService = MonacoWebBridgeService();
 
     _monacoWebBridgeService.onNavigationRequest = (request) {
@@ -167,8 +166,8 @@ class EditorViewVM implements EditorViewVMInterface {
     settingUp.value = true;
     try {
       await _monacoWebBridgeService.setUp();
-      await _monacoWebBridgeService.setLanguage(language: _page.file.language);
-      await _monacoWebBridgeService.setCode(code: _page.file.code);
+      await _monacoWebBridgeService.setLanguage(language: _file.language);
+      await _monacoWebBridgeService.setCode(code: _file.code);
     } catch (e, s) {
       EventService.error(
         error: AppError(object: e, stackTrace: s),
@@ -185,7 +184,7 @@ class EditorViewVM implements EditorViewVMInterface {
 
   @override
   Future<void> onAIBoosModeChange({required bool state}) async {
-    final updatedPage = _page.copy(isAIBoosted: state);
-    _pagesService.updatePage(page: updatedPage);
+    final currentPage = await _pagesService.getSelectedPage();
+    _pagesService.updatePage(page: currentPage.copy(isAIBoosted: state));
   }
 }

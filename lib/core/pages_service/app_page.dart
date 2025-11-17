@@ -32,4 +32,17 @@ class AppPage {
       isAIBoosted: isAIBoosted ?? this.isAIBoosted,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    return id == (other as AppPage).id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() {
+    return 'id: $id\nfile:${file.name}\nindex:$index\nisAIBoosted: $isAIBoosted';
+  }
 }
