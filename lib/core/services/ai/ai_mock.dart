@@ -1,3 +1,5 @@
+import 'package:dartpad_lite/core/services/ai/ai_response.dart';
+
 final withCodeResponse = """
   ```swift
 import Foundation
@@ -165,3 +167,8 @@ The final `result` is 14.  The backward iteration and the `prevValue` comparison
 | Single Arm Kettlebell Rows | 4 | 8-10 per arm | 60 seconds |
 | Kettlebell Shoulder Press | 4 | 8-10 | 60 seconds |
   """;
+
+class AIMockResponse implements AIResponse {
+  @override
+  String get responseText => withCodeResponse;
+}

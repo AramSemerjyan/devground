@@ -28,6 +28,8 @@
 		33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F42044A3C60003C045 /* MainMenu.xib */; };
 		33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC11122044BFA00003C045 /* MainFlutterWindow.swift */; };
+		AED6F06E2ECB4D5B002E73D3 /* SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED6EFC12EC9BDF6002E73D3 /* SystemInfo.swift */; };
+		AED6F0A02ECB4EF2002E73D3 /* LocalAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED6F09F2ECB4EEF002E73D3 /* LocalAI.swift */; };
 		D6F842165631097EE18EACDC /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB3F3601D19666978D028DDB /* Pods_RunnerTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -85,11 +87,48 @@
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		A001C873E28546715D901E3C /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		AED6EFC12EC9BDF6002E73D3 /* SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfo.swift; sourceTree = "<group>"; };
+		AED6F09F2ECB4EEF002E73D3 /* LocalAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAI.swift; sourceTree = "<group>"; };
 		B02661641A00679653B92636 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		C04820938AA164D6F2AAF539 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E72AF8FE60D5B483BA49BF88 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		EB3F3601D19666978D028DDB /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		AED6F09E2ECB4EC4002E73D3 /* Exceptions for "macos-arm64_x86_64" folder in "Bundle Framework" build phase */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 33CC110E2044A8840003C045 /* Bundle Framework */;
+			membershipExceptions = (
+				llama.framework,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		AED6F0732ECB4EBC002E73D3 /* macos-arm64_x86_64 */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AED6F09E2ECB4EC4002E73D3 /* Exceptions for "macos-arm64_x86_64" folder in "Bundle Framework" build phase */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "macos-arm64_x86_64";
+			sourceTree = "<group>";
+		};
+		AED6F0872ECB4EBC002E73D3 /* SwiftLlama */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = SwiftLlama;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		331C80D2294CF70F00263BE5 /* Frameworks */ = {
@@ -176,6 +215,7 @@
 		33FAB671232836740065AC1E /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				AED6F06F2ECB4EAC002E73D3 /* LocalAI */,
 				AED6EFC02EC9BDEE002E73D3 /* Plugins */,
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
@@ -203,9 +243,19 @@
 		AED6EFC02EC9BDEE002E73D3 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
+				AED6F09F2ECB4EEF002E73D3 /* LocalAI.swift */,
 				AED6EFC12EC9BDF6002E73D3 /* SystemInfo.swift */,
 			);
 			path = Plugins;
+			sourceTree = "<group>";
+		};
+		AED6F06F2ECB4EAC002E73D3 /* LocalAI */ = {
+			isa = PBXGroup;
+			children = (
+				AED6F0732ECB4EBC002E73D3 /* macos-arm64_x86_64 */,
+				AED6F0872ECB4EBC002E73D3 /* SwiftLlama */,
+			);
+			path = LocalAI;
 			sourceTree = "<group>";
 		};
 		D73912EC22F37F3D000D13A0 /* Frameworks */ = {
@@ -256,6 +306,10 @@
 			dependencies = (
 				33CC11202044C79F0003C045 /* PBXTargetDependency */,
 			);
+			fileSystemSynchronizedGroups = (
+				AED6F0732ECB4EBC002E73D3 /* macos-arm64_x86_64 */,
+				AED6F0872ECB4EBC002E73D3 /* SwiftLlama */,
+			);
 			name = Runner;
 			productName = Runner;
 			productReference = 33CC10ED2044A3C60003C045 /* dartpad_lite.app */;
@@ -293,7 +347,6 @@
 				};
 			};
 			buildConfigurationList = 33CC10E82044A3C60003C045 /* Build configuration list for PBXProject "Runner" */;
-			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -301,6 +354,7 @@
 				Base,
 			);
 			mainGroup = 33CC10E42044A3C60003C045;
+			preferredProjectObjectVersion = 50;
 			productRefGroup = 33CC10EE2044A3C60003C045 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -446,9 +500,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AED6F06E2ECB4D5B002E73D3 /* SystemInfo.swift in Sources */,
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
+				AED6F0A02ECB4EF2002E73D3 /* LocalAI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -598,6 +654,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Runner/macos-arm64_x86_64",
+					"$(PROJECT_DIR)/Runner/LocalAI/macos-arm64_x86_64",
 				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Dev Playground";
@@ -605,6 +662,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
@@ -747,6 +805,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Runner/macos-arm64_x86_64",
+					"$(PROJECT_DIR)/Runner/LocalAI/macos-arm64_x86_64",
 				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Dev Playground";
@@ -754,6 +813,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -784,6 +844,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Runner/macos-arm64_x86_64",
+					"$(PROJECT_DIR)/Runner/LocalAI/macos-arm64_x86_64",
 				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Dev Playground";
@@ -791,6 +852,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};

@@ -1,6 +1,6 @@
-import 'package:dartpad_lite/core/services/ai/ai_local_provider.dart';
-import 'package:dartpad_lite/core/services/ai/ai_network_provider.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider.dart';
+import 'package:dartpad_lite/core/services/ai/local/ai_local_provider.dart';
+import 'package:dartpad_lite/core/services/ai/remote/ai_network_provider.dart';
 
 abstract class AiProviderServiceInterface {
   AIProviderInterface get provider;

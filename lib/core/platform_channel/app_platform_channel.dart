@@ -1,6 +1,11 @@
 import 'package:flutter/services.dart';
 
-class SystemInfoChannel {
+class PlatformLlamaChannel {
+  static const method = MethodChannel('llama.method');
+  static const stream = EventChannel('llama.stream');
+}
+
+class PlatformSystemInfoChannel {
   static const _channel = MethodChannel('system_monitor');
 
   static Future<Map<Object?, Object?>?> get cpuUsage async =>
