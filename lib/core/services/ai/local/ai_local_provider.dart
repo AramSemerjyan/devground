@@ -47,15 +47,6 @@ class AILocalProvider implements AIProviderInterface {
 
     await for (final token in tokenStream) {
       if (token == "__done__") {
-        // Emit any leftover thinking content
-        // if (thinkBuffer.isNotEmpty) {
-        //   yield AILocalResponse(
-        //     think: thinkBuffer.toString(),
-        //     result: null,
-        //     isDone: false,
-        //   );
-        // }
-
         // Emit final result
         yield AILocalResponse(isDone: true);
         break;

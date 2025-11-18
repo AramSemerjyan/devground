@@ -94,7 +94,8 @@ class _AiChatBubbleState extends State<AiChatBubble> {
   }
 
   Widget _buildThinkFinal() {
-    final full = widget.message.text; // you must store final think text
+    final full = widget.message.fullThink;
+    if (full == null) return SizedBox();
 
     if (!_isThinkExpanded) {
       return _buildThinkCollapsed();
@@ -154,7 +155,7 @@ class _AiChatBubbleState extends State<AiChatBubble> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: GptMarkdown(
-        widget.message.text,
+        widget.message.fullResponse,
         style: const TextStyle(color: AppColor.mainGreyLighter),
       ),
     );

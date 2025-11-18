@@ -20,7 +20,8 @@ class AIUserChatMessage {
 }
 
 class AIBotChatMessage {
-  final String text;
+  final String fullResponse;
+  final String? fullThink;
   final bool isUser;
   final bool isDone;
   final bool isThinking;
@@ -29,7 +30,8 @@ class AIBotChatMessage {
   final StreamController<String>? thinkStream;
 
   AIBotChatMessage({
-    this.text = '',
+    this.fullResponse = '',
+    this.fullThink,
     this.isUser = false,
     this.isDone = false,
     this.isThinking = false,
@@ -163,7 +165,7 @@ class AIHelperVM implements AIHelperVMInterface {
               if (message.response == null) {
                 message = message.copyWithResponse(
                   botResponse: AIBotChatMessage(
-                    text: wholeResultText,
+                    fullResponse: wholeResultText,
                     isUser: false,
                     isThinking: aiResponse.isThinking,
                     isDone: aiResponse.isDone,
@@ -182,7 +184,7 @@ class AIHelperVM implements AIHelperVMInterface {
               if (message.response?.isThinking != aiResponse.isThinking) {
                 message = message.copyWithResponse(
                   botResponse: AIBotChatMessage(
-                    text: wholeResultText,
+                    fullResponse: wholeResultText,
                     isUser: false,
                     isThinking: aiResponse.isThinking,
                     isDone: aiResponse.isDone,
@@ -213,7 +215,8 @@ class AIHelperVM implements AIHelperVMInterface {
               } else {
                 message = message.copyWithResponse(
                   botResponse: AIBotChatMessage(
-                    text: wholeResultText,
+                    fullResponse: wholeResultText,
+                    fullThink: wholeThinkText,
                     isUser: false,
                     isDone: true,
                     shouldShowThink: aiResponse.shouldShowThink,
@@ -256,7 +259,7 @@ class AIHelperVM implements AIHelperVMInterface {
             } else {
               _chatMessages.add(
                 message.copyWithResponse(
-                  botResponse: AIBotChatMessage(text: 'Error: $error'),
+                  botResponse: AIBotChatMessage(fullResponse: 'Error: $error'),
                 ),
               );
               onMessagesUpdate.value = _chatMessages.toSet();
