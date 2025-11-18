@@ -1,30 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../storage/supported_language.dart';
-import '../event_service/event_service.dart';
+import '../../../../../core/storage/supported_language.dart';
 
-abstract class MonacoWebBridgeServiceInterface {
-  WebViewController get controller;
-
-  Future<void> setUp();
-  Future<void> formatCode();
-  Future<void> runCode();
-  Future<String> getValue();
-  Future<void> setLanguage({required SupportedLanguage language});
-  Future<void> setCode({required String code});
-  Future<void> reload();
-  Future<void> dropFocus();
-  Future<void> debug();
-
-  NavigationDecision Function(NavigationRequest)? onNavigationRequest;
-}
-
-class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
-  @override
+class LocalMonacoEditorController implements LanguageEditorControllerInterface {
   late final WebViewController controller;
 
   @override
@@ -77,24 +60,9 @@ class MonacoWebBridgeService implements MonacoWebBridgeServiceInterface {
 
     await reload();
     await completer.future;
-
-    EventService.instance.stream
-        .where((e) => e.type == EventType.monacoDropFocus)
-        .listen((event) {
-          dropFocus();
-        });
   }
 
-  Future<void> handleEditorMessage(Map<String, dynamic> msg) async {
-    final type = msg['type'] as String?;
-    if (type == 'run') {
-      final code = msg['code'] as String? ?? '';
-    } else if (type == 'format') {
-      final code = msg['code'] as String? ?? '';
-    } else {
-      sendStatus('Unknown message type: $type');
-    }
-  }
+  Future<void> handleEditorMessage(Map<String, dynamic> msg) async {}
 
   Future<void> sendStatus(String s) async {
     final payload = jsonEncode({'type': 'status', 'payload': s});

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor.dart';
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -8,15 +10,13 @@ import '../../../core/services/compiler/compiler_interface.dart';
 import '../../../core/services/event_service/app_error.dart';
 import '../../../core/services/event_service/event_service.dart';
 import '../../../core/services/import_file/imported_file.dart';
-import '../../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../../core/services/save_file/file_service.dart';
 import '../../../core/storage/supported_language.dart';
 
 abstract class EditorViewVMInterface {
-  MonacoWebBridgeServiceInterface get bridge;
   AppFile get file;
 
-  WebViewController get controller;
+  LanguageEditorControllerInterface get controller;
 
   SupportedLanguage get language;
 
@@ -39,20 +39,14 @@ class EditorViewVM implements EditorViewVMInterface {
   final FileServiceInterface _saveFileService;
   late final PagesServiceInterface _pagesService;
 
-  late final MonacoWebBridgeServiceInterface _monacoWebBridgeService;
+  late final LanguageEditorControllerInterface _languageEditorController;
   late final CompilerInterface _compiler;
 
   @override
   AppFile get file => _file;
 
   @override
-  MonacoWebBridgeServiceInterface get bridge => _monacoWebBridgeService;
-
-  @override
   SupportedLanguage get language => _file.language;
-
-  @override
-  get controller => _monacoWebBridgeService.controller;
 
   @override
   Stream<String> get compileResultStream => _outputController.stream;
@@ -67,14 +61,19 @@ class EditorViewVM implements EditorViewVMInterface {
   @override
   ValueNotifier<bool> saveProgress = ValueNotifier(false);
 
+  @override
+  LanguageEditorControllerInterface get controller => _languageEditorController;
+
   final _outputController = StreamController<String>.broadcast();
   final _output = StringBuffer();
 
   EditorViewVM(this._file, this._saveFileService, this._pagesService) {
     _compiler = Compiler(language: file.language);
-    _monacoWebBridgeService = MonacoWebBridgeService();
+    _languageEditorController = LanguageEditorFactory.getController(
+      language: language,
+    );
 
-    _monacoWebBridgeService.onNavigationRequest = (request) {
+    _languageEditorController.onNavigationRequest = (request) {
       if (request.url.startsWith('data:text/html') ||
           request.url == 'about:blank') {
         return NavigationDecision.navigate;
@@ -95,7 +94,7 @@ class EditorViewVM implements EditorViewVMInterface {
     if (runProgress.value) return;
     runProgress.value = true;
 
-    final code = await _monacoWebBridgeService.getValue();
+    final code = await _languageEditorController.getValue();
 
     _output.clear();
     _outputController.sink.add('');
@@ -125,14 +124,14 @@ class EditorViewVM implements EditorViewVMInterface {
     try {
       if (formatProgress.value) return;
       formatProgress.value = true;
-      final code = await _monacoWebBridgeService.getValue();
+      final code = await _languageEditorController.getValue();
 
       final result = await _compiler.formatCode(code);
 
       if (result.hasError) {
         EventService.error(msg: 'Error');
       } else {
-        _monacoWebBridgeService.setCode(code: result.data);
+        _languageEditorController.setCode(code: result.data);
       }
     } catch (e, s) {
       EventService.error(
@@ -149,7 +148,7 @@ class EditorViewVM implements EditorViewVMInterface {
     if (saveProgress.value) return;
     saveProgress.value = true;
 
-    final code = await _monacoWebBridgeService.getValue();
+    final code = await _languageEditorController.getValue();
     await _saveFileService.saveMonacoCodeToFile(raw: code, fileName: name);
 
     saveProgress.value = false;
@@ -159,15 +158,15 @@ class EditorViewVM implements EditorViewVMInterface {
   Future<void> dropEditorFocus() {
     if (settingUp.value) return Future.value();
 
-    return _monacoWebBridgeService.dropFocus();
+    return _languageEditorController.dropFocus();
   }
 
   void _setUp() async {
     settingUp.value = true;
     try {
-      await _monacoWebBridgeService.setUp();
-      await _monacoWebBridgeService.setLanguage(language: _file.language);
-      await _monacoWebBridgeService.setCode(code: _file.code);
+      await _languageEditorController.setUp();
+      await _languageEditorController.setLanguage(language: _file.language);
+      await _languageEditorController.setCode(code: _file.code);
     } catch (e, s) {
       EventService.error(
         error: AppError(object: e, stackTrace: s),

@@ -12,12 +12,11 @@ enum EventType {
   languageChanged,
   sdkPathUpdated,
   importedFile,
-  monacoDropFocus,
+  dropEditorFocus,
   aiModeChanged,
   aiStateChanged,
 
-  onAppInactive,
-  onAppResume,
+  onAppStateChanged,
 }
 
 class Event {

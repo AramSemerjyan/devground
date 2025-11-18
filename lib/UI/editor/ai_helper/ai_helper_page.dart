@@ -2,7 +2,7 @@ import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/ai_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/user_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
-import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
 import 'package:dartpad_lite/core/services/save_file/file_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -11,12 +11,12 @@ import '../../command_palette/command_palette.dart';
 import 'ai_helper_vm.dart';
 
 class AiHelperPage extends StatefulWidget {
-  final MonacoWebBridgeServiceInterface monacoWebBridgeService;
+  final LanguageEditorControllerInterface editorController;
   final FileServiceInterface fileService;
 
   const AiHelperPage({
     super.key,
-    required this.monacoWebBridgeService,
+    required this.editorController,
     required this.fileService,
   });
 
@@ -26,7 +26,7 @@ class AiHelperPage extends StatefulWidget {
 
 class _AiHelperPageState extends State<AiHelperPage> {
   late final AIHelperVMInterface _vm = AIHelperVM(
-    widget.monacoWebBridgeService,
+    widget.editorController,
     widget.fileService,
   );
 
@@ -74,6 +74,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
                         if (msg.response != null)
                           AiChatBubble(
                             message: msg.response!,
+                            providerInfo: _vm.providerInfo,
                             onCodeReplace: (code) =>
                                 _vm.moveToEditor(code: code),
                             onFullResponseSave: (message) {

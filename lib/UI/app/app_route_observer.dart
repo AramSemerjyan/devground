@@ -3,16 +3,11 @@ import 'dart:async';
 import 'package:dartpad_lite/UI/app/app_pages.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
-
 class AppRouteObserver extends NavigatorObserver {
-  final MonacoWebBridgeServiceInterface monacoWebBridgeService;
   final List<Route<dynamic>> _routeStack = [];
   final StreamController<AppPages> _onRouteChange = StreamController();
 
   Stream<AppPages> get routeUpdated => _onRouteChange.stream;
-
-  AppRouteObserver({required this.monacoWebBridgeService});
 
   String? get currentRoute =>
       _routeStack.isNotEmpty ? _routeStack.last.settings.name : null;
@@ -32,7 +27,6 @@ class AppRouteObserver extends NavigatorObserver {
   @override
   void didPush(Route route, Route? previousRoute) async {
     _routeStack.add(route);
-    await monacoWebBridgeService.dropFocus();
     super.didPush(route, previousRoute);
   }
 

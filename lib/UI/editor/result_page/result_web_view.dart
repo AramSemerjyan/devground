@@ -45,7 +45,7 @@ class _ResultWebViewState extends State<ResultWebView> {
   Future<void> handleWebMessage(Map<String, dynamic> msg) async {
     final action = msg['action'] as String?;
     if (action == 'clicked') {
-      EventService.emit(type: EventType.monacoDropFocus);
+      EventService.emit(type: EventType.dropEditorFocus);
     }
   }
 

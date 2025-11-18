@@ -1,4 +1,5 @@
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_vm.dart';
+import 'package:dartpad_lite/core/services/ai/ai_provider_info.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../utils/app_colors.dart';
@@ -6,12 +7,14 @@ import '../response_parser/gpt_markdown.dart';
 
 class AiChatBubble extends StatefulWidget {
   final AIBotChatMessage message;
+  final AIProviderInfo? providerInfo;
   final Function(String)? onCodeReplace;
   final Function(AIBotChatMessage)? onFullResponseSave;
 
   const AiChatBubble({
     super.key,
     required this.message,
+    this.providerInfo,
     this.onCodeReplace,
     this.onFullResponseSave,
   });
@@ -164,7 +167,7 @@ class _AiChatBubbleState extends State<AiChatBubble> {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 25),
+            padding: const EdgeInsets.only(top: 40),
             child: GptMarkdown(
               widget.message.fullResponse,
               style: const TextStyle(color: AppColor.mainGreyLighter),
@@ -173,21 +176,35 @@ class _AiChatBubbleState extends State<AiChatBubble> {
               },
             ),
           ),
-          Row(
+          Column(
+            spacing: 3,
             children: [
-              Spacer(),
-              Tooltip(
-                message: 'Save response as file',
-                child: InkWell(
-                  onTap: () {
-                    widget.onFullResponseSave?.call(widget.message);
-                  },
-                  child: Icon(
-                    Icons.save_rounded,
-                    color: AppColor.mainGreyLighter,
+              Row(
+                children: [
+                  if (widget.providerInfo != null)
+                    Text(
+                      'Powered by: ${widget.providerInfo?.name ?? ''}',
+                      style: TextStyle(
+                        color: AppColor.mainGreyLighter.withValues(alpha: 0.5),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  Spacer(),
+                  Tooltip(
+                    message: 'Save response as file',
+                    child: InkWell(
+                      onTap: () {
+                        widget.onFullResponseSave?.call(widget.message);
+                      },
+                      child: Icon(
+                        Icons.save_rounded,
+                        color: AppColor.mainGreyLighter,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              Container(color: AppColor.mainGreyLighter, height: 1),
             ],
           ),
         ],

@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import '../../core/services/event_service/event_service.dart';
 import '../../core/services/import_file/import_file_service.dart';
 import '../../core/services/import_file/imported_file.dart';
-import '../../core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import '../../core/services/save_file/file_service.dart';
 import '../../core/storage/language_repo.dart';
 import '../../core/storage/supported_language.dart';
@@ -15,8 +14,6 @@ enum SDKState { inProgress, ready, notReady }
 class AppPageVM {
   late final LanguageRepo languageRepo = LanguageRepo();
   late final FileServiceInterface fileService = FileService(languageRepo);
-  final MonacoWebBridgeServiceInterface monacoWebBridgeService =
-      MonacoWebBridgeService();
   late final ImportFileServiceInterface importFileService = ImportFileService(
     languageRepo,
   );
@@ -42,9 +39,6 @@ class AppPageVM {
 
       // lspBridge = LspBridge(8081, language);
       // await lspBridge.start();
-
-      await monacoWebBridgeService.setUp();
-      monacoWebBridgeService.setLanguage(language: language);
     }
 
     inProgress.value = false;

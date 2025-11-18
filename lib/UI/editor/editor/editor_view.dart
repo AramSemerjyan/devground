@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:dartpad_lite/UI/common/Animations%20/animated_buttons_appear.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
-import 'package:dartpad_lite/UI/editor/ai_helper/ui/response_parser/gpt_markdown.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
-import 'package:dartpad_lite/core/storage/supported_language.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../core/services/event_service/event_service.dart';
 import '../../../core/services/save_file/file_service.dart';
 import '../../../utils/app_colors.dart';
 import '../../command_palette/command_palette.dart';
@@ -51,13 +50,7 @@ class _EditorViewState extends State<EditorView>
   @override
   void initState() {
     super.initState();
-
-    _subscriptions.add(
-      _vm.compileResultStream.listen((_) {
-        _inProgress.value = false;
-      }),
-    );
-
+    _setListeners();
     PagesService().onPagesUpdate.addListener(_onPageUpdate);
   }
 
@@ -73,6 +66,24 @@ class _EditorViewState extends State<EditorView>
     super.dispose();
   }
 
+  void _setListeners() {
+    _subscriptions.addAll([
+      EventService.instance.stream
+          .where((e) => e.type == EventType.dropEditorFocus)
+          .listen((event) {
+            _vm.dropEditorFocus();
+          }),
+      EventService.instance.stream
+          .where((e) => e.type == EventType.onAppStateChanged)
+          .listen((_) {
+            _vm.dropEditorFocus();
+          }),
+      _vm.compileResultStream.listen((_) {
+        _inProgress.value = false;
+      }),
+    ]);
+  }
+
   void _onPageUpdate() {
     _vm.dropEditorFocus();
   }
@@ -83,35 +94,11 @@ class _EditorViewState extends State<EditorView>
     _vm.dropEditorFocus();
   }
 
-  Widget _buildMonacoWebView() {
-    return WebViewWidget(controller: _vm.controller);
-  }
-
   Widget _buildLanguageEditorView() {
-    if (_vm.language.key == SupportedLanguageType.ai) {
-      return Container(
-        color: AppColor.mainGreyDark,
-        padding: EdgeInsets.all(16),
-        height: double.infinity,
-        width: double.infinity,
-        child: Container(
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: AppColor.mainGrey,
-          ),
-          child: SingleChildScrollView(
-            child: GptMarkdown(
-              _vm.file.code,
-              shouldShowCodeReplace: false,
-              style: TextStyle(color: AppColor.mainGreyLighter),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return _buildMonacoWebView();
+    return LanguageEditorFactory.buildLanguageEditor(
+      language: _vm.language,
+      controller: _vm.controller,
+    );
   }
 
   Widget _buildButtons() {
@@ -245,7 +232,7 @@ class _EditorViewState extends State<EditorView>
               width: double.infinity,
               color: AppColor.black,
               child: AiHelperPage(
-                monacoWebBridgeService: _vm.bridge,
+                editorController: _vm.controller,
                 fileService: widget.saveFileService,
               ),
             ),

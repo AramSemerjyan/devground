@@ -25,9 +25,7 @@ class AppMainPage extends StatefulWidget {
 
 class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
-  late final _observer = AppRouteObserver(
-    monacoWebBridgeService: _vm.monacoWebBridgeService,
-  );
+  late final _observer = AppRouteObserver();
   late final _vm = AppPageVM();
 
   @override
@@ -57,15 +55,11 @@ class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.inactive:
-        EventService.emit(type: EventType.onAppInactive);
-        break;
-      case AppLifecycleState.resumed:
-        EventService.emit(type: EventType.onAppResume);
-      default:
-        break;
-    }
+
+    EventService.emit(
+      type: EventType.onAppStateChanged,
+      data: AppLifecycleState,
+    );
   }
 
   Widget _buildMain() {

@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_error.dart';
+import 'package:dartpad_lite/core/services/ai/ai_provider_info.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_service.dart';
 import 'package:dartpad_lite/core/services/event_service/event_service.dart';
-import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
 import 'package:dartpad_lite/core/services/save_file/file_service.dart';
 import 'package:dartpad_lite/core/storage/ai_repo.dart';
 import 'package:flutter/cupertino.dart';
@@ -67,6 +68,8 @@ abstract class AIHelperVMInterface {
   ValueNotifier<AIState> get aiState;
   ValueNotifier<bool> get readFromEditor;
 
+  AIProviderInfo get providerInfo;
+
   Future<void> generate({required String text});
   void moveToEditor({required String code});
   void fullFileSave({required AIMessage message, String? name});
@@ -74,7 +77,7 @@ abstract class AIHelperVMInterface {
 
 class AIHelperVM implements AIHelperVMInterface {
   final AIRepoInterface aiRepoInterface = AIRepo();
-  final MonacoWebBridgeServiceInterface monacoWebBridgeService;
+  final LanguageEditorControllerInterface editorController;
   final FileServiceInterface _fileService;
   late final AiProviderServiceInterface _aiProviderService =
       AIProviderService.instance;
@@ -82,6 +85,9 @@ class AIHelperVM implements AIHelperVMInterface {
   final Set<AIMessage> _chatMessages = {};
 
   final List<AIResponse> _aiResponses = [];
+
+  @override
+  AIProviderInfo get providerInfo => _aiProviderService.provider.providerInfo;
 
   @override
   ValueNotifier<Set<AIMessage>> onMessagesUpdate = ValueNotifier({});
@@ -92,7 +98,7 @@ class AIHelperVM implements AIHelperVMInterface {
   @override
   ValueNotifier<AIState> aiState = ValueNotifier(AIState.idle);
 
-  AIHelperVM(this.monacoWebBridgeService, this._fileService) {
+  AIHelperVM(this.editorController, this._fileService) {
     _setUpAIProvider();
   }
 
@@ -139,7 +145,7 @@ class AIHelperVM implements AIHelperVMInterface {
       String userText = text;
 
       if (readFromEditor.value) {
-        final code = await monacoWebBridgeService.getValue();
+        final code = await editorController.getValue();
         userText += '\n$code';
       }
       final requestId = Uuid().v4();
@@ -290,7 +296,7 @@ class AIHelperVM implements AIHelperVMInterface {
 
   @override
   void moveToEditor({required String code}) {
-    monacoWebBridgeService.setCode(code: code);
+    editorController.setCode(code: code);
   }
 
   @override
