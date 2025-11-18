@@ -28,8 +28,8 @@ class EditorTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? AppColor.mainGreyDarker : AppColor.mainGreyDark,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(10),
-            topRight: Radius.circular(10),
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
           ),
         ),
         child: Row(
@@ -142,7 +142,7 @@ class EditorTabView extends StatelessWidget {
 
     return Container(
       color: AppColor.mainGrey,
-      height: 30,
+      height: 35,
       width: double.infinity,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,

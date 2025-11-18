@@ -93,7 +93,7 @@ class _EditorPageState extends State<EditorPage> {
             ),
             if (pages.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 10),
+                padding: const EdgeInsets.only(top: 5),
                 child: EditorTabView(
                   pages: pages,
                   selectedTab: _vm.onPagesUpdate.value.$2,

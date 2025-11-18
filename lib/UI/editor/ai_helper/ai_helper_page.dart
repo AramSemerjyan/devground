@@ -153,6 +153,8 @@ class _AiHelperPageState extends State<AiHelperPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     controller: _controller,
+                    minLines: 1,
+                    maxLines: 3,
                     style: TextStyle(color: AppColor.mainGreyLighter),
                     onSubmitted: (_) => _sendMessage(),
                     decoration: const InputDecoration(
