@@ -50,6 +50,9 @@ class _ResultViewState extends State<ResultView> {
         SupportedLanguageType.json => ResultWebView(
           outputStream: widget.outputStream,
         ),
+        SupportedLanguageType.xml => ResultWebView(
+          outputStream: widget.outputStream,
+        ),
         _ => _buildDefaultConsole(),
       },
       floatingActionButton: StreamBuilder(
