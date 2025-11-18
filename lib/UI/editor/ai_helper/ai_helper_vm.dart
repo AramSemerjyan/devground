@@ -5,6 +5,7 @@ import 'package:dartpad_lite/core/services/ai/ai_provider_error.dart';
 import 'package:dartpad_lite/core/services/ai/ai_provider_service.dart';
 import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
+import 'package:dartpad_lite/core/services/save_file/file_service.dart';
 import 'package:dartpad_lite/core/storage/ai_repo.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
@@ -68,11 +69,13 @@ abstract class AIHelperVMInterface {
 
   Future<void> generate({required String text});
   void moveToEditor({required String code});
+  void fullFileSave({required AIMessage message, String? name});
 }
 
 class AIHelperVM implements AIHelperVMInterface {
   final AIRepoInterface aiRepoInterface = AIRepo();
   final MonacoWebBridgeServiceInterface monacoWebBridgeService;
+  final FileServiceInterface _fileService;
   late final AiProviderServiceInterface _aiProviderService =
       AIProviderService.instance;
 
@@ -89,7 +92,7 @@ class AIHelperVM implements AIHelperVMInterface {
   @override
   ValueNotifier<AIState> aiState = ValueNotifier(AIState.idle);
 
-  AIHelperVM(this.monacoWebBridgeService) {
+  AIHelperVM(this.monacoWebBridgeService, this._fileService) {
     _setUpAIProvider();
   }
 
@@ -288,5 +291,14 @@ class AIHelperVM implements AIHelperVMInterface {
   @override
   void moveToEditor({required String code}) {
     monacoWebBridgeService.setCode(code: code);
+  }
+
+  @override
+  void fullFileSave({required AIMessage message, String? name}) async {
+    await _fileService.saveToFile(
+      raw: message.response?.fullResponse ?? '',
+      fileName: message.id,
+      extension: 'ai',
+    );
   }
 }

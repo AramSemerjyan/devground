@@ -6,8 +6,15 @@ import '../response_parser/gpt_markdown.dart';
 
 class AiChatBubble extends StatefulWidget {
   final AIBotChatMessage message;
+  final Function(String)? onCodeReplace;
+  final Function(AIBotChatMessage)? onFullResponseSave;
 
-  const AiChatBubble({super.key, required this.message});
+  const AiChatBubble({
+    super.key,
+    required this.message,
+    this.onCodeReplace,
+    this.onFullResponseSave,
+  });
 
   @override
   State<AiChatBubble> createState() => _AiChatBubbleState();
@@ -154,9 +161,30 @@ class _AiChatBubbleState extends State<AiChatBubble> {
         color: AppColor.mainGrey,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: GptMarkdown(
-        widget.message.fullResponse,
-        style: const TextStyle(color: AppColor.mainGreyLighter),
+      child: Stack(
+        children: [
+          GptMarkdown(
+            widget.message.fullResponse,
+            style: const TextStyle(color: AppColor.mainGreyLighter),
+            onCodeReplaceTap: (code) {
+              widget.onCodeReplace?.call(code);
+            },
+          ),
+          Row(
+            children: [
+              Spacer(),
+              Tooltip(
+                message: 'Save response as file',
+                child: InkWell(
+                  onTap: () {
+                    widget.onFullResponseSave?.call(widget.message);
+                  },
+                  child: Icon(Icons.save, color: AppColor.mainGreyLighter),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

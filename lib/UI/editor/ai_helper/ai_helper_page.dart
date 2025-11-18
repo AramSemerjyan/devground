@@ -3,15 +3,22 @@ import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/ai_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/user_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/core/services/monaco_bridge_service/monaco_bridge_service.dart';
+import 'package:dartpad_lite/core/services/save_file/file_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
+import '../../command_palette/command_palette.dart';
 import 'ai_helper_vm.dart';
 
 class AiHelperPage extends StatefulWidget {
   final MonacoWebBridgeServiceInterface monacoWebBridgeService;
+  final FileServiceInterface fileService;
 
-  const AiHelperPage({super.key, required this.monacoWebBridgeService});
+  const AiHelperPage({
+    super.key,
+    required this.monacoWebBridgeService,
+    required this.fileService,
+  });
 
   @override
   State<AiHelperPage> createState() => _AiHelperPageState();
@@ -20,6 +27,7 @@ class AiHelperPage extends StatefulWidget {
 class _AiHelperPageState extends State<AiHelperPage> {
   late final AIHelperVMInterface _vm = AIHelperVM(
     widget.monacoWebBridgeService,
+    widget.fileService,
   );
 
   final TextEditingController _controller = TextEditingController();
@@ -27,6 +35,12 @@ class _AiHelperPageState extends State<AiHelperPage> {
   void _sendMessage() async {
     _vm.generate(text: _controller.text.trim());
     _controller.clear();
+  }
+
+  void _fullResponseSave(AIMessage message) async {
+    final name = await CommandPalette.showRename(context);
+
+    _vm.fullFileSave(message: message, name: name);
   }
 
   @override
@@ -58,7 +72,14 @@ class _AiHelperPageState extends State<AiHelperPage> {
                       children: [
                         UseChatBubble(text: msg.userMessage.text),
                         if (msg.response != null)
-                          AiChatBubble(message: msg.response!),
+                          AiChatBubble(
+                            message: msg.response!,
+                            onCodeReplace: (code) =>
+                                _vm.moveToEditor(code: code),
+                            onFullResponseSave: (message) {
+                              _fullResponseSave(msg);
+                            },
+                          ),
                       ],
                     );
                   },

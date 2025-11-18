@@ -215,7 +215,10 @@ class _EditorViewState extends State<EditorView>
               height: value,
               width: double.infinity,
               color: AppColor.black,
-              child: AiHelperPage(monacoWebBridgeService: _vm.bridge),
+              child: AiHelperPage(
+                monacoWebBridgeService: _vm.bridge,
+                fileService: widget.saveFileService,
+              ),
             ),
             ValueListenableBuilder(
               valueListenable: _isDragging,

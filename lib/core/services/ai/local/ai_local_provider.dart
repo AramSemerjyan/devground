@@ -12,8 +12,6 @@ import '../ai_provider_info.dart';
 class AILocalProvider implements AIProviderInterface {
   final String path;
 
-  Stream<String>? _tokenStream;
-
   @override
   AIProviderInfo get providerInfo => AIProviderInfo(name: basename(path));
 

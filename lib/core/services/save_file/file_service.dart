@@ -10,6 +10,11 @@ import '../event_service/event_service.dart';
 abstract class FileServiceInterface {
   Future<List<File>> getHistoryFiles();
   Future<File?> saveMonacoCodeToFile({required String raw, String? fileName});
+  Future<void> saveToFile({
+    required String raw,
+    String? fileName,
+    String? extension,
+  });
   Future<bool> deleteFile({required File file});
   Future<void> revealInFinder({required File file});
 }
@@ -47,6 +52,34 @@ class FileService implements FileServiceInterface {
         error: AppError(object: e, stackTrace: s),
       );
       return null;
+    }
+  }
+
+  @override
+  Future<void> saveToFile({
+    required String raw,
+    String? fileName,
+    String? extension,
+  }) async {
+    final name = fileName ?? 'file';
+
+    final fullName = '$name.$extension';
+
+    try {
+      final appDir = await getApplicationSupportDirectory();
+
+      final historyDir = Directory('${appDir.path}/history');
+      if (!await historyDir.exists()) await historyDir.create();
+
+      final file = File('${historyDir.path}/$fullName');
+      await file.writeAsString(raw);
+
+      EventService.success(msg: 'Saved ${file.path}');
+    } catch (e, s) {
+      EventService.error(
+        msg: e.toString(),
+        error: AppError(object: e, stackTrace: s),
+      );
     }
   }
 
