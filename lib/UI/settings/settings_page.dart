@@ -22,6 +22,7 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: AppColor.mainGreyDark,
       appBar: AppBar(
         backgroundColor: AppColor.mainGrey,
+        leading: SizedBox(),
         title: const Text(
           "Settings",
           style: TextStyle(color: AppColor.mainGreyLighter),

@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/services.dart';
 class CodeField extends StatefulWidget {
   final String name;
   final String codes;
+  final bool shouldShowRepalceCode;
   final void Function(String code)? onCodeReplaceTap;
 
   const CodeField({
@@ -12,6 +14,7 @@ class CodeField extends StatefulWidget {
     required this.name,
     required this.codes,
     this.onCodeReplaceTap,
+    this.shouldShowRepalceCode = true,
   });
 
   @override
@@ -46,9 +49,10 @@ class _CodeFieldState extends State<CodeField> {
                 child: InkWell(
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: widget.codes));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Code copied to clipboard')),
-                    );
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text('Code copied to clipboard')),
+                    // );
+                    EventService.success(msg: 'Copied to clipboard');
                   },
                   child: const Icon(
                     Icons.copy,
@@ -57,19 +61,20 @@ class _CodeFieldState extends State<CodeField> {
                   ),
                 ),
               ),
-              Tooltip(
-                message: 'Replace editor code',
-                child: InkWell(
-                  onTap: () {
-                    widget.onCodeReplaceTap?.call(widget.codes);
-                  },
-                  child: const Icon(
-                    Icons.move_up_sharp,
-                    size: 16,
-                    color: Colors.white70,
+              if (widget.shouldShowRepalceCode)
+                Tooltip(
+                  message: 'Replace editor code',
+                  child: InkWell(
+                    onTap: () {
+                      widget.onCodeReplaceTap?.call(widget.codes);
+                    },
+                    child: const Icon(
+                      Icons.move_up_sharp,
+                      size: 16,
+                      color: Colors.white70,
+                    ),
                   ),
                 ),
-              ),
               const SizedBox(width: 10),
             ],
           ),

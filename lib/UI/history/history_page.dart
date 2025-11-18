@@ -67,7 +67,14 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: AppColor.mainGrey),
+      appBar: AppBar(
+        backgroundColor: AppColor.mainGrey,
+        leading: SizedBox(),
+        title: const Text(
+          "History",
+          style: TextStyle(color: AppColor.mainGreyLighter),
+        ),
+      ),
       backgroundColor: AppColor.mainGreyDark,
       body: Padding(
         padding: const EdgeInsets.all(16.0),

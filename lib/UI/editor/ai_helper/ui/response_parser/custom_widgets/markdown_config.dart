@@ -8,6 +8,7 @@ class GptMarkdownConfig {
   final TextAlign? textAlign;
   final TextScaler? textScaler;
   final void Function(String url, String title)? onLinkTap;
+  final bool shouldShowReplaceCode;
   final void Function(String code)? onCodeReplaceTap;
   final String Function(String tex)? latexWorkaround;
   final bool followLinkColor;
@@ -24,6 +25,7 @@ class GptMarkdownConfig {
     this.textAlign,
     this.textScaler,
     this.latexWorkaround,
+    this.shouldShowReplaceCode = true,
     this.followLinkColor = false,
     this.maxLines,
     this.overflow,
@@ -36,6 +38,7 @@ class GptMarkdownConfig {
     TextDirection? textDirection,
     final void Function(String url, String title)? onLinkTap,
     final void Function(String code)? onCodeReplaceTap,
+    final bool? shouldShowReplaceCode,
     final TextAlign? textAlign,
     final TextScaler? textScaler,
     final String Function(String tex)? latexWorkaround,
@@ -50,6 +53,8 @@ class GptMarkdownConfig {
       textDirection: textDirection ?? this.textDirection,
       onLinkTap: onLinkTap ?? this.onLinkTap,
       onCodeReplaceTap: onCodeReplaceTap ?? this.onCodeReplaceTap,
+      shouldShowReplaceCode:
+          shouldShowReplaceCode ?? this.shouldShowReplaceCode,
       textAlign: textAlign ?? this.textAlign,
       textScaler: textScaler ?? this.textScaler,
       latexWorkaround: latexWorkaround ?? this.latexWorkaround,

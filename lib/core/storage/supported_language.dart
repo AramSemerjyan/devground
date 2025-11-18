@@ -13,7 +13,8 @@ enum SupportedLanguageType {
   html('html'),
   txt('txt'),
   log('log'),
-  css('css');
+  css('css'),
+  ai('ai');
 
   final String value;
 

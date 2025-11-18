@@ -163,12 +163,15 @@ class _AiChatBubbleState extends State<AiChatBubble> {
       ),
       child: Stack(
         children: [
-          GptMarkdown(
-            widget.message.fullResponse,
-            style: const TextStyle(color: AppColor.mainGreyLighter),
-            onCodeReplaceTap: (code) {
-              widget.onCodeReplace?.call(code);
-            },
+          Padding(
+            padding: const EdgeInsets.only(top: 25),
+            child: GptMarkdown(
+              widget.message.fullResponse,
+              style: const TextStyle(color: AppColor.mainGreyLighter),
+              onCodeReplaceTap: (code) {
+                widget.onCodeReplace?.call(code);
+              },
+            ),
           ),
           Row(
             children: [
@@ -179,7 +182,10 @@ class _AiChatBubbleState extends State<AiChatBubble> {
                   onTap: () {
                     widget.onFullResponseSave?.call(widget.message);
                   },
-                  child: Icon(Icons.save, color: AppColor.mainGreyLighter),
+                  child: Icon(
+                    Icons.save_rounded,
+                    color: AppColor.mainGreyLighter,
+                  ),
                 ),
               ),
             ],

@@ -297,7 +297,7 @@ class AIHelperVM implements AIHelperVMInterface {
   void fullFileSave({required AIMessage message, String? name}) async {
     await _fileService.saveToFile(
       raw: message.response?.fullResponse ?? '',
-      fileName: message.id,
+      fileName: name ?? message.id,
       extension: 'ai',
     );
   }

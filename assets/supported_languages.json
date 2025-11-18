@@ -171,5 +171,18 @@
     "snippet": "",
     "supported": "supported",
     "need_sdk_path": false
+  },
+  {
+    "key": "ai",
+    "name": "AI Response",
+    "extension": ".ai",
+    "icon": "",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "",
+    "supported": "supported",
+    "need_sdk_path": false
   }
 ]

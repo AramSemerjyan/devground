@@ -1108,6 +1108,7 @@ class CodeBlockMd extends BlockMd {
       name: name,
       codes: codes,
       onCodeReplaceTap: config.onCodeReplaceTap,
+      shouldShowRepalceCode: config.shouldShowReplaceCode,
     );
   }
 }

@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:dartpad_lite/UI/common/Animations%20/animated_buttons_appear.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
+import 'package:dartpad_lite/UI/editor/ai_helper/ui/response_parser/gpt_markdown.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
+import 'package:dartpad_lite/core/storage/supported_language.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -85,6 +87,33 @@ class _EditorViewState extends State<EditorView>
     return WebViewWidget(controller: _vm.controller);
   }
 
+  Widget _buildLanguageEditorView() {
+    if (_vm.language.key == SupportedLanguageType.ai) {
+      return Container(
+        color: AppColor.mainGreyDark,
+        padding: EdgeInsets.all(16),
+        height: double.infinity,
+        width: double.infinity,
+        child: Container(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: AppColor.mainGrey,
+          ),
+          child: SingleChildScrollView(
+            child: GptMarkdown(
+              _vm.file.code,
+              shouldShowCodeReplace: false,
+              style: TextStyle(color: AppColor.mainGreyLighter),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return _buildMonacoWebView();
+  }
+
   Widget _buildButtons() {
     return AnimatedButtonsRow(
       buttons: [
@@ -115,7 +144,7 @@ class _EditorViewState extends State<EditorView>
           heroTag: 'saveBtn',
           tooltip: 'Save',
           mini: true,
-          icon: const Icon(Icons.save),
+          icon: const Icon(Icons.save_rounded),
           onPressed: () async {
             final name = await CommandPalette.showRename(
               context,
@@ -159,7 +188,7 @@ class _EditorViewState extends State<EditorView>
 
         return Stack(
           children: [
-            _buildMonacoWebView(),
+            _buildLanguageEditorView(),
             // Floating buttons
             Positioned(bottom: 16, left: 16, child: _buildButtons()),
             ValueListenableBuilder(

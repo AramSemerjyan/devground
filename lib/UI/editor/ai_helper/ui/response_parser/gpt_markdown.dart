@@ -11,6 +11,7 @@ class GptMarkdown extends StatelessWidget {
   final TextAlign? textAlign;
   final TextScaler? textScaler;
   final void Function(String url, String title)? onLinkTap;
+  final bool shouldShowCodeReplace;
   final void Function(String code)? onCodeReplaceTap;
   final String Function(String tex)? latexWorkaround;
   final int? maxLines;
@@ -25,6 +26,7 @@ class GptMarkdown extends StatelessWidget {
     this.data, {
     super.key,
     this.style,
+    this.shouldShowCodeReplace = true,
     this.followLinkColor = false,
     this.textDirection = TextDirection.ltr,
     this.onCodeReplaceTap,
@@ -69,6 +71,7 @@ class GptMarkdown extends StatelessWidget {
           textDirection: textDirection,
           style: style,
           onLinkTap: onLinkTap,
+          shouldShowReplaceCode: shouldShowCodeReplace,
           onCodeReplaceTap: onCodeReplaceTap,
           textAlign: textAlign,
           textScaler: textScaler,
