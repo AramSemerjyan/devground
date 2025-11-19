@@ -95,59 +95,9 @@
                 console.error(e);
             }
         };
-<!--        window.runEditorCode = function() {-->
-<!--            if (!window.editor) return;-->
-<!--            const code = window.editor.getValue();-->
-<!--            sendToFlutter({ type: 'run', code });-->
-<!--        };-->
-
-<!--        window.formatEditorCode = function() {-->
-<!--            if (!window.editor) return;-->
-<!--            sendToFlutter({ type: 'format', code: window.editor.getValue() });-->
-<!--        };-->
     </script>
     <script src="https://unpkg.com/vscode-ws-jsonrpc/dist/browser.js"></script>
     <script src="https://unpkg.com/monaco-languageclient/lib/monaco-languageclient.js"></script>
-<!--    <script>-->
-<!--      // utility to create WebSocket-->
-<!--      function createWebSocket(url) {-->
-<!--        const socket = new WebSocket(url);-->
-<!--        socket.onopen = () => console.log('ws open');-->
-<!--        socket.onclose = () => console.log('ws closed');-->
-<!--        return socket;-->
-<!--      }-->
-
-<!--      function connectToAnalysisServer(wsUrl) {-->
-<!--        // use vscode-ws-jsonrpc to create a message reader/writer over the web socket-->
-<!--        const webSocket = createWebSocket(wsUrl);-->
-
-<!--        // Use to convert classic websocket to MessageConnection for monaco-languageclient-->
-<!--        webSocket.onopen = () => {-->
-<!--          const socketTransport = vscodeWsJsonRpc.toSocket(webSocket); // provided by vscode-ws-jsonrpc-->
-<!--          const reader = new WebSocketMessageReader(socketTransport);-->
-<!--          const writer = new WebSocketMessageWriter(socketTransport);-->
-
-<!--          const languageClient = new MonacoLanguageClient({-->
-<!--            name: "Dart Language Client",-->
-<!--            clientOptions: {-->
-<!--              // use the existing monaco model-->
-<!--              documentSelector: [{ language: 'dart' }],-->
-<!--              errorHandler: { /* default handlers */ },-->
-<!--            },-->
-<!--            connectionProvider: {-->
-<!--              get: (errorHandler, closeHandler) => {-->
-<!--                return Promise.resolve(createConnection(reader, writer, errorHandler, closeHandler));-->
-<!--              }-->
-<!--            }-->
-<!--          });-->
-
-<!--          languageClient.start();-->
-<!--        };-->
-<!--      }-->
-
-<!--      // Connect to local bridge-->
-<!--      connectToAnalysisServer('ws://127.0.0.1:8081/');-->
-<!--    </script>-->
     <script>
         window.setEditorLanguage = function(language) {
           if (!window.editor) return;

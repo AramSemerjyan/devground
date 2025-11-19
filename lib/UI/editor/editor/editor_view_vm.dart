@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -171,6 +171,7 @@ class EditorViewVM implements EditorViewVMInterface {
       EventService.error(
         error: AppError(object: e, stackTrace: s),
         msg: e.toString(),
+        duration: const Duration(seconds: 5),
       );
     }
     settingUp.value = false;

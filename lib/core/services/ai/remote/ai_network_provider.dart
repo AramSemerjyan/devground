@@ -14,10 +14,10 @@ class AINetworkProvider implements AIProviderInterface {
   late final Dio _dio;
 
   late final request = '''
-  curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
-  -H 'Content-Type: application/json' \
-  -H 'X-goog-api-key: AIzaSyDbZsNwbliBc7ZbqEH4nLvlH5PoDhTG_GA' \
-  -X POST \
+  curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" 
+  -H 'Content-Type: application/json' 
+  -H 'X-goog-api-key: AIzaSyDbZsNwbliBc7ZbqEH4nLvlH5PoDhTG_GA' 
+  -X POST 
   -d '{
     "contents": [
       {

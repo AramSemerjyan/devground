@@ -21,7 +21,7 @@ class FloatingProgressButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: inProgress!,
+      valueListenable: inProgress,
       builder: (_, value, __) => _buildButton(value),
     );
   }

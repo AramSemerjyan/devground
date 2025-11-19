@@ -24,5 +24,5 @@ class AIModelNotFoundError extends AIProviderError {
 }
 
 class AIRequestFailedError extends AIProviderError {
-  AIRequestFailedError(String message) : super(message);
+  AIRequestFailedError(super.message);
 }

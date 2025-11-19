@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dartpad_lite/UI/common/Animations%20/animated_buttons_appear.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
-import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor.dart';
+import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
 import 'package:flutter/material.dart';

@@ -6,6 +6,7 @@ import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_co
 import 'package:dartpad_lite/core/services/save_file/file_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../command_palette/command_palette.dart';
 import 'ai_helper_vm.dart';
@@ -155,6 +156,19 @@ class _AiHelperPageState extends State<AiHelperPage> {
                     controller: _controller,
                     minLines: 1,
                     maxLines: 3,
+                    focusNode: FocusNode(
+                      onKeyEvent: (FocusNode node, KeyEvent evt) {
+                        if (!HardwareKeyboard.instance.isShiftPressed &&
+                            evt.logicalKey == LogicalKeyboardKey.enter) {
+                          if (evt is KeyDownEvent) {
+                            _sendMessage();
+                          }
+                          return KeyEventResult.handled;
+                        } else {
+                          return KeyEventResult.ignored;
+                        }
+                      },
+                    ),
                     style: TextStyle(color: AppColor.mainGreyLighter),
                     onSubmitted: (_) => _sendMessage(),
                     decoration: const InputDecoration(

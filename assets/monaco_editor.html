@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Monaco Editor in Flutter WebView</title>
+  <style>
+    html,
+    body,
+    #container {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #container {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+  <script src="monaco/vs/loader.js"></script>
+  <script>
+    require.config({ paths: { 'vs': 'monaco/vs' } });
+    require(['vs/editor/editor.main'], function () {
+      window.editor = monaco.editor.create(document.getElementById('container'), {
+        value: '// Monaco Editor loaded in Flutter WebView\n',
+        language: 'dart',
+        theme: 'vs-dark',
+        automaticLayout: true
+      });
+      // Optional: Expose functions for Flutter-JS communication
+      window.getEditorValue = function () {
+        return window.editor.getValue();
+      };
+      window.setEditorValue = function (val) {
+        window.editor.setValue(val);
+      };
+
+      window.setEditorLanguage = function (language) {
+        if (!window.editor) return;
+        try {
+          monaco.editor.setModelLanguage(window.editor.getModel(), language);
+          console.log("Language changed to", language);
+        } catch (e) {
+          console.error("Failed to change language", e);
+        }
+      };
+
+      window.postMessageToEditor = function (message) {
+        try {
+          const msg = typeof message === 'string' ? JSON.parse(message) : message;
+          if (msg.type === 'output') {
+            output.textContent += msg.payload + '\n';
+          } else if (msg.type === 'status') {
+            status.textContent = msg.payload;
+          } else if (msg.type === 'replaceCode') {
+            window.editor.setValue(msg.payload);
+          } else if (msg.type === 'clearOutput') {
+            output.textContent = '';
+          } else if (msg.type === 'setDiagnostics') {
+            // You could implement monaco.editor.setModelMarkers here to show errors inline.
+            // Keep it simple for now: print them to output
+            output.textContent += 'DIAGNOSTICS:\\n' + JSON.stringify(msg.payload, null, 2) + '\\n';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+    });
+  </script>
+</body>
+
+</html>

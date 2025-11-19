@@ -39,39 +39,39 @@ func romanToInt(_ s: String) -> Int {
 
 let romanNumeral1 = "III"
 let integerValue1 = romanToInt(romanNumeral1)
-print("\(romanNumeral1) = \(integerValue1)") // Output: III = 3
+print("(romanNumeral1) = (integerValue1)") // Output: III = 3
 
 let romanNumeral2 = "IV"
 let integerValue2 = romanToInt(romanNumeral2)
-print("\(romanNumeral2) = \(integerValue2)") // Output: IV = 4
+print("(romanNumeral2) = (integerValue2)") // Output: IV = 4
 
 let romanNumeral3 = "IX"
 let integerValue3 = romanToInt(romanNumeral3)
-print("\(romanNumeral3) = \(integerValue3)") // Output: IX = 9
+print("(romanNumeral3) = (integerValue3)") // Output: IX = 9
 
 let romanNumeral4 = "LVIII"
 let integerValue4 = romanToInt(romanNumeral4)
-print("\(romanNumeral4) = \(integerValue4)") // Output: LVIII = 58
+print("(romanNumeral4) = (integerValue4)") // Output: LVIII = 58
 
 let romanNumeral5 = "MCMXCIV"
 let integerValue5 = romanToInt(romanNumeral5)
-print("\(romanNumeral5) = \(integerValue5)") // Output: MCMXCIV = 1994
+print("(romanNumeral5) = (integerValue5)") // Output: MCMXCIV = 1994
 
 let romanNumeral6 = "MMXXIII"
 let integerValue6 = romanToInt(romanNumeral6)
-print("\(romanNumeral6) = \(integerValue6)") // Output: MMXXIII = 2023
+print("(romanNumeral6) = (integerValue6)") // Output: MMXXIII = 2023
 
 let romanNumeral7 = "C"
 let integerValue7 = romanToInt(romanNumeral7)
-print("\(romanNumeral7) = \(integerValue7)") // Output: C = 100
+print("(romanNumeral7) = (integerValue7)") // Output: C = 100
 
 let romanNumeral8 = "M"
 let integerValue8 = romanToInt(romanNumeral8)
-print("\(romanNumeral8) = \(integerValue8)") // Output: M = 1000
+print("(romanNumeral8) = (integerValue8)") // Output: M = 1000
 
 let romanNumeral9 = "Invalid"
 let integerValue9 = romanToInt(romanNumeral9)  // This will return -1 because of the invalid character
-print("\(romanNumeral9) = \(integerValue9)")   // Output: Invalid = -1
+print("(romanNumeral9) = (integerValue9)")   // Output: Invalid = -1
 
 // MARK: - Extension for enhanced readability and error handling
 
@@ -111,16 +111,16 @@ extension String {
 // Example usage of the extension:
 let romanNumeral10 = "MCMLXXXIV"
 if let integerValue10 = romanNumeral10.toIntFromRoman() {
-    print("\(romanNumeral10) = \(integerValue10)")  // Output: MCMLXXXIV = 1984
+    print("(romanNumeral10) = (integerValue10)")  // Output: MCMLXXXIV = 1984
 } else {
-    print("Invalid Roman numeral: \(romanNumeral10)")
+    print("Invalid Roman numeral: (romanNumeral10)")
 }
 
 let romanNumeral11 = "BLAH"
 if let integerValue11 = romanNumeral11.toIntFromRoman() {
-    print("\(romanNumeral11) = \(integerValue11)")
+    print("(romanNumeral11) = (integerValue11)")
 } else {
-    print("Invalid Roman numeral: \(romanNumeral11)") // Output: Invalid Roman numeral: BLAH
+    print("Invalid Roman numeral: (romanNumeral11)") // Output: Invalid Roman numeral: BLAH
 }
 ```
 

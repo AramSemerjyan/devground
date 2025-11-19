@@ -77,6 +77,26 @@ flutter:
     - assets/index.html
     - assets/blank_html.html
     - assets/supported_languages.json
+    - assets/monaco_editor.html
+
+    # everything that lives directly under assets/monaco
+    - assets/monaco/
+
+    # ── vs root (includes loader.js + nls translations) ──
+    - assets/monaco/vs/
+
+    # ── editor core (CSS + JS bundles) ──
+    - assets/monaco/vs/editor/
+
+    # ── language service workers ──
+    - assets/monaco/vs/language/
+    - assets/monaco/vs/language/css/
+    - assets/monaco/vs/language/html/
+    - assets/monaco/vs/language/json/
+    - assets/monaco/vs/language/typescript/
+
+    # ── syntax-highlighting grammars ──
+    - assets/monaco/vs/basic-languages/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
