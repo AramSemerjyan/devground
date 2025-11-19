@@ -43,6 +43,7 @@ class _WelcomePageState extends State<WelcomePage> {
             color: AppColor.mainGrey,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Column(
+              spacing: 10,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
@@ -61,16 +62,24 @@ class _WelcomePageState extends State<WelcomePage> {
                   enabled: true,
                   onTap: _vm.onNewFile,
                 ),
-                _actionTile(Icons.folder_open_outlined, 'Open Folder'),
-                _actionTile(Icons.cloud_download_outlined, 'Clone Repository'),
+                _actionTile(
+                  Icons.folder_open_outlined,
+                  'Open Folder',
+                  upcoming: true,
+                ),
+                _actionTile(
+                  Icons.cloud_download_outlined,
+                  'Clone Repository',
+                  upcoming: true,
+                ),
                 const SizedBox(height: 32),
                 _sectionTitle('Help'),
                 _actionTile(Icons.book_outlined, 'Documentation'),
-                _actionTile(
-                  Icons.play_circle_outline,
-                  'Interactive Playground',
-                ),
-                _actionTile(Icons.forum_outlined, 'Community'),
+                // _actionTile(
+                //   Icons.play_circle_outline,
+                //   'Interactive Playground',
+                // ),
+                // _actionTile(Icons.forum_outlined, 'Community'),
               ],
             ),
           ),
@@ -144,6 +153,7 @@ class _WelcomePageState extends State<WelcomePage> {
     String label, {
     enabled = false,
     VoidCallback? onTap,
+    bool upcoming = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -152,18 +162,29 @@ class _WelcomePageState extends State<WelcomePage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(6),
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
+          child: Column(
+            spacing: 3,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    label,
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                ],
+              ),
+              if (upcoming)
                 Text(
-                  label,
-                  style: TextStyle(color: Colors.white, fontSize: 15),
+                  'Upcoming...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColor.mainGreyLighter,
+                  ),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
