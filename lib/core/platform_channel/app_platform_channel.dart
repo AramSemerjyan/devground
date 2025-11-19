@@ -1,8 +1,15 @@
+import 'dart:io';
+
+import 'package:dartpad_lite/core/services/import_file/import_file_service.dart';
 import 'package:flutter/services.dart';
 
 class PlatformLlamaChannel {
   static const method = MethodChannel('llama.method');
   static const stream = EventChannel('llama.stream');
+}
+
+class PlatformFileOpenChannel {
+  static const channel = MethodChannel('file_open_channel');
 }
 
 class PlatformSystemInfoChannel {

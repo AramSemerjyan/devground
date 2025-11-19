@@ -158,7 +158,7 @@ class _WelcomePageState extends State<WelcomePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Opacity(
-        opacity: enabled ? 1 : 0.5,
+        opacity: enabled ? 1 : 0.2,
         child: InkWell(
           borderRadius: BorderRadius.circular(6),
           onTap: onTap,

@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
+import 'package:dartpad_lite/core/platform_channel/app_platform_channel.dart';
 import 'package:dartpad_lite/core/services/event_service/app_error.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -19,8 +22,6 @@ class AppPageVM {
   );
   late final PagesServiceInterface pagesService = PagesService();
 
-  // late final lspBridge;
-
   ValueNotifier<bool> inProgress = ValueNotifier(false);
 
   void setUp() async {
@@ -36,9 +37,6 @@ class AppPageVM {
 
     if (language != null) {
       EventService.emit(type: EventType.languageChanged, data: language);
-
-      // lspBridge = LspBridge(8081, language);
-      // await lspBridge.start();
     }
 
     inProgress.value = false;
@@ -93,6 +91,13 @@ class AppPageVM {
             EventService.success(msg: 'Success');
           }
         });
+
+    PlatformFileOpenChannel.channel.setMethodCallHandler((call) async {
+      if (call.method == 'file_open') {
+        final path = call.arguments as String;
+        importFileService.importFile(file: File(path));
+      }
+    });
   }
 
   void _setLanguage(SupportedLanguage language) {

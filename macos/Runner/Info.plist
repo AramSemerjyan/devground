@@ -30,5 +30,195 @@
 	<string>NSApplication</string>
     <key>CFBundleName</key>
     <string>Dev Playground</string>
+    
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <!-- Dart -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Dart File</string>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.dart-source</string>
+            </array>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>dart</string>
+            </array>
+        </dict>
+
+        <!-- Shell -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Shell Script</string>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>sh</string>
+                <string>shell</string>
+            </array>
+        </dict>
+
+        <!-- C -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>C Source File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>c</string>
+            </array>
+        </dict>
+
+        <!-- C++ -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>C++ Source File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>cpp</string>
+                <string>cc</string>
+                <string>cxx</string>
+            </array>
+        </dict>
+
+        <!-- Python -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Python Script</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>py</string>
+            </array>
+        </dict>
+
+        <!-- Swift -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Swift Source File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>swift</string>
+            </array>
+        </dict>
+
+        <!-- JavaScript -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>JavaScript File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>js</string>
+            </array>
+        </dict>
+
+        <!-- JSON -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>JSON File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>json</string>
+            </array>
+        </dict>
+
+        <!-- XML -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>XML File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>xml</string>
+            </array>
+        </dict>
+
+        <!-- HTML -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>HTML File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>html</string>
+                <string>htm</string>
+            </array>
+        </dict>
+
+        <!-- Text -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Text File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>txt</string>
+            </array>
+        </dict>
+
+        <!-- Log -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Log File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>log</string>
+            </array>
+        </dict>
+
+        <!-- CSS -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>CSS Stylesheet</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>css</string>
+            </array>
+        </dict>
+
+        <!-- Custom AI file -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>AI Custom File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>ai</string>
+            </array>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.example.dartpadLite.ai-file</string>
+            </array>
+        </dict>
+
+    </array>
 </dict>
 </plist>
