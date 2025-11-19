@@ -11,13 +11,10 @@ abstract class LanguageSettingOptionVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
   Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
-  Future<void> setSDKPath({
-    required SupportedLanguage language,
-    required String sdkPath,
-  });
+  Future<void> setSDKPath({required String sdkPath});
 }
 
-class LanguageSettingOptionVM {
+class LanguageSettingOptionVM implements LanguageSettingOptionVMInterface {
   final LanguageRepoInterface _languageStorage;
 
   late final ValueNotifier<SupportedLanguage?> _selectedLanguage =

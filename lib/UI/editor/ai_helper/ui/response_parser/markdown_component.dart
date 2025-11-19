@@ -1102,7 +1102,6 @@ class CodeBlockMd extends BlockMd {
     String codes = this.exp.firstMatch(text)?[2] ?? "";
     String name = this.exp.firstMatch(text)?[1] ?? "";
     codes = codes.replaceAll(r"```", "");
-    bool closed = text.endsWith("```");
 
     return CodeField(
       name: name,

@@ -10,7 +10,6 @@ abstract class AiProviderServiceInterface {
 }
 
 class AIProviderService implements AiProviderServiceInterface {
-  @override
   late AIProviderInterface _provider;
 
   @override

@@ -98,7 +98,6 @@ class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
           reverseTransitionDuration: Duration.zero,
           settings: settings,
         );
-        return MaterialPageRoute(builder: builder, settings: settings);
       },
     );
   }

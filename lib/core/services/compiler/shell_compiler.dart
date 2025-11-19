@@ -36,6 +36,10 @@ class ShellCompiler implements CompilerInterface {
           ? result.stderr.toString()
           : null;
 
+          if (error != null) {
+            return CompilerResult(error: error);
+          }
+
       return CompilerResult(data: output);
     } catch (e) {
       return CompilerResult(error: e.toString());

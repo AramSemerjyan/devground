@@ -16,7 +16,7 @@ class LanguageSettingOption extends StatefulWidget {
 }
 
 class _LanguageSettingOptionState extends State<LanguageSettingOption> {
-  late final _vm = LanguageSettingOptionVM(widget.languageRepo);
+  late final LanguageSettingOptionVMInterface _vm = LanguageSettingOptionVM(widget.languageRepo);
 
   void _selectDirectory(String? path) async {
     if (path != null) {
