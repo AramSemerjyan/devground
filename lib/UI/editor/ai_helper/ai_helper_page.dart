@@ -3,6 +3,7 @@ import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/ai_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/bubble/user_chat_bubble.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:dartpad_lite/core/services/save_file/file_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,40 @@ class _AiHelperPageState extends State<AiHelperPage> {
   );
 
   final TextEditingController _controller = TextEditingController();
+  late final _fieldFocus = FocusNode(
+    onKeyEvent: (FocusNode node, KeyEvent evt) {
+      if (!HardwareKeyboard.instance.isShiftPressed &&
+          evt.logicalKey == LogicalKeyboardKey.enter) {
+        if (evt is KeyDownEvent) {
+          _sendMessage();
+        }
+        return KeyEventResult.handled;
+      } else {
+        return KeyEventResult.ignored;
+      }
+    },
+  );
+
+  @override
+  void initState() {
+    super.initState();
+
+    _fieldFocus.addListener(_onChange);
+  }
+
+  @override
+  void dispose() {
+    _fieldFocus.removeListener(_onChange);
+    _fieldFocus.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChange() {
+    if (_fieldFocus.hasFocus) {
+      EventService.emit(type: EventType.dropEditorFocus);
+    }
+  }
 
   void _sendMessage() async {
     _vm.generate(text: _controller.text.trim());
@@ -156,19 +191,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
                     controller: _controller,
                     minLines: 1,
                     maxLines: 3,
-                    focusNode: FocusNode(
-                      onKeyEvent: (FocusNode node, KeyEvent evt) {
-                        if (!HardwareKeyboard.instance.isShiftPressed &&
-                            evt.logicalKey == LogicalKeyboardKey.enter) {
-                          if (evt is KeyDownEvent) {
-                            _sendMessage();
-                          }
-                          return KeyEventResult.handled;
-                        } else {
-                          return KeyEventResult.ignored;
-                        }
-                      },
-                    ),
+                    focusNode: _fieldFocus,
                     style: TextStyle(color: AppColor.mainGreyLighter),
                     onSubmitted: (_) => _sendMessage(),
                     decoration: const InputDecoration(
@@ -185,7 +208,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
                     padding: EdgeInsets.all(5),
                     decoration: BoxDecoration(
                       color: value
-                          ? AppColor.mainGreyDarker.withValues(alpha: 0.3)
+                          ? AppColor.mainGreyBlack.withValues(alpha: 0.3)
                           : AppColor.mainGrey,
                       borderRadius: BorderRadius.all(Radius.circular(3)),
                     ),

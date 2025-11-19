@@ -25,7 +25,7 @@ class _CodeFieldState extends State<CodeField> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColor.mainGreyDarker,
+      color: AppColor.mainGreyBlack,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

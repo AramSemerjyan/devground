@@ -28,7 +28,7 @@ class _UseChatBubbleState extends State<UseChatBubble> {
         padding: const EdgeInsets.all(12),
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
-          color: AppColor.mainGreyDarker,
+          color: AppColor.mainGreyBlack,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

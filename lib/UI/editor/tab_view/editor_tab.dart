@@ -26,7 +26,7 @@ class EditorTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? AppColor.mainGreyDarker : AppColor.mainGreyDark,
+          color: isSelected ? AppColor.mainGreyBlack : AppColor.mainGreyDark,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(8),
             topRight: Radius.circular(8),

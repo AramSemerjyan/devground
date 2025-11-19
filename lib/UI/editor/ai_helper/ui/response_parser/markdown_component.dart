@@ -1014,7 +1014,7 @@ class TableMd extends BlockMd {
           border: TableBorder.all(
             width: 1,
             borderRadius: BorderRadius.circular(8),
-            color: AppColor.mainGreyDarker,
+            color: AppColor.mainGreyBlack,
           ),
           children: value
               .asMap()
