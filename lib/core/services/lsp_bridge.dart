@@ -27,9 +27,7 @@ class LspBridge {
       _broadcastToClients(text);
     });
 
-    _analysisProc!.stderr.transform(utf8.decoder).listen((s) {
-      print('[analysis stderr] $s');
-    });
+    _analysisProc!.stderr.transform(utf8.decoder).listen((s) {});
 
     // Start local HTTP server for upgrading to WebSocket
     _httpServer = await HttpServer.bind(InternetAddress.loopbackIPv4, port);

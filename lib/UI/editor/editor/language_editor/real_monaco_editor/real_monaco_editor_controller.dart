@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -149,7 +150,7 @@ class RealMonacoEditorController implements LanguageEditorControllerInterface {
             file.createSync();
             file.writeAsBytesSync(data.buffer.asUint8List());
           } catch (e) {
-            print(e);
+            EventService.error(msg: 'Failed to copy $assetPath: $e');
           }
         }
       }

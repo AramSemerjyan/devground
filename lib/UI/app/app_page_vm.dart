@@ -19,7 +19,7 @@ class AppPageVM {
   );
   late final PagesServiceInterface pagesService = PagesService();
 
-  late final lspBridge;
+  // late final lspBridge;
 
   ValueNotifier<bool> inProgress = ValueNotifier(false);
 

@@ -55,8 +55,6 @@ class Compiler implements CompilerInterface {
   void _setUp() {
     final sdkPath = language.sdkPath;
 
-    print(language.key);
-
     if (sdkPath == null && language.needSDKPath) {
       _selectedCompiler = null;
 
