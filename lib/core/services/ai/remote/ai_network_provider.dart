@@ -82,6 +82,17 @@ class AINetworkProvider implements AIProviderInterface {
         options: Options(headers: header),
       );
 
+      _dio.interceptors.add(
+        LogInterceptor(
+          request: true,
+          requestBody: true,
+          responseBody: true,
+          responseHeader: false,
+          error: true,
+          logPrint: print, // You can customize this
+        ),
+      );
+
       if (response.statusCode == 200) {
         // If the API returns a stream of tokens, you would yield them one by one
         // Example: yield each token as AIProviderResponse
