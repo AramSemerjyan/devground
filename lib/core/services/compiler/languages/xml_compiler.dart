@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:xml/xml.dart';
 
 import '../compiler_interface.dart';
+import '../compiler_result.dart';
 
 class XMLCompiler extends Compiler {
   final uuid = const Uuid();

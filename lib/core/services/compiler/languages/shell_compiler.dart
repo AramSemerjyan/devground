@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
+import '../compiler_result.dart';
 
 class ShellCompiler extends Compiler {
   final String path;
@@ -36,9 +37,9 @@ class ShellCompiler extends Compiler {
           ? result.stderr.toString()
           : null;
 
-          if (error != null) {
-            return CompilerResult(error: error);
-          }
+      if (error != null) {
+        return CompilerResult(error: error);
+      }
 
       return CompilerResult(data: output);
     } catch (e) {

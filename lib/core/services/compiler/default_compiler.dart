@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../storage/supported_language.dart';
 import 'compiler_interface.dart';
+import 'compiler_result.dart';
 
 class DefaultCompiler implements CompilerInterface {
   final SupportedLanguage language;

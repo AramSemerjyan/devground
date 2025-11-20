@@ -2,6 +2,7 @@ import 'package:flutter_js/flutter_js.dart';
 import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
+import '../compiler_result.dart';
 
 class JsCompiler extends Compiler {
   final uuid = const Uuid();

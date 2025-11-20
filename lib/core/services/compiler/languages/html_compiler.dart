@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
+import '../compiler_result.dart';
 
 class HTMLCompiler extends Compiler {
   final uuid = const Uuid();

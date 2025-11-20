@@ -62,16 +62,16 @@ class _WelcomePageState extends State<WelcomePage> {
                   enabled: true,
                   onTap: _vm.onNewFile,
                 ),
-                _actionTile(
-                  Icons.folder_open_outlined,
-                  'Open Folder',
-                  upcoming: true,
-                ),
-                _actionTile(
-                  Icons.cloud_download_outlined,
-                  'Clone Repository',
-                  upcoming: true,
-                ),
+                // _actionTile(
+                //   Icons.folder_open_outlined,
+                //   'Open Folder',
+                //   upcoming: true,
+                // ),
+                // _actionTile(
+                //   Icons.cloud_download_outlined,
+                //   'Clone Repository',
+                //   upcoming: true,
+                // ),
                 const SizedBox(height: 32),
                 _sectionTitle('Help'),
                 _actionTile(Icons.book_outlined, 'Documentation'),

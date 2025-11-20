@@ -7,6 +7,7 @@ import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../core/services/compiler/compiler_factory.dart';
 import '../../../core/services/compiler/compiler_interface.dart';
 import '../../../core/services/event_service/app_error.dart';
 import '../../../core/services/event_service/event_service.dart';
@@ -168,10 +169,8 @@ class EditorViewVM implements EditorViewVMInterface {
       await _languageEditorController.setUp();
       await _languageEditorController.setLanguage(language: _file.language);
       await _languageEditorController.setCode(code: _file.code);
-    } on CompilerUpcomingSupport catch(e) {
-      EventService.warning(
-        msg: e.toString(),
-      );
+    } on CompilerUpcomingSupport catch (e) {
+      EventService.warning(msg: e.toString());
     } catch (e, s) {
       EventService.error(
         error: AppError(object: e, stackTrace: s),
