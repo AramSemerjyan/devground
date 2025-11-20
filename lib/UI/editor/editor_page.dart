@@ -38,8 +38,8 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void _handlePagesUpdate() {
-    final pages = _vm.onPagesUpdate.value.$1;
-    final selectedTab = _vm.onPagesUpdate.value.$2;
+    final pages = _vm.onPagesUpdate.value.pages;
+    final selectedTab = _vm.onPagesUpdate.value.selectedIndex;
 
     // Update cache
     for (final page in pages) {
@@ -71,7 +71,7 @@ class _EditorPageState extends State<EditorPage> {
     return ValueListenableBuilder(
       valueListenable: _vm.onPagesUpdate,
       builder: (_, update, __) {
-        final pages = update.$1;
+        final pages = update.pages;
 
         if (pages.isEmpty) {
           return WelcomePage(
@@ -96,7 +96,7 @@ class _EditorPageState extends State<EditorPage> {
                 padding: const EdgeInsets.only(top: 5),
                 child: EditorTabView(
                   pages: pages,
-                  selectedTab: _vm.onPagesUpdate.value.$2,
+                  selectedTab: _vm.onPagesUpdate.value.selectedIndex,
                   onSelect: (i) {
                     _vm.onSelect(i);
                     _pageController.jumpToPage(i);

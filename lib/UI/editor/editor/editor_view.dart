@@ -69,12 +69,11 @@ class _EditorViewState extends State<EditorView>
   void _setListeners() {
     _subscriptions.addAll([
       EventService.instance.stream
-          .where((e) => e.type == EventType.dropEditorFocus)
-          .listen((event) {
-            _vm.dropEditorFocus();
-          }),
-      EventService.instance.stream
-          .where((e) => e.type == EventType.onAppStateChanged)
+          .where(
+            (e) =>
+                e.type == EventType.dropEditorFocus ||
+                e.type == EventType.onAppStateChanged,
+          )
           .listen((_) {
             _vm.dropEditorFocus();
           }),

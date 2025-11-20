@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/core/services/event_service/logger/file_logger.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -8,11 +9,12 @@ import 'logger/app_logger.dart';
 
 enum EventType {
   sdkSetUp,
-  languageChangedForNewFile,
   languageChanged,
   sdkPathUpdated,
   importedFile,
+
   dropEditorFocus,
+
   aiModeChanged,
   aiStateChanged,
 
@@ -87,7 +89,7 @@ class EventService {
 
     /// TODO: implement
     // RemoteLogger();
-    // FileLogger();
+    FileLogger(),
   ]);
   final StreamController<Event> _controller = StreamController.broadcast();
 

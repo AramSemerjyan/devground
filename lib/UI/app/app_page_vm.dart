@@ -46,22 +46,13 @@ class AppPageVM {
     EventService.instance.stream
         .where((event) => event.type == EventType.languageChanged)
         .listen((event) {
-          final data = event.data as SupportedLanguage?;
-
-          if (data != null) _setLanguage(data);
-        });
-
-    EventService.instance.stream
-        .where((event) => event.type == EventType.languageChangedForNewFile)
-        .listen((event) {
-          final data = event.data as SupportedLanguage?;
-
-          if (data != null) {
-            _setLanguage(data);
-
-            importFileService.importAppFile(
-              importedFile: AppFile.newFile(language: data),
-            );
+          switch (event.data) {
+            case SupportedLanguage value:
+              _setLanguage(value);
+            case AppFile value:
+              importFileService.importAppFile(importedFile: value);
+            default:
+              ();
           }
         });
 
@@ -69,6 +60,8 @@ class AppPageVM {
         .where((event) => event.type == EventType.importedFile)
         .listen((event) async {
           final importedFile = event.data as AppFile;
+
+          pagesService.insertPageWithAppFile(importedFile);
 
           EventService.emit(
             type: EventType.languageChanged,
@@ -96,6 +89,21 @@ class AppPageVM {
       if (call.method == 'file_open') {
         final path = call.arguments as String;
         importFileService.importFile(file: File(path));
+      }
+    });
+
+    pagesService.onPagesUpdate.addListener(() {
+      final updatedPages = pagesService.onPagesUpdate.value.pages;
+      final selectedIndex = pagesService.onPagesUpdate.value.selectedIndex;
+
+      // Reset AI mode on pages update
+      EventService.emit(type: EventType.aiModeChanged, data: false);
+
+      if (selectedIndex >= 0 && updatedPages.isNotEmpty) {
+        EventService.emit(
+          type: EventType.languageChanged,
+          data: updatedPages[selectedIndex].file.language,
+        );
       }
     });
   }

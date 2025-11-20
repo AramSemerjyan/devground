@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import '../../core/services/event_service/event_service.dart';
 
 abstract class EditorPageVMInterface {
-  ValueNotifier<(List<AppPage>, int)> get onPagesUpdate;
+  ValueNotifier<PageState> get onPagesUpdate;
 
   Future<void> onSelect(int pageIndex);
   Future<void> onClose(int pageIndex);
@@ -19,18 +19,20 @@ class EditorPageVM implements EditorPageVMInterface {
   final PagesServiceInterface pagesService;
 
   @override
-  ValueNotifier<(List<AppPage>, int)> get onPagesUpdate =>
-      pagesService.onPagesUpdate;
+  ValueNotifier<PageState> get onPagesUpdate => pagesService.onPagesUpdate;
 
   EditorPageVM(this.pagesService);
 
   @override
   Future<void> onSelect(int pageIndex) async {
-    if (pageIndex == onPagesUpdate.value.$2) return;
+    if (pageIndex == onPagesUpdate.value.selectedIndex) return;
 
-    onPagesUpdate.value = (onPagesUpdate.value.$1, pageIndex);
+    onPagesUpdate.value = PageState(
+      pages: onPagesUpdate.value.pages,
+      selectedIndex: pageIndex,
+    );
 
-    final page = onPagesUpdate.value.$1[onPagesUpdate.value.$2];
+    final page = onPagesUpdate.value.pages[onPagesUpdate.value.selectedIndex];
 
     EventService.emit(
       type: EventType.languageChanged,

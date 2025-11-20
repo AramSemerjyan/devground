@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../../../core/services/ai/ai_provider_service.dart';
 import '../../../core/services/event_service/event_service.dart';
+import '../../../core/services/import_file/imported_file.dart';
 import '../../../core/storage/language_repo.dart';
 import '../../../core/storage/supported_language.dart';
 
@@ -40,8 +41,8 @@ class BottomToolBarVM implements BottomToolBarVMInterface {
   Future<void> selectLanguage({required SupportedLanguage language}) async {
     await _languageRepo.setSelectedLanguage(key: language.key);
     EventService.emit(
-      type: EventType.languageChangedForNewFile,
-      data: language,
+      type: EventType.languageChanged,
+      data: AppFile.newFile(language: language),
     );
   }
 

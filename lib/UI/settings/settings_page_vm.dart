@@ -1,9 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 
-import '../../core/services/event_service/app_error.dart';
-import '../../core/services/event_service/event_service.dart';
 import '../../core/storage/language_repo.dart';
 import '../../core/storage/supported_language.dart';
 
@@ -11,10 +7,6 @@ abstract class SettingsPageVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
   Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
-  Future<void> setSDKPath({
-    required SupportedLanguage language,
-    required String sdkPath,
-  });
 }
 
 class SettingsPageVM implements SettingsPageVMInterface {
@@ -32,39 +24,5 @@ class SettingsPageVM implements SettingsPageVMInterface {
   Future<Map<SupportedLanguageType, SupportedLanguage>>
   getSupportedLanguages() {
     return _languageStorage.getSupportedLanguages();
-  }
-
-  @override
-  Future<void> setSDKPath({
-    required SupportedLanguage language,
-    required String sdkPath,
-  }) async {
-    sdkPath = sdkPath.trim();
-    if (sdkPath.isEmpty) {
-      EventService.error(msg: 'Path cannot be empty.');
-      return;
-    }
-
-    if (language.path.validation.isNotEmpty) {
-      final flutterBin = File('$sdkPath${language.path.validation}');
-      if (!await flutterBin.exists()) {
-        EventService.error(msg: 'Invalid SDK path.');
-        return;
-      }
-    }
-
-    try {
-      final updatedLang = await _languageStorage.setLanguagePath(
-        key: language.key,
-        path: sdkPath,
-      );
-      _selectedLanguage.value = updatedLang;
-      EventService.emit(type: EventType.sdkPathUpdated, data: updatedLang);
-    } catch (e, s) {
-      EventService.error(
-        msg: e.toString(),
-        error: AppError(object: e, stackTrace: s),
-      );
-    }
   }
 }
