@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class SwiftCompiler implements CompilerInterface {
+class SwiftCompiler extends Compiler {
   final String path;
 
   SwiftCompiler(this.path);

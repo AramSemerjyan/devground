@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class DartCompiler implements CompilerInterface {
+class DartCompiler extends Compiler {
   final String flutterPath;
   final uuid = const Uuid();
 

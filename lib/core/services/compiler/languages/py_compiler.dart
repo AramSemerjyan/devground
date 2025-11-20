@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class PythonCompiler implements CompilerInterface {
+class PythonCompiler extends Compiler {
   final String pythonPath;
   final uuid = const Uuid();
 

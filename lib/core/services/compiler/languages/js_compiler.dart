@@ -1,9 +1,9 @@
 import 'package:flutter_js/flutter_js.dart';
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class JsCompiler implements CompilerInterface {
+class JsCompiler extends Compiler {
   final uuid = const Uuid();
 
   // JS runtime

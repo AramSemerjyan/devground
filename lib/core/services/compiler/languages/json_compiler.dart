@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class JSONCompiler implements CompilerInterface {
+class JSONCompiler extends Compiler {
   final uuid = const Uuid();
 
   @override

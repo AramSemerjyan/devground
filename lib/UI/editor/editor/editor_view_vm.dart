@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -68,7 +69,6 @@ class EditorViewVM implements EditorViewVMInterface {
   final _output = StringBuffer();
 
   EditorViewVM(this._file, this._saveFileService, this._pagesService) {
-    _compiler = Compiler(language: file.language);
     _languageEditorController = LanguageEditorFactory.getController(
       language: language,
     );
@@ -164,9 +164,14 @@ class EditorViewVM implements EditorViewVMInterface {
   void _setUp() async {
     settingUp.value = true;
     try {
+      _compiler = await CompilerFactory.getCompiler(file.language);
       await _languageEditorController.setUp();
       await _languageEditorController.setLanguage(language: _file.language);
       await _languageEditorController.setCode(code: _file.code);
+    } on CompilerUpcomingSupport catch(e) {
+      EventService.warning(
+        msg: e.toString(),
+      );
     } catch (e, s) {
       EventService.error(
         error: AppError(object: e, stackTrace: s),

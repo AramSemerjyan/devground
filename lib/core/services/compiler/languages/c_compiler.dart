@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class CPPCompiler implements CompilerInterface {
+class CCompiler extends Compiler {
   final String path;
 
-  CPPCompiler(this.path);
+  CCompiler(this.path);
 
   final uuid = const Uuid();
 
@@ -30,10 +30,10 @@ class CPPCompiler implements CompilerInterface {
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
-      final file = File('${tmpDir.path}/snippet_c_$id.cpp');
+      final file = File('${tmpDir.path}/snippet_c_$id.c');
       await file.writeAsString(code);
 
-      final cCompiler = path.isNotEmpty ? '$path/g++' : 'g++';
+      final cCompiler = path.isNotEmpty ? '$path/gcc' : 'gcc';
 
       final compileProc = await Process.start(cCompiler, [
         file.path,

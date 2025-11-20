@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import 'compiler_interface.dart';
+import '../compiler_interface.dart';
 
-class ShellCompiler implements CompilerInterface {
+class ShellCompiler extends Compiler {
   final String path;
   final uuid = const Uuid();
 
