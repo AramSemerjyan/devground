@@ -2,7 +2,7 @@ import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedButtonsRow extends StatefulWidget {
-  final List<FloatingProgressButton> buttons;
+  final List<Widget> buttons;
 
   const AnimatedButtonsRow({super.key, this.buttons = const []});
 
@@ -86,14 +86,7 @@ class _AnimatedButtonsRowState extends State<AnimatedButtonsRow>
                       opacity: _fadeAnimations[i].value,
                       child: Padding(
                         padding: const EdgeInsets.only(left: 8),
-                        child: FloatingProgressButton(
-                          inProgress: btn.inProgress,
-                          heroTag: btn.heroTag,
-                          tooltip: btn.tooltip,
-                          mini: btn.mini,
-                          icon: btn.icon,
-                          onPressed: btn.onPressed,
-                        ),
+                        child: btn,
                       ),
                     ),
                   );

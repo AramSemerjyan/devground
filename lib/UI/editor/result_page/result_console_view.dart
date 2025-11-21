@@ -1,3 +1,4 @@
+import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
 import 'package:dartpad_lite/UI/editor/result_page/result_web_view.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +76,7 @@ class _ResultViewState extends State<ResultView> {
                               if (value.isEmpty) return SizedBox();
 
                               return IconButton(
-                                icon: Icon(Icons.send, color: AppColor.aiBlue),
+                                icon: Icon(Icons.send, color: AppColor.blue),
                                 onPressed: () {
                                   widget.onInput?.call(value);
                                   _controller.clear();
@@ -125,11 +126,11 @@ class _ResultViewState extends State<ResultView> {
               padding: widget.enableInput
                   ? EdgeInsets.only(bottom: 60)
                   : EdgeInsets.zero,
-              child: FloatingActionButton(
+              child: FloatingProgressButton(
                 heroTag: 'copyBtn',
                 tooltip: 'Copy',
                 mini: true,
-                child: const Icon(Icons.copy),
+                icon: Icons.copy,
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: data));
                 },

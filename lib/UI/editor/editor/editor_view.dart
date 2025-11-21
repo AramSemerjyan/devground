@@ -108,7 +108,7 @@ class _EditorViewState extends State<EditorView>
           heroTag: 'runBtn',
           tooltip: 'Run',
           mini: true,
-          icon: const Icon(Icons.play_arrow_rounded),
+          icon: Icons.play_arrow_rounded,
           onPressed: () {
             if (_inProgress.value) return;
             _inProgress.value = true;
@@ -120,7 +120,7 @@ class _EditorViewState extends State<EditorView>
           heroTag: 'formatBtn',
           tooltip: 'Format',
           mini: true,
-          icon: const Icon(Icons.format_align_left),
+          icon: Icons.format_align_left,
           onPressed: () {
             _vm.formatCode();
           },
@@ -130,7 +130,7 @@ class _EditorViewState extends State<EditorView>
           heroTag: 'saveBtn',
           tooltip: 'Save',
           mini: true,
-          icon: const Icon(Icons.save_rounded),
+          icon: Icons.save_rounded,
           onPressed: () async {
             final name = await CommandPalette.showRename(
               context,
@@ -142,24 +142,20 @@ class _EditorViewState extends State<EditorView>
             _vm.dropEditorFocus();
           },
         ),
-        FloatingProgressButton(
-          inProgress: _vm.saveProgress,
-          heroTag: 'aiBtn',
-          tooltip: 'AI boost',
-          mini: true,
-          icon: ValueListenableBuilder(
-            valueListenable: _showAI,
-            builder: (_, show, __) {
-              if (!show) {
-                return Icon(Icons.accessible);
-              }
-              return Icon(Icons.accessible_forward);
-            },
-          ),
-          onPressed: () async {
-            _showAI.value = !_showAI.value;
+        ValueListenableBuilder(
+          valueListenable: _showAI,
+          builder: (_, show, __) {
+            return FloatingProgressButton(
+              heroTag: 'aiBtn',
+              tooltip: 'AI boost',
+              mini: true,
+              icon: !show ? Icons.accessible : Icons.accessible_forward,
+              onPressed: () async {
+                _showAI.value = !_showAI.value;
 
-            _vm.onAIBoosModeChange(state: _showAI.value);
+                _vm.onAIBoosModeChange(state: _showAI.value);
+              },
+            );
           },
         ),
       ],
