@@ -4,7 +4,7 @@ import '../../storage/supported_language.dart';
 import 'compiler_interface.dart';
 import 'compiler_result.dart';
 
-class DefaultCompiler implements CompilerInterface {
+class DefaultCompiler extends Compiler {
   final SupportedLanguage language;
 
   final uuid = const Uuid();
@@ -13,14 +13,13 @@ class DefaultCompiler implements CompilerInterface {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-    return CompilerResult(data: code);
+    return CompilerResult.message(data: code);
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
-    return CompilerResult(
-      hasError: true,
-      data: "Language doesn't contains compiler",
+  Future<void> runCode(String code) async {
+    resultStream.add(
+      CompilerResult.error(data: "Language doesn't contains compiler"),
     );
   }
 }

@@ -1,7 +1,7 @@
-import 'package:dartpad_lite/UI/settings/options/ai_section/options/ai_type_selector_option.dart';
-import 'package:dartpad_lite/UI/settings/options/ai_section/options/model_path_option.dart';
 import 'package:flutter/material.dart';
 
+import 'options/ai_type_selector_option.dart';
+import 'options/model_path_option.dart';
 import '../setting_section.dart';
 import 'ai_setting_vm.dart';
 import 'options/api_key_option.dart';

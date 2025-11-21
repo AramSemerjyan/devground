@@ -13,7 +13,8 @@ class ShellCompiler extends Compiler {
   ShellCompiler(this.path);
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  @override
+  Future<void> runCode(String code) async {
     try {
       // Write code to a temporary file
       final tmpDir = await getTemporaryDirectory();
@@ -31,19 +32,19 @@ class ShellCompiler extends Compiler {
       // Run the shell script
       final result = await Process.run(exe, [tempFile.path]);
 
-      // Combine stdout/stderr
       final output = result.stdout.toString();
       final error = result.stderr.toString().isNotEmpty
           ? result.stderr.toString()
           : null;
 
       if (error != null) {
-        return CompilerResult(error: error);
+        resultStream.add(CompilerResult.error(data: error));
+        return;
       }
 
-      return CompilerResult(data: output);
+      resultStream.add(CompilerResult.done(data: output));
     } catch (e) {
-      return CompilerResult(error: e.toString());
+      resultStream.add(CompilerResult.error(error: e.toString()));
     }
   }
 
@@ -59,9 +60,9 @@ class ShellCompiler extends Compiler {
           .join('\n')
           .replaceAll('\r\n', '\n');
 
-      return CompilerResult(data: formatted);
+      return CompilerResult.message(data: formatted);
     } catch (e) {
-      return CompilerResult(error: e.toString());
+      return CompilerResult.error(error: e.toString());
     }
   }
 }

@@ -13,26 +13,23 @@ class JsCompiler extends Compiler {
   JsCompiler();
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     try {
       // Evaluate code
       final result = _jsRuntime.evaluate(code);
-
-      return CompilerResult(hasError: false, data: result.stringResult);
+      resultStream.add(CompilerResult.done(data: result.stringResult));
     } catch (e) {
-      return CompilerResult(error: e.toString());
+      resultStream.add(CompilerResult.error(error: e.toString()));
     }
   }
 
   @override
   Future<CompilerResult> formatCode(String code) async {
     try {
-      // Simple formatting: just trim for now
       final formatted = code.trim();
-
-      return CompilerResult(data: formatted, hasError: false);
+      return CompilerResult.message(data: formatted);
     } catch (e) {
-      return CompilerResult(error: e.toString());
+      return CompilerResult.error(error: e.toString());
     }
   }
 }

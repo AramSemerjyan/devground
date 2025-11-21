@@ -29,14 +29,14 @@ class DartCompiler extends Compiler {
     final exitCode = await proc.exitCode;
     if (exitCode == 0) {
       final formatted = await file.readAsString();
-      return CompilerResult(data: formatted);
+      return CompilerResult.message(data: formatted);
     } else {
-      return CompilerResult(hasError: true, data: exitCode);
+      return CompilerResult.error(data: exitCode);
     }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_$id.dart');
@@ -45,7 +45,6 @@ class DartCompiler extends Compiler {
     final compiledPath = '${tmpDir.path}/snippet_$id.bin';
 
     // Run: dart compile exe <file> -o <compiledPath>
-    // final flutterPath = await SettingsManager.getFlutterPath();
     final dartExecutable = flutterPath.isNotEmpty
         ? '$flutterPath/bin/dart'
         : 'dart'; // fallback to default if not set
@@ -70,10 +69,12 @@ class DartCompiler extends Compiler {
 
     if (exitCode != 0) {
       if (compileStderr.isNotEmpty) {
-        return CompilerResult(
-          hasError: true,
-          data: _extractDartError(compileStderr.toString()),
+        resultStream.add(
+          CompilerResult.error(
+            data: _extractDartError(compileStderr.toString()),
+          ),
         );
+        return;
       }
     }
 
@@ -92,12 +93,14 @@ class DartCompiler extends Compiler {
       final rc = await runProc.exitCode;
 
       if (rc != 0) {
-        return CompilerResult(hasError: true, data: runProcStderr.toString());
+        resultStream.add(CompilerResult.error(data: runProcStderr.toString()));
       } else {
-        return CompilerResult(data: runProcStdout.toString());
+        resultStream.add(
+          CompilerResult.done(data: runProcStdout.toString()),
+        );
       }
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      resultStream.add(CompilerResult.error(error: e));
     }
   }
 

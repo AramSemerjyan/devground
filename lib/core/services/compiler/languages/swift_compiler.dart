@@ -20,9 +20,9 @@ class SwiftCompiler extends Compiler {
       // Simple formatting: add line breaks and indentation for nested tags
       // (You can use `html` package or prettier for more advanced formatting)
       final formatted = code.replaceAll(RegExp(r'>\s*<'), '>\n<');
-      return CompilerResult(data: formatted);
+      return CompilerResult.message(data: formatted);
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      return CompilerResult.error(error: e);
     }
 
     // // Swift has no built-in code formatter CLI for snippets easily.
@@ -46,7 +46,7 @@ class SwiftCompiler extends Compiler {
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
@@ -66,12 +66,12 @@ class SwiftCompiler extends Compiler {
       final exitCode = await proc.exitCode;
 
       if (exitCode == 0) {
-        return CompilerResult(data: stdoutBuffer.toString());
+        resultStream.add(CompilerResult.done(data: stdoutBuffer.toString()));
       } else {
-        return CompilerResult(hasError: true, data: stderrBuffer.toString());
+        resultStream.add(CompilerResult.error(data: stderrBuffer.toString()));
       }
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      resultStream.add(CompilerResult.error(error: e));
     }
   }
 }

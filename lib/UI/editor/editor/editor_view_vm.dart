@@ -9,6 +9,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/services/compiler/compiler_factory.dart';
 import '../../../core/services/compiler/compiler_interface.dart';
+import '../../../core/services/compiler/compiler_result.dart';
 import '../../../core/services/event_service/app_error.dart';
 import '../../../core/services/event_service/event_service.dart';
 import '../../../core/services/import_file/imported_file.dart';
@@ -28,12 +29,14 @@ abstract class EditorViewVMInterface {
   ValueNotifier<bool> get formatProgress;
   ValueNotifier<bool> get saveProgress;
   ValueNotifier<bool> get settingUp;
+  ValueNotifier<bool> get enableConsoleInput;
 
   Future<void> formatCode();
   Future<void> runCode();
   Future<void> save({String? name});
   Future<void> dropEditorFocus();
   Future<void> onAIBoosModeChange({required bool state});
+  Future<void> onConsoleInput(String input);
 }
 
 class EditorViewVM implements EditorViewVMInterface {
@@ -62,6 +65,9 @@ class EditorViewVM implements EditorViewVMInterface {
   ValueNotifier<bool> formatProgress = ValueNotifier(false);
   @override
   ValueNotifier<bool> saveProgress = ValueNotifier(false);
+
+  @override
+  ValueNotifier<bool> enableConsoleInput = ValueNotifier(false);
 
   @override
   LanguageEditorControllerInterface get controller => _languageEditorController;
@@ -101,15 +107,7 @@ class EditorViewVM implements EditorViewVMInterface {
     _outputController.sink.add('');
 
     try {
-      final result = await _compiler.runCode(code);
-
-      if (result.hasError) {
-        _sendOutput(result.data);
-        EventService.error(msg: 'Error');
-      } else {
-        _sendOutput(result.data);
-        EventService.success(msg: 'Success');
-      }
+      await _compiler.runCode(code);
     } catch (e, s) {
       EventService.error(
         msg: e.toString(),
@@ -129,7 +127,7 @@ class EditorViewVM implements EditorViewVMInterface {
 
       final result = await _compiler.formatCode(code);
 
-      if (result.hasError) {
+      if (result.status == CompilerResultStatus.error) {
         EventService.error(msg: 'Error');
       } else {
         _languageEditorController.setCode(code: result.data);
@@ -169,6 +167,24 @@ class EditorViewVM implements EditorViewVMInterface {
       await _languageEditorController.setUp();
       await _languageEditorController.setLanguage(language: _file.language);
       await _languageEditorController.setCode(code: _file.code);
+
+      _compiler.outputStream.listen((result) {
+        switch (result.status) {
+          case CompilerResultStatus.message:
+            _sendOutput(result.data);
+            break;
+          case CompilerResultStatus.error:
+            _sendOutput(result.data);
+            EventService.error(msg: 'Error');
+            break;
+          case CompilerResultStatus.waitingForInput:
+            enableConsoleInput.value = true;
+            break;
+          case CompilerResultStatus.done:
+            _sendOutput(result.data);
+            break;
+        }
+      });
     } on CompilerUpcomingSupport catch (e) {
       EventService.warning(msg: e.toString());
     } catch (e, s) {
@@ -190,5 +206,10 @@ class EditorViewVM implements EditorViewVMInterface {
   Future<void> onAIBoosModeChange({required bool state}) async {
     final currentPage = await _pagesService.getSelectedPage();
     _pagesService.updatePage(page: currentPage.copy(isAIBoosted: state));
+  }
+
+  @override
+  Future<void> onConsoleInput(String input) async {
+    _compiler.inputSink.add(input);
   }
 }

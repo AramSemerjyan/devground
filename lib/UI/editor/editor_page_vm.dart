@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:flutter/cupertino.dart';
 

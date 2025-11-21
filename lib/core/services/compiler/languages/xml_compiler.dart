@@ -14,16 +14,16 @@ class XMLCompiler extends Compiler {
   Future<CompilerResult> formatCode(String code) async {
     try {
       final document = XmlDocument.parse(code);
-      return CompilerResult(
+      return CompilerResult.message(
         data: document.toXmlString(pretty: true, indent: '\t'),
       );
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      return CompilerResult.error(error: e);
     }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     try {
       // Create a temporary HTML file
       final tmpDir = await getTemporaryDirectory();
@@ -34,9 +34,11 @@ class XMLCompiler extends Compiler {
       // Load the temporary file into WebView
       final uri = Uri.file(file.path).path;
 
-      return CompilerResult(data: uri);
+      resultStream.add(CompilerResult.done(data: uri));
+      return;
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      resultStream.add(CompilerResult.error(error: e));
+      return;
     }
   }
 }

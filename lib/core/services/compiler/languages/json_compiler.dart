@@ -13,26 +13,16 @@ class JSONCompiler extends Compiler {
     try {
       final jsonObject = jsonDecode(code);
       const encoder = JsonEncoder.withIndent('  '); // 2 spaces
-      return CompilerResult(data: encoder.convert(jsonObject));
+      return CompilerResult.message(data: encoder.convert(jsonObject));
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      return CompilerResult.error(error: e);
     }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
-    // try {
-    // final tmpDir = await getTemporaryDirectory();
-    // final id = uuid.v4();
-    // final file = File('${tmpDir.path}/snippet_fmt_$id.${language.extension}');
-    // await file.writeAsString(code);
-    //
-    // // Load the temporary file into WebView
-    // final uri = Uri.file(file.path).path;
-
-    //   return CompilerResult(data: code);
-    // } catch (e) {
-    return CompilerResult(hasError: true);
+  Future<void> runCode(String code) async {
+    // This compiler does not execute code; just report as not supported for run
+    resultStream.add(CompilerResult.error(data: 'Run not supported for JSON'));
   }
 
   // }

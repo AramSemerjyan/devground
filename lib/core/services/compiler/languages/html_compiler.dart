@@ -15,27 +15,24 @@ class HTMLCompiler extends Compiler {
     //   // Simple formatting: add line breaks and indentation for nested tags
     //   // (You can use `html` package or prettier for more advanced formatting)
     //   final formatted = code.replaceAll(RegExp(r'>\s*<'), '>\n<');
-    return CompilerResult(data: code);
+    return CompilerResult.message(data: code);
     // } catch (e) {
     //   return CompilerResult(hasError: true, error: e);
     // }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     try {
-      // Create a temporary HTML file
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
       final file = File('${tmpDir.path}/snippet_fmt_$id.html');
       await file.writeAsString(code);
 
-      // Load the temporary file into WebView
       final uri = Uri.file(file.path).path;
-
-      return CompilerResult(data: uri);
+      resultStream.add(CompilerResult.done(data: uri));
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      resultStream.add(CompilerResult.error(error: e));
     }
   }
 }

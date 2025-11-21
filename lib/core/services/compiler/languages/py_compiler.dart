@@ -30,17 +30,16 @@ class PythonCompiler extends Compiler {
     final exitCode = await proc.exitCode;
     if (exitCode == 0) {
       final formatted = await file.readAsString();
-      return CompilerResult(data: formatted);
+      return CompilerResult.message(data: formatted);
     } else {
-      return CompilerResult(
-        hasError: true,
+      return CompilerResult.error(
         data: 'Python formatting failed with exit code $exitCode',
       );
     }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_$id.py');
@@ -61,13 +60,15 @@ class PythonCompiler extends Compiler {
     final exitCode = await proc.exitCode;
 
     if (exitCode != 0) {
-      return CompilerResult(
-        hasError: true,
-        data: _extractPythonError(stderrBuffer.toString()),
+      resultStream.add(
+        CompilerResult.error(
+          data: _extractPythonError(stderrBuffer.toString()),
+        ),
       );
+      return;
     }
 
-    return CompilerResult(data: stdoutBuffer.toString());
+    resultStream.add(CompilerResult.done(data: stdoutBuffer.toString()));
   }
 
   String _extractPythonError(String stderr) {

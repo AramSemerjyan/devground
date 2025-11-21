@@ -201,9 +201,16 @@ class _EditorViewState extends State<EditorView>
               width: value,
               height: double.infinity,
               color: AppColor.black,
-              child: ResultView(
-                language: _vm.language,
-                outputStream: _vm.compileResultStream,
+              child: ValueListenableBuilder(
+                valueListenable: _vm.enableConsoleInput,
+                builder: (_, value, __) {
+                  return ResultView(
+                    language: _vm.language,
+                    outputStream: _vm.compileResultStream,
+                    enableInput: value,
+                    onInput: _vm.onConsoleInput,
+                  );
+                },
               ),
             ),
             ValueListenableBuilder(

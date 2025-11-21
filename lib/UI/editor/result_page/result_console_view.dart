@@ -8,11 +8,15 @@ import '../../../core/storage/supported_language.dart';
 class ResultView extends StatefulWidget {
   final SupportedLanguage language;
   final Stream<String> outputStream;
+  final bool enableInput;
+  final Function(String)? onInput;
 
   const ResultView({
     super.key,
     required this.outputStream,
     required this.language,
+    this.onInput,
+    this.enableInput = false,
   });
 
   @override
@@ -20,20 +24,76 @@ class ResultView extends StatefulWidget {
 }
 
 class _ResultViewState extends State<ResultView> {
+  final _controller = TextEditingController();
+
+  ValueNotifier<String> onInputChange = ValueNotifier('');
+
   Widget _buildDefaultConsole() {
     return StreamBuilder(
       stream: widget.outputStream,
       builder: (_, value) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(8),
-          child: SelectableText(
-            value.data ?? '',
-            style: const TextStyle(
-              color: Colors.greenAccent,
-              fontFamily: 'monospace',
-              fontSize: 13,
+        return Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(8),
+              child: SelectableText(
+                value.data ?? '',
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                ),
+              ),
             ),
-          ),
+            if (widget.enableInput)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      Container(height: 1, color: AppColor.mainGreyDark),
+                      TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          isDense: true,
+                          hint: Text(
+                            'Input...',
+                            style: TextStyle(color: AppColor.mainGrey),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          suffix: ValueListenableBuilder(
+                            valueListenable: onInputChange,
+                            builder: (_, value, __) {
+                              if (value.isEmpty) return SizedBox();
+
+                              return IconButton(
+                                icon: Icon(Icons.send, color: AppColor.aiBlue),
+                                onPressed: () {
+                                  widget.onInput?.call(value);
+                                  _controller.clear();
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        onChanged: (input) {
+                          onInputChange.value = input;
+                        },
+                        style: TextStyle(color: AppColor.mainGreyLighter),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );
@@ -61,14 +121,19 @@ class _ResultViewState extends State<ResultView> {
           final data = value.data;
 
           if (data != null && data.isNotEmpty) {
-            return FloatingActionButton(
-              heroTag: 'copyBtn',
-              tooltip: 'Copy',
-              mini: true,
-              child: const Icon(Icons.copy),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: data));
-              },
+            return Padding(
+              padding: widget.enableInput
+                  ? EdgeInsets.only(bottom: 60)
+                  : EdgeInsets.zero,
+              child: FloatingActionButton(
+                heroTag: 'copyBtn',
+                tooltip: 'Copy',
+                mini: true,
+                child: const Icon(Icons.copy),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: data));
+                },
+              ),
             );
           }
 

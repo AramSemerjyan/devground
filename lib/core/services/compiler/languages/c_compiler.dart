@@ -20,14 +20,14 @@ class CCompiler extends Compiler {
       // Simple formatting: add line breaks and indentation for nested tags
       // (You can use `html` package or prettier for more advanced formatting)
       final formatted = code.replaceAll(RegExp(r'>\s*<'), '>\n<');
-      return CompilerResult(data: formatted);
+      return CompilerResult.message(data: formatted);
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      return CompilerResult.error(error: e);
     }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
@@ -50,7 +50,8 @@ class CCompiler extends Compiler {
 
       final exitCode = await compileProc.exitCode;
       if (exitCode != 0) {
-        return CompilerResult(hasError: true, data: compileStderr.toString());
+        resultStream.add(CompilerResult.error(data: compileStderr.toString()));
+        return;
       }
 
       final runProc = await Process.start(file.path, []);
@@ -62,12 +63,12 @@ class CCompiler extends Compiler {
 
       final rc = await runProc.exitCode;
       if (rc != 0) {
-        return CompilerResult(hasError: true, data: runStderr.toString());
+        resultStream.add(CompilerResult.error(data: runStderr.toString()));
       } else {
-        return CompilerResult(data: runStdout.toString(), hasError: false);
+        resultStream.add(CompilerResult.done(data: runStdout.toString()));
       }
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      resultStream.add(CompilerResult.error(error: e));
     }
   }
 }

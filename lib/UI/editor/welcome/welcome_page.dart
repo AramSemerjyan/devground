@@ -75,10 +75,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 const SizedBox(height: 32),
                 _sectionTitle('Help'),
                 _actionTile(Icons.book_outlined, 'Documentation'),
-                // _actionTile(
-                //   Icons.play_circle_outline,
-                //   'Interactive Playground',
-                // ),
+                _actionTile(Icons.play_circle_outline, 'Interactive Tutorial'),
                 // _actionTile(Icons.forum_outlined, 'Community'),
               ],
             ),

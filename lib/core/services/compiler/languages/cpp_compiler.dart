@@ -10,7 +10,11 @@ import '../compiler_result.dart';
 class CPPCompiler extends Compiler {
   final String path;
 
-  CPPCompiler(this.path);
+  CPPCompiler(this.path) {
+    inpSink.stream.listen((input) {
+      currentProcess?.stdin.writeln(input);
+    });
+  }
 
   final uuid = const Uuid();
 
@@ -20,14 +24,14 @@ class CPPCompiler extends Compiler {
       // Simple formatting: add line breaks and indentation for nested tags
       // (You can use `html` package or prettier for more advanced formatting)
       final formatted = code.replaceAll(RegExp(r'>\s*<'), '>\n<');
-      return CompilerResult(data: formatted);
+      return CompilerResult.message(data: formatted);
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      return CompilerResult.error(error: e);
     }
   }
 
   @override
-  Future<CompilerResult> runCode(String code) async {
+  Future<void> runCode(String code) async {
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
@@ -50,24 +54,36 @@ class CPPCompiler extends Compiler {
 
       final exitCode = await compileProc.exitCode;
       if (exitCode != 0) {
-        return CompilerResult(hasError: true, data: compileStderr.toString());
+        resultStream.sink.add(CompilerResult.error(data: compileStderr.toString()));
       }
 
       final runProc = await Process.start(file.path, []);
+      currentProcess = runProc;
       final runStdout = StringBuffer();
       final runStderr = StringBuffer();
+
+      final shouldWaitForAnswer = code.contains('std::cin');
 
       runProc.stdout.transform(utf8.decoder).listen(runStdout.write);
       runProc.stderr.transform(utf8.decoder).listen(runStderr.write);
 
+      if (shouldWaitForAnswer) {
+        resultStream.sink.add(
+          CompilerResult(
+            status: CompilerResultStatus.waitingForInput,
+            data: 'something',
+          ),
+        );
+      }
+
       final rc = await runProc.exitCode;
       if (rc != 0) {
-        return CompilerResult(hasError: true, data: runStderr.toString());
+        resultStream.sink.add(CompilerResult.error(data: runStderr.toString()));
       } else {
-        return CompilerResult(data: runStdout.toString(), hasError: false);
+        resultStream.sink.add(CompilerResult.done(data: runStdout.toString()));
       }
     } catch (e) {
-      return CompilerResult(hasError: true, error: e);
+      resultStream.sink.add(CompilerResult.error(error: e));
     }
   }
 }

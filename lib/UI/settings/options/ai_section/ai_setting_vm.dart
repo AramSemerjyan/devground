@@ -1,7 +1,8 @@
 import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
-import 'package:dartpad_lite/core/services/event_service/event_service.dart';
-import 'package:dartpad_lite/core/storage/ai_repo.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../core/services/event_service/event_service.dart';
+import '../../../../core/storage/ai_repo.dart';
 
 enum AIType implements CommandPaletteItem {
   local('local'),
