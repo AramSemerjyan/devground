@@ -17,9 +17,9 @@ class JsCompiler extends Compiler {
     try {
       // Evaluate code
       final result = _jsRuntime.evaluate(code);
-      resultStream.add(CompilerResult.done(data: result.stringResult));
+      resultStream.sink.add(CompilerResult.done(data: result.stringResult));
     } catch (e) {
-      resultStream.add(CompilerResult.error(error: e.toString()));
+      resultStream.sink.add(CompilerResult.error(error: e.toString()));
     }
   }
 

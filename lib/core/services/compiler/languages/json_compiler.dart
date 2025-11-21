@@ -22,8 +22,6 @@ class JSONCompiler extends Compiler {
   @override
   Future<void> runCode(String code) async {
     // This compiler does not execute code; just report as not supported for run
-    resultStream.add(CompilerResult.error(data: 'Run not supported for JSON'));
+    resultStream.sink.add(CompilerResult.error(data: 'Run not supported for JSON'));
   }
-
-  // }
 }

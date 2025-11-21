@@ -60,7 +60,7 @@ class PythonCompiler extends Compiler {
     final exitCode = await proc.exitCode;
 
     if (exitCode != 0) {
-      resultStream.add(
+      resultStream.sink.add(
         CompilerResult.error(
           data: _extractPythonError(stderrBuffer.toString()),
         ),
@@ -68,7 +68,7 @@ class PythonCompiler extends Compiler {
       return;
     }
 
-    resultStream.add(CompilerResult.done(data: stdoutBuffer.toString()));
+    resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
   }
 
   String _extractPythonError(String stderr) {

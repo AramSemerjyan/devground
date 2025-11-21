@@ -67,21 +67,15 @@ class CPPCompiler extends Compiler {
       final runProc = await Process.start(file.path, []);
       currentProcess = runProc;
 
-      final shouldWaitForAnswer = RegExp(
-        r'std::cin|std::getline',
-      ).hasMatch(code);
-
       runProc.stdout.transform(utf8.decoder).listen((chunk) {
         resultStream.add(CompilerResult.message(data: chunk));
 
-        if (shouldWaitForAnswer) {
-          resultStream.add(
-            CompilerResult(
-              status: CompilerResultStatus.waitingForInput,
-              data: null,
-            ),
-          );
-        }
+        resultStream.add(
+          CompilerResult(
+            status: CompilerResultStatus.waitingForInput,
+            data: null,
+          ),
+        );
       });
 
       runProc.stderr.transform(utf8.decoder).listen((chunk) {

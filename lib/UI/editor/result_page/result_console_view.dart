@@ -27,7 +27,24 @@ class ResultView extends StatefulWidget {
 class _ResultViewState extends State<ResultView> {
   final _controller = TextEditingController();
 
+  void _onSend() {
+    widget.onInput?.call(_controller.text);
+    _controller.clear();
+  }
+
   ValueNotifier<String> onInputChange = ValueNotifier('');
+  late final _fieldFocus = FocusNode(
+    onKeyEvent: (FocusNode node, KeyEvent evt) {
+      if (evt.logicalKey == LogicalKeyboardKey.enter) {
+        if (evt is KeyDownEvent) {
+          _onSend();
+        }
+        return KeyEventResult.handled;
+      } else {
+        return KeyEventResult.ignored;
+      }
+    },
+  );
 
   Widget _buildDefaultConsole() {
     return StreamBuilder(
@@ -57,6 +74,7 @@ class _ResultViewState extends State<ResultView> {
                       Container(height: 1, color: AppColor.mainGreyDark),
                       TextField(
                         controller: _controller,
+                        focusNode: _fieldFocus,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -77,10 +95,7 @@ class _ResultViewState extends State<ResultView> {
 
                               return IconButton(
                                 icon: Icon(Icons.send, color: AppColor.blue),
-                                onPressed: () {
-                                  widget.onInput?.call(value);
-                                  _controller.clear();
-                                },
+                                onPressed: _onSend,
                               );
                             },
                           ),

@@ -66,12 +66,12 @@ class SwiftCompiler extends Compiler {
       final exitCode = await proc.exitCode;
 
       if (exitCode == 0) {
-        resultStream.add(CompilerResult.done(data: stdoutBuffer.toString()));
+        resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
       } else {
-        resultStream.add(CompilerResult.error(data: stderrBuffer.toString()));
+        resultStream.sink.add(CompilerResult.error(data: stderrBuffer.toString()));
       }
     } catch (e) {
-      resultStream.add(CompilerResult.error(error: e));
+      resultStream.sink.add(CompilerResult.error(error: e));
     }
   }
 }

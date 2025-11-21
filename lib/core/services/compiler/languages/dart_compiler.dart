@@ -93,14 +93,14 @@ class DartCompiler extends Compiler {
       final rc = await runProc.exitCode;
 
       if (rc != 0) {
-        resultStream.add(CompilerResult.error(data: runProcStderr.toString()));
+        resultStream.sink.add(CompilerResult.error(data: runProcStderr.toString()));
       } else {
-        resultStream.add(
+        resultStream.sink.add(
           CompilerResult.done(data: runProcStdout.toString()),
         );
       }
     } catch (e) {
-      resultStream.add(CompilerResult.error(error: e));
+      resultStream.sink.add(CompilerResult.error(error: e));
     }
   }
 

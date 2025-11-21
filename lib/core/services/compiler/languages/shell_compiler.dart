@@ -38,13 +38,13 @@ class ShellCompiler extends Compiler {
           : null;
 
       if (error != null) {
-        resultStream.add(CompilerResult.error(data: error));
+        resultStream.sink.add(CompilerResult.error(data: error));
         return;
       }
 
-      resultStream.add(CompilerResult.done(data: output));
+      resultStream.sink.add(CompilerResult.done(data: output));
     } catch (e) {
-      resultStream.add(CompilerResult.error(error: e.toString()));
+      resultStream.sink.add(CompilerResult.error(error: e.toString()));
     }
   }
 
