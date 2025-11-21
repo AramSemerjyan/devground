@@ -141,7 +141,7 @@ class EventService {
           type: StatusType.error,
           msg: msg,
           error: error,
-          duration: duration ?? Duration(seconds: 1),
+          duration: duration ?? Duration(seconds: 5),
         ),
       ),
     );
@@ -160,7 +160,7 @@ class EventService {
         status: StatusEvent(
           type: StatusType.warning,
           msg: msg,
-          duration: duration ?? Duration(seconds: 1),
+          duration: duration ?? Duration(seconds: 3),
         ),
       ),
     );
