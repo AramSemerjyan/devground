@@ -29,41 +29,12 @@ class EditorPage extends StatefulWidget {
 class _EditorPageState extends State<EditorPage> {
   late final EditorPageVMInterface _vm = EditorPageVM(widget.pagesService);
   final PageController _pageController = PageController();
-  final _editorCache = <String, EditorView>{};
 
   @override
-  void initState() {
-    super.initState();
-    _vm.onPagesUpdate.addListener(_handlePagesUpdate);
-  }
+  void dispose() {
+    _pageController.dispose();
 
-  void _handlePagesUpdate() {
-    final pages = _vm.onPagesUpdate.value.pages;
-    final selectedTab = _vm.onPagesUpdate.value.selectedIndex;
-
-    // Update cache
-    for (final page in pages) {
-      _editorCache.putIfAbsent(
-        page.id,
-        () => EditorView(
-          key: ValueKey(page.id),
-          saveFileService: widget.fileService,
-          pagesService: widget.pagesService,
-          file: page.file,
-        ),
-      );
-    }
-
-    // Clean cache
-    final existingIds = pages.map((p) => p.id).toSet();
-    _editorCache.removeWhere((key, _) => !existingIds.contains(key));
-
-    // Animate to selected page
-    if (selectedTab >= 0 && selectedTab < pages.length) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _pageController.jumpToPage(selectedTab);
-      });
-    }
+    super.dispose();
   }
 
   @override
@@ -81,6 +52,10 @@ class _EditorPageState extends State<EditorPage> {
           );
         }
 
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(update.selectedIndex);
+        }
+
         return Stack(
           children: [
             Padding(
@@ -88,7 +63,16 @@ class _EditorPageState extends State<EditorPage> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(), // Disable swipe
-                children: pages.map((page) => _editorCache[page.id]!).toList(),
+                children: pages
+                    .map(
+                      (page) => EditorView(
+                        key: ValueKey(page.id),
+                        saveFileService: widget.fileService,
+                        pagesService: widget.pagesService,
+                        file: page.file,
+                      ),
+                    )
+                    .toList(),
               ),
             ),
             if (pages.isNotEmpty)

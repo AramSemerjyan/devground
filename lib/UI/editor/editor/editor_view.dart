@@ -47,6 +47,9 @@ class _EditorViewState extends State<EditorView>
 
   late final List<StreamSubscription> _subscriptions = [];
 
+    @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     super.initState();
@@ -364,7 +367,4 @@ class _EditorViewState extends State<EditorView>
       ],
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
