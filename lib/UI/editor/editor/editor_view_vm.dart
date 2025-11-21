@@ -176,12 +176,14 @@ class EditorViewVM implements EditorViewVMInterface {
           case CompilerResultStatus.error:
             _sendOutput(result.data);
             EventService.error(msg: 'Error');
+            enableConsoleInput.value = false;
             break;
           case CompilerResultStatus.waitingForInput:
             enableConsoleInput.value = true;
             break;
           case CompilerResultStatus.done:
             _sendOutput(result.data);
+            enableConsoleInput.value = false;
             break;
         }
       });

@@ -49,41 +49,58 @@ class CPPCompiler extends Compiler {
       final compileStdout = StringBuffer();
       final compileStderr = StringBuffer();
 
-      compileProc.stdout.transform(utf8.decoder).listen(compileStdout.write);
-      compileProc.stderr.transform(utf8.decoder).listen(compileStderr.write);
+      await compileProc.stdout
+          .transform(utf8.decoder)
+          .listen(compileStdout.write)
+          .asFuture();
+      await compileProc.stderr
+          .transform(utf8.decoder)
+          .listen(compileStderr.write)
+          .asFuture();
 
       final exitCode = await compileProc.exitCode;
       if (exitCode != 0) {
-        resultStream.sink.add(CompilerResult.error(data: compileStderr.toString()));
+        resultStream.add(CompilerResult.error(data: compileStderr.toString()));
+        return;
       }
 
       final runProc = await Process.start(file.path, []);
       currentProcess = runProc;
-      final runStdout = StringBuffer();
-      final runStderr = StringBuffer();
 
-      final shouldWaitForAnswer = code.contains('std::cin');
+      final shouldWaitForAnswer = RegExp(
+        r'std::cin|std::getline',
+      ).hasMatch(code);
 
-      runProc.stdout.transform(utf8.decoder).listen(runStdout.write);
-      runProc.stderr.transform(utf8.decoder).listen(runStderr.write);
+      runProc.stdout.transform(utf8.decoder).listen((chunk) {
+        resultStream.add(CompilerResult.message(data: chunk));
 
-      if (shouldWaitForAnswer) {
-        resultStream.sink.add(
-          CompilerResult(
-            status: CompilerResultStatus.waitingForInput,
-            data: 'something',
-          ),
-        );
-      }
+        if (shouldWaitForAnswer) {
+          resultStream.add(
+            CompilerResult(
+              status: CompilerResultStatus.waitingForInput,
+              data: null,
+            ),
+          );
+        }
+      });
 
+      runProc.stderr.transform(utf8.decoder).listen((chunk) {
+        resultStream.add(CompilerResult.message(data: chunk));
+      });
+
+      // Wait for process to exit
       final rc = await runProc.exitCode;
       if (rc != 0) {
-        resultStream.sink.add(CompilerResult.error(data: runStderr.toString()));
+        resultStream.add(
+          CompilerResult.error(data: 'Process exited with code $rc'),
+        );
       } else {
-        resultStream.sink.add(CompilerResult.done(data: runStdout.toString()));
+        resultStream.add(
+          CompilerResult.done(data: 'Process exited with code 0'),
+        );
       }
     } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e));
+      resultStream.add(CompilerResult.error(error: e));
     }
   }
 }
