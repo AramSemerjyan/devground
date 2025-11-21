@@ -7,16 +7,15 @@ import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
 import '../compiler_result.dart';
+import '../terminal_runner.dart';
 
 class CCompiler extends Compiler {
   final String path;
 
   CCompiler(this.path) {
-    subscriptions.add(
-      inpSink.stream.listen((input) {
-        currentProcess?.stdin.writeln(input);
-      }),
-    );
+    // Do not forward inpSink here; runCode will subscribe per-run so it can
+    // re-arm waiting timers after each input. This prevents duplicate writes
+    // and allows per-run cleanup.
   }
 
   final uuid = const Uuid();
@@ -68,19 +67,16 @@ class CCompiler extends Compiler {
         return;
       }
 
-      final runProc = await Process.start(file.path, []);
-      currentProcess = runProc;
+      final tp = await runWithPty(file.path, []);
 
-      // Heuristic: if source code contains stdin-style calls, we may need
-      // to notify the UI that the process is waiting for input even if
-      // the program doesn't flush a prompt to stdout.
       bool looksLikeStdin = _looksLikeStdin(code);
 
       bool outputSeen = false;
       Timer? inputWaitTimer;
-      if (looksLikeStdin) {
-        // If no output appears shortly, emit waiting-for-input so UI can
-        // present an input field.
+
+      void armTimer() {
+        inputWaitTimer?.cancel();
+        if (!looksLikeStdin) return;
         inputWaitTimer = Timer(const Duration(milliseconds: 250), () {
           if (!outputSeen) {
             resultStream.add(
@@ -93,7 +89,18 @@ class CCompiler extends Compiler {
         });
       }
 
-      final subOut = runProc.stdout.transform(utf8.decoder).listen((chunk) {
+      armTimer();
+
+      final inputSub = inpSink.stream.listen((input) {
+        try {
+          tp.input.add(input);
+        } catch (_) {}
+        outputSeen = false;
+        armTimer();
+      });
+      subscriptions.add(inputSub);
+
+      final subOut = tp.output.listen((chunk) {
         outputSeen = true;
         inputWaitTimer?.cancel();
         resultStream.add(CompilerResult.message(data: chunk));
@@ -107,15 +114,12 @@ class CCompiler extends Compiler {
           );
         }
       });
+      subscriptions.add(subOut);
 
-      runProc.stderr.transform(utf8.decoder).listen((chunk) {
-        outputSeen = true;
-        inputWaitTimer?.cancel();
-        resultStream.add(CompilerResult.message(data: chunk));
-      });
+      final rc = await tp.exitCode;
+      clearSubscriptions();
+      inputWaitTimer?.cancel();
 
-      final rc = await runProc.exitCode;
-      subOut.cancel();
       if (rc != 0) {
         resultStream.add(
           CompilerResult.error(data: 'Process exited with code $rc'),
@@ -126,6 +130,7 @@ class CCompiler extends Compiler {
         );
       }
     } catch (e) {
+      clearSubscriptions();
       resultStream.add(CompilerResult.error(error: e));
     }
   }

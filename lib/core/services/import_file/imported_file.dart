@@ -7,7 +7,13 @@ class AppFile {
   final bool isNew;
   final Uri? path;
 
-  String get name => path?.pathSegments.last ?? fileName ?? '';
+  String get name {
+    final filename = path?.pathSegments.last ?? fileName ?? '';
+    if (filename.isEmpty) return '';
+    final dot = filename.lastIndexOf('.');
+    if (dot > 0) return filename.substring(0, dot);
+    return filename;
+  }
 
   AppFile({
     required this.language,

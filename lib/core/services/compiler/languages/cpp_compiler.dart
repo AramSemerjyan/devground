@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,15 +7,12 @@ import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
 import '../compiler_result.dart';
+import '../terminal_runner.dart';
 
 class CPPCompiler extends Compiler {
   final String path;
 
-  CPPCompiler(this.path) {
-    subscriptions.add(inpSink.stream.listen((input) {
-      currentProcess?.stdin.writeln(input);
-    }));
-  }
+  CPPCompiler(this.path);
 
   final uuid = const Uuid();
 
@@ -28,6 +26,22 @@ class CPPCompiler extends Compiler {
     } catch (e) {
       return CompilerResult.error(error: e);
     }
+  }
+
+  bool _looksLikeStdin(String code) {
+    final patterns = [
+      'cin>>',
+      'std::getline',
+      'getline(',
+      'scanf(',
+      'readline',
+    ];
+
+    final lower = code.toLowerCase();
+    for (final p in patterns) {
+      if (lower.contains(p.toLowerCase())) return true;
+    }
+    return false;
   }
 
   @override
@@ -60,32 +74,63 @@ class CPPCompiler extends Compiler {
 
       final exitCode = await compileProc.exitCode;
       if (exitCode != 0) {
-        resultStream.add(CompilerResult.error(data: compileStderr.toString()));
+        resultStream.sink.add(
+          CompilerResult.error(data: compileStderr.toString()),
+        );
         return;
       }
 
-      final runProc = await Process.start(file.path, []);
-      currentProcess = runProc;
+      final tp = await runWithPty(file.path, []);
 
-      final subOut = runProc.stdout.transform(utf8.decoder).listen((chunk) {
-        resultStream.add(CompilerResult.message(data: chunk));
+      final looksLikeStdin = _looksLikeStdin(code);
 
-        resultStream.add(
-          CompilerResult(
-            status: CompilerResultStatus.waitingForInput,
-            data: null,
-          ),
-        );
+      bool outputSeen = false;
+      Timer? inputWaitTimer;
+
+      void armTimer() {
+        inputWaitTimer?.cancel();
+        if (!looksLikeStdin) return;
+        inputWaitTimer = Timer(const Duration(milliseconds: 250), () {
+          if (!outputSeen) {
+            resultStream.add(
+              CompilerResult(
+                status: CompilerResultStatus.waitingForInput,
+                data: null,
+              ),
+            );
+          }
+        });
+      }
+
+      armTimer();
+
+      final inputSub = inpSink.stream.listen((input) {
+        try {
+          tp.input.add(input);
+        } catch (_) {}
+        outputSeen = false;
+        armTimer();
       });
+      subscriptions.add(inputSub);
 
-      final subErr = runProc.stderr.transform(utf8.decoder).listen((chunk) {
+      final subOut = tp.output.listen((chunk) {
+        outputSeen = true;
+        inputWaitTimer?.cancel();
         resultStream.add(CompilerResult.message(data: chunk));
+        if (looksLikeStdin) {
+          resultStream.add(
+            CompilerResult(
+              status: CompilerResultStatus.waitingForInput,
+              data: null,
+            ),
+          );
+        }
       });
+      subscriptions.add(subOut);
 
-      // Wait for process to exit
-      final rc = await runProc.exitCode;
-      subOut.cancel();
-      subErr.cancel();
+      final rc = await tp.exitCode;
+      inputWaitTimer?.cancel();
+      clearSubscriptions();
 
       if (rc != 0) {
         resultStream.add(
@@ -97,6 +142,7 @@ class CPPCompiler extends Compiler {
         );
       }
     } catch (e) {
+      clearSubscriptions();
       resultStream.add(CompilerResult.error(error: e));
     }
   }

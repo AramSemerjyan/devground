@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
 import '../compiler_result.dart';
+import '../terminal_runner.dart';
 
 class SwiftCompiler extends Compiler {
   final String path;
@@ -55,23 +56,86 @@ class SwiftCompiler extends Compiler {
 
       final cCompiler = path.isNotEmpty ? '$path/swift' : 'swift';
 
-      final proc = await Process.start(cCompiler, [file.path, file.path]);
+      final tp = await runWithPty(cCompiler, [file.path, file.path]);
 
-      final stdoutBuffer = StringBuffer();
-      final stderrBuffer = StringBuffer();
+      final looksLikeStdin = _looksLikeStdin(code);
+      bool outputSeen = false;
+      Timer? inputWaitTimer;
+      void armTimer() {
+        inputWaitTimer?.cancel();
+        if (!looksLikeStdin) return;
+        inputWaitTimer = Timer(const Duration(milliseconds: 250), () {
+          if (!outputSeen) {
+            resultStream.add(
+              CompilerResult(
+                status: CompilerResultStatus.waitingForInput,
+                data: null,
+              ),
+            );
+          }
+        });
+      }
 
-      proc.stdout.transform(utf8.decoder).listen(stdoutBuffer.write);
-      proc.stderr.transform(utf8.decoder).listen(stderrBuffer.write);
+      armTimer();
 
-      final exitCode = await proc.exitCode;
+      final inputSub = inpSink.stream.listen((input) {
+        try {
+          tp.input.add(input);
+        } catch (_) {}
+        outputSeen = false;
+        armTimer();
+      });
+      subscriptions.add(inputSub);
 
-      if (exitCode == 0) {
-        resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
+      final subOut = tp.output.listen((chunk) {
+        outputSeen = true;
+        inputWaitTimer?.cancel();
+        resultStream.add(CompilerResult.message(data: chunk));
+
+        if (looksLikeStdin) {
+          resultStream.add(
+            CompilerResult(
+              status: CompilerResultStatus.waitingForInput,
+              data: null,
+            ),
+          );
+        }
+      });
+      subscriptions.add(subOut);
+
+      final rc = await tp.exitCode;
+      inputWaitTimer?.cancel();
+      clearSubscriptions();
+
+      if (rc != 0) {
+        resultStream.add(
+          CompilerResult.error(data: 'Process exited with code $rc'),
+        );
       } else {
-        resultStream.sink.add(CompilerResult.error(data: stderrBuffer.toString()));
+        resultStream.add(
+          CompilerResult.done(data: 'Process exited with code 0'),
+        );
       }
     } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e));
+      clearSubscriptions();
+      resultStream.add(CompilerResult.error(error: e));
     }
+  }
+
+  bool _looksLikeStdin(String code) {
+    final patterns = [
+      'readline(',
+      'readline',
+      'scanf(',
+      'getchar(',
+      'fgets(',
+      'getline(',
+    ];
+
+    final lower = code.toLowerCase();
+    for (final p in patterns) {
+      if (lower.contains(p)) return true;
+    }
+    return false;
   }
 }

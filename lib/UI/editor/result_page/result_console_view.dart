@@ -1,5 +1,6 @@
 import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
 import 'package:dartpad_lite/UI/editor/result_page/result_web_view.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,27 @@ class ResultView extends StatefulWidget {
 
 class _ResultViewState extends State<ResultView> {
   final _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _fieldFocus.addListener(_onChange);
+  }
+
+  @override
+  void dispose() {
+    _fieldFocus.removeListener(_onChange);
+    _fieldFocus.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChange() {
+    if (_fieldFocus.hasFocus) {
+      EventService.emit(type: EventType.dropEditorFocus);
+    }
+  }
 
   void _onSend() {
     widget.onInput?.call(_controller.text);
