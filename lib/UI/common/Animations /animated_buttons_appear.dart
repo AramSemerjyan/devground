@@ -1,4 +1,3 @@
-import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedButtonsRow extends StatefulWidget {

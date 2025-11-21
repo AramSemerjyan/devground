@@ -177,6 +177,7 @@
     "name": "AI Response",
     "extension": ".ai",
     "icon": "",
+    "type": "custom",
     "path": {
       "validation": "",
       "hint": ""

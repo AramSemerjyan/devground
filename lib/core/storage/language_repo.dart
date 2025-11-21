@@ -10,19 +10,20 @@ import 'supported_language.dart';
 abstract class LanguageRepoInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
-  Future<void> setSelectedLanguage({required SupportedLanguageType key});
-  Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
-  Future<String> getPathForLanguage({required SupportedLanguageType key});
+  Future<void> setSelectedLanguage({required SupportedLanguageKey key});
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages();
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getAllLanguages();
+  Future<String> getPathForLanguage({required SupportedLanguageKey key});
   Future<SupportedLanguage?> setLanguagePath({
-    required SupportedLanguageType key,
+    required SupportedLanguageKey key,
     required String path,
   });
-  Future<Map<SupportedLanguageType, String?>> getSDKPaths();
+  Future<Map<SupportedLanguageKey, String?>> getSDKPaths();
 }
 
 class LanguageRepo implements LanguageRepoInterface {
-  Map<SupportedLanguageType, SupportedLanguage>? _supportedLanguages;
-  Map<SupportedLanguageType, String?> _sdkPaths = {};
+  Map<SupportedLanguageKey, SupportedLanguage>? _supportedLanguages;
+  Map<SupportedLanguageKey, String?> _sdkPaths = {};
   final ValueNotifier<SupportedLanguage?> _selectedLanguage = ValueNotifier(
     null,
   );
@@ -37,7 +38,7 @@ class LanguageRepo implements LanguageRepoInterface {
   }
 
   @override
-  Future<void> setSelectedLanguage({required SupportedLanguageType key}) async {
+  Future<void> setSelectedLanguage({required SupportedLanguageKey key}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(SPKeys.selectedSdkKey.value, key.value);
 
@@ -52,7 +53,7 @@ class LanguageRepo implements LanguageRepoInterface {
     final prefs = await SharedPreferences.getInstance();
     final languageKey = prefs.getString(SPKeys.selectedSdkKey.value);
     _selectedLanguage.value =
-        _supportedLanguages?[SupportedLanguageType.fromString(
+        _supportedLanguages?[SupportedLanguageKey.fromString(
           languageKey ?? key ?? 'dart',
         )];
 
@@ -60,7 +61,7 @@ class LanguageRepo implements LanguageRepoInterface {
   }
 
   @override
-  Future<Map<SupportedLanguageType, String?>> getSDKPaths() async {
+  Future<Map<SupportedLanguageKey, String?>> getSDKPaths() async {
     final prefs = await SharedPreferences.getInstance();
     final sdkPathsString = prefs.getString(SPKeys.sdkPathKey.value);
 
@@ -69,9 +70,9 @@ class LanguageRepo implements LanguageRepoInterface {
     final decoded = jsonDecode(sdkPathsString);
 
     // Explicit cast to Map<String, String?>
-    final Map<SupportedLanguageType, String?> paths = (decoded as Map).map(
+    final Map<SupportedLanguageKey, String?> paths = (decoded as Map).map(
       (key, value) => MapEntry(
-        SupportedLanguageType.fromString(key as String),
+        SupportedLanguageKey.fromString(key as String),
         value as String?,
       ),
     );
@@ -81,8 +82,21 @@ class LanguageRepo implements LanguageRepoInterface {
   }
 
   @override
-  Future<Map<SupportedLanguageType, SupportedLanguage>>
+  Future<Map<SupportedLanguageKey, SupportedLanguage>>
   getSupportedLanguages() async {
+    final languages = await getAllLanguages();
+    return languages.entries.where((e) => e.value.type != SupportedLanguageType.custom).fold<
+        Map<SupportedLanguageKey, SupportedLanguage>>(
+      {},
+      (previousValue, element) {
+        previousValue[element.key] = element.value;
+        return previousValue;
+      },
+    );
+  }
+
+  @override
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getAllLanguages() async {
     if (_supportedLanguages != null) return _supportedLanguages!;
 
     final jsonString = await rootBundle.loadString(
@@ -94,7 +108,7 @@ class LanguageRepo implements LanguageRepoInterface {
 
     _supportedLanguages = {};
     for (var e in mapList) {
-      _supportedLanguages?[SupportedLanguageType.fromString(e['key'])] =
+      _supportedLanguages?[SupportedLanguageKey.fromString(e['key'])] =
           SupportedLanguage.fromJson(e);
     }
 
@@ -113,13 +127,13 @@ class LanguageRepo implements LanguageRepoInterface {
   }
 
   @override
-  Future<String> getPathForLanguage({required SupportedLanguageType key}) {
+  Future<String> getPathForLanguage({required SupportedLanguageKey key}) {
     return Future.value(_sdkPaths[key]);
   }
 
   @override
   Future<SupportedLanguage?> setLanguagePath({
-    required SupportedLanguageType key,
+    required SupportedLanguageKey key,
     required String path,
   }) async {
     // Load previous paths

@@ -15,7 +15,7 @@ class LspBridge {
 
   /// Start analysis server and ws bridge
   Future<void> start() async {
-    if (language.key != SupportedLanguageType.dart) {
+    if (language.key != SupportedLanguageKey.dart) {
       return;
     }
 

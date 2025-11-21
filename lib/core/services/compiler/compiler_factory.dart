@@ -14,7 +14,9 @@ import 'languages/html_compiler.dart';
 import 'languages/js_compiler.dart';
 
 class CompilerFactory {
-  static Future<CompilerInterface> getCompiler(SupportedLanguage language) async {
+  static Future<CompilerInterface> getCompiler(
+    SupportedLanguage language,
+  ) async {
     final sdkPath = language.sdkPath;
 
     if (sdkPath == null && language.needSDKPath) {
@@ -26,25 +28,25 @@ class CompilerFactory {
     }
 
     switch (language.key) {
-      case SupportedLanguageType.dart:
+      case SupportedLanguageKey.dart:
         return DartCompiler(language.sdkPath!);
-      case SupportedLanguageType.shell:
+      case SupportedLanguageKey.shell:
         return ShellCompiler(language.sdkPath!);
-      case SupportedLanguageType.html:
+      case SupportedLanguageKey.html:
         return HTMLCompiler();
-      case SupportedLanguageType.js:
+      case SupportedLanguageKey.js:
         return JsCompiler();
-      case SupportedLanguageType.c:
+      case SupportedLanguageKey.c:
         return CCompiler(language.sdkPath!);
-      case SupportedLanguageType.cpp:
+      case SupportedLanguageKey.cpp:
         return CPPCompiler(language.sdkPath!);
-      case SupportedLanguageType.python:
+      case SupportedLanguageKey.python:
         return PythonCompiler(language.sdkPath!);
-      case SupportedLanguageType.swift:
+      case SupportedLanguageKey.swift:
         return SwiftCompiler(language.sdkPath!);
-      case SupportedLanguageType.xml:
+      case SupportedLanguageKey.xml:
         return XMLCompiler();
-      case SupportedLanguageType.json:
+      case SupportedLanguageKey.json:
         return JSONCompiler();
       default:
         return DefaultCompiler(language: language);

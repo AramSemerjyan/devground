@@ -6,7 +6,7 @@ import '../../core/storage/supported_language.dart';
 abstract class SettingsPageVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
-  Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages();
 }
 
 class SettingsPageVM implements SettingsPageVMInterface {
@@ -21,8 +21,7 @@ class SettingsPageVM implements SettingsPageVMInterface {
   SettingsPageVM(this._languageStorage);
 
   @override
-  Future<Map<SupportedLanguageType, SupportedLanguage>>
-  getSupportedLanguages() {
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages() {
     return _languageStorage.getSupportedLanguages();
   }
 }

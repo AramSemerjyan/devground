@@ -10,7 +10,7 @@ import '../../../../core/storage/supported_language.dart';
 abstract class LanguageSettingOptionVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
-  Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages();
   Future<void> setSDKPath({required String sdkPath});
 }
 
@@ -26,8 +26,7 @@ class LanguageSettingOptionVM implements LanguageSettingOptionVMInterface {
   LanguageSettingOptionVM(this._languageStorage);
 
   @override
-  Future<Map<SupportedLanguageType, SupportedLanguage>>
-  getSupportedLanguages() {
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages() {
     return _languageStorage.getSupportedLanguages();
   }
 

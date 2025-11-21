@@ -1,6 +1,24 @@
 import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
 
 enum SupportedLanguageType {
+  standard('standard'),
+  custom('custom');
+
+  final String value;
+
+  const SupportedLanguageType(this.value);
+
+  static SupportedLanguageType fromString(String type) {
+    return SupportedLanguageType.values.firstWhere(
+      (e) => e.value == type,
+      orElse: () => SupportedLanguageType.standard,
+    );
+  }
+
+  String toJson() => value;
+}
+
+enum SupportedLanguageKey {
   dart('dart'),
   shell('shell'),
   c('c'),
@@ -18,12 +36,12 @@ enum SupportedLanguageType {
 
   final String value;
 
-  const SupportedLanguageType(this.value);
+  const SupportedLanguageKey(this.value);
 
-  static SupportedLanguageType fromString(String type) {
-    return SupportedLanguageType.values.firstWhere(
+  static SupportedLanguageKey fromString(String type) {
+    return SupportedLanguageKey.values.firstWhere(
       (e) => e.value == type,
-      orElse: () => SupportedLanguageType.dart,
+      orElse: () => SupportedLanguageKey.dart,
     );
   }
 
@@ -67,7 +85,8 @@ class Path {
 }
 
 class SupportedLanguage implements CommandPaletteItem {
-  final SupportedLanguageType key;
+  final SupportedLanguageKey key;
+  final SupportedLanguageType type;
   final String name;
   final String icon;
   final String extension;
@@ -79,6 +98,7 @@ class SupportedLanguage implements CommandPaletteItem {
 
   SupportedLanguage({
     required this.key,
+    required this.type,
     required this.name,
     required this.icon,
     required this.extension,
@@ -91,7 +111,8 @@ class SupportedLanguage implements CommandPaletteItem {
 
   factory SupportedLanguage.fromJson(Map<String, dynamic> json) {
     return SupportedLanguage(
-      key: SupportedLanguageType.fromString(json['key'] ?? ''),
+      key: SupportedLanguageKey.fromString(json['key'] ?? ''),
+      type: SupportedLanguageType.fromString(json['type'] ?? 'standard'),
       name: json['name'] ?? '',
       icon: json['icon'] ?? '',
       extension: json['extension'] ?? '',
@@ -120,6 +141,7 @@ class SupportedLanguage implements CommandPaletteItem {
   SupportedLanguage addSDKPath(String sdkPath) {
     return SupportedLanguage(
       key: key,
+      type: type,
       name: name,
       icon: icon,
       extension: extension,

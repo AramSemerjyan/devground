@@ -13,7 +13,7 @@ abstract class LanguageEditorFactory {
     required LanguageEditorControllerInterface controller,
   }) {
     switch (language.key) {
-      case SupportedLanguageType.ai:
+      case SupportedLanguageKey.ai:
         if (controller is AIResponseEditorController) {
           return AiResponseEditor(controller: controller);
         } else {
@@ -36,7 +36,7 @@ abstract class LanguageEditorFactory {
     required SupportedLanguage language,
   }) {
     switch (language.key) {
-      case SupportedLanguageType.ai:
+      case SupportedLanguageKey.ai:
         return AIResponseEditorController();
       default:
         // return RealMonacoEditorController();

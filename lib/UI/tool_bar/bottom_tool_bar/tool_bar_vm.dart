@@ -11,7 +11,7 @@ abstract class BottomToolBarVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
   AIProviderInfo get aiProviderInfo;
 
-  Future<Map<SupportedLanguageType, SupportedLanguage>> getSupportedLanguages();
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages();
   Future<void> selectLanguage({required SupportedLanguage language});
 }
 
@@ -32,8 +32,7 @@ class BottomToolBarVM implements BottomToolBarVMInterface {
       _languageRepo.selectedLanguage;
 
   @override
-  Future<Map<SupportedLanguageType, SupportedLanguage>>
-  getSupportedLanguages() {
+  Future<Map<SupportedLanguageKey, SupportedLanguage>> getSupportedLanguages() {
     return _languageRepo.getSupportedLanguages();
   }
 

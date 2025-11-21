@@ -21,7 +21,7 @@ class ImportFileService implements ImportFileServiceInterface {
   Future<void> importFile({required File file}) async {
     try {
       // Get all supported languages
-      final supportedLanguages = await _languageRepo.getSupportedLanguages();
+      final supportedLanguages = await _languageRepo.getAllLanguages();
 
       // Get file extension
       final ext = extension(file.path).toLowerCase(); // e.g., ".dart"

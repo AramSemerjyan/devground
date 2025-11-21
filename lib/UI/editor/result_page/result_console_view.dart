@@ -105,13 +105,13 @@ class _ResultViewState extends State<ResultView> {
     return Scaffold(
       backgroundColor: AppColor.black,
       body: switch (widget.language.key) {
-        SupportedLanguageType.html => ResultWebView(
+        SupportedLanguageKey.html => ResultWebView(
           outputStream: widget.outputStream,
         ),
-        SupportedLanguageType.json => ResultWebView(
+        SupportedLanguageKey.json => ResultWebView(
           outputStream: widget.outputStream,
         ),
-        SupportedLanguageType.xml => ResultWebView(
+        SupportedLanguageKey.xml => ResultWebView(
           outputStream: widget.outputStream,
         ),
         _ => _buildDefaultConsole(),

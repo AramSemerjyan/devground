@@ -1,9 +1,8 @@
-import 'package:dartpad_lite/core/pages_service/app_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:uuid/uuid.dart';
 
-import '../services/event_service/event_service.dart';
+import 'app_page.dart';
 import '../services/import_file/imported_file.dart';
 
 class PageState {

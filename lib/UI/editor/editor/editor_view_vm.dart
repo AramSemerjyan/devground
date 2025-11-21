@@ -86,7 +86,7 @@ class EditorViewVM implements EditorViewVMInterface {
         return NavigationDecision.navigate;
       }
 
-      if (language.key == SupportedLanguageType.json) {
+      if (language.key == SupportedLanguageKey.json) {
         _outputController.sink.add(request.url);
       }
 
