@@ -11,9 +11,9 @@ class CPPCompiler extends Compiler {
   final String path;
 
   CPPCompiler(this.path) {
-    inpSink.stream.listen((input) {
+    subscriptions.add(inpSink.stream.listen((input) {
       currentProcess?.stdin.writeln(input);
-    });
+    }));
   }
 
   final uuid = const Uuid();
@@ -67,7 +67,7 @@ class CPPCompiler extends Compiler {
       final runProc = await Process.start(file.path, []);
       currentProcess = runProc;
 
-      runProc.stdout.transform(utf8.decoder).listen((chunk) {
+      final subOut = runProc.stdout.transform(utf8.decoder).listen((chunk) {
         resultStream.add(CompilerResult.message(data: chunk));
 
         resultStream.add(
@@ -78,12 +78,15 @@ class CPPCompiler extends Compiler {
         );
       });
 
-      runProc.stderr.transform(utf8.decoder).listen((chunk) {
+      final subErr = runProc.stderr.transform(utf8.decoder).listen((chunk) {
         resultStream.add(CompilerResult.message(data: chunk));
       });
 
       // Wait for process to exit
       final rc = await runProc.exitCode;
+      subOut.cancel();
+      subErr.cancel();
+
       if (rc != 0) {
         resultStream.add(
           CompilerResult.error(data: 'Process exited with code $rc'),

@@ -60,8 +60,8 @@ class _EditorViewState extends State<EditorView>
       s.cancel();
     }
     _subscriptions.clear();
-
     PagesService().onPagesUpdate.removeListener(_onPageUpdate);
+    _vm.dispose();
 
     super.dispose();
   }

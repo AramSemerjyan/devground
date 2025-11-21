@@ -12,9 +12,11 @@ class CCompiler extends Compiler {
   final String path;
 
   CCompiler(this.path) {
-    inpSink.stream.listen((input) {
-      currentProcess?.stdin.writeln(input);
-    });
+    subscriptions.add(
+      inpSink.stream.listen((input) {
+        currentProcess?.stdin.writeln(input);
+      }),
+    );
   }
 
   final uuid = const Uuid();
@@ -91,7 +93,7 @@ class CCompiler extends Compiler {
         });
       }
 
-      runProc.stdout.transform(utf8.decoder).listen((chunk) {
+      final subOut = runProc.stdout.transform(utf8.decoder).listen((chunk) {
         outputSeen = true;
         inputWaitTimer?.cancel();
         resultStream.add(CompilerResult.message(data: chunk));
@@ -113,6 +115,7 @@ class CCompiler extends Compiler {
       });
 
       final rc = await runProc.exitCode;
+      subOut.cancel();
       if (rc != 0) {
         resultStream.add(
           CompilerResult.error(data: 'Process exited with code $rc'),

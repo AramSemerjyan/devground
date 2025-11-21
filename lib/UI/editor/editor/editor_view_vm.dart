@@ -37,6 +37,7 @@ abstract class EditorViewVMInterface {
   Future<void> dropEditorFocus();
   Future<void> onAIBoosModeChange({required bool state});
   Future<void> onConsoleInput(String input);
+  void dispose();
 }
 
 class EditorViewVM implements EditorViewVMInterface {
@@ -213,5 +214,11 @@ class EditorViewVM implements EditorViewVMInterface {
   @override
   Future<void> onConsoleInput(String input) async {
     _compiler.inputSink.add(input);
+  }
+
+  @override
+  void dispose() {
+    _compiler.dispose();
+    _outputController.close();
   }
 }

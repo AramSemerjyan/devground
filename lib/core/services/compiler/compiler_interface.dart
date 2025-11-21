@@ -10,11 +10,14 @@ abstract class CompilerInterface {
 
   Future<void> runCode(String code);
   Future<CompilerResult> formatCode(String code);
+  void dispose();
 }
 
 class Compiler implements CompilerInterface {
   late StreamController<dynamic> inpSink = StreamController();
   late StreamController<CompilerResult> resultStream = StreamController();
+
+  List<StreamSubscription> subscriptions = [];
 
   @override
   Sink get inputSink => inpSink.sink;
@@ -32,5 +35,16 @@ class Compiler implements CompilerInterface {
   @override
   Future<void> runCode(String code) {
     throw CompilerNotSelected();
+  }
+
+  @override
+  void dispose() {
+    for (final s in subscriptions) {
+      s.cancel();
+    }
+    inpSink.close();
+    resultStream.close();
+    currentProcess?.kill(ProcessSignal.sigkill);
+    subscriptions.clear();
   }
 }
