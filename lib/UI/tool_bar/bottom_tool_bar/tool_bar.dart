@@ -6,6 +6,7 @@ import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/tool_bar_container.dart';
 import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/tool_bar_vm.dart';
+import 'package:dartpad_lite/core/services/app_info/app_info_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -161,6 +162,38 @@ class _BottomToolBarState extends State<BottomToolBar> {
     );
   }
 
+  Widget _buildAppInfo() {
+    return FutureBuilder<AppInfo>(
+      future: _vm.getAppInfo(),
+      builder: (c, f) {
+        final data = f.data;
+
+        if (data == null) return Container();
+
+        return Tooltip(
+          message: 'App Version: ${data.version} (${data.buildNumber})',
+          child: Row(
+            spacing: 5,
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: AppColor.lightBlue.withValues(alpha: 0.2),
+                size: 16,
+              ),
+              Text(
+                data.version,
+                style: TextStyle(
+                  color: AppColor.lightBlue.withValues(alpha: 0.2),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -218,6 +251,8 @@ class _BottomToolBarState extends State<BottomToolBar> {
                   const Spacer(),
                   if (aiMode) _buildAI(),
                   _buildLanguageSelection(),
+                  const SizedBox(width: 8),
+                  _buildAppInfo(),
                   const SizedBox(width: 15),
                 ],
               ),
