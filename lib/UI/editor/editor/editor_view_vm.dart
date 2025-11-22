@@ -220,12 +220,14 @@ class EditorViewVM implements EditorViewVMInterface {
       }
     });
 
-    if (file.language.sdkPath != null) {
-      await _compiler.setPath(file.language.sdkPath);
-    } else {
-      EventService.error(
-        msg: 'SDK path is not set for ${file.language.name} language.',
-      );
+    if (file.language.needSDKPath) {
+      if (file.language.sdkPath == null) {
+        EventService.error(
+          msg: 'SDK path is not set for ${file.language.name} language.',
+        );
+      } else {
+        await _compiler.setPath(file.language.sdkPath);
+      }
     }
   }
 

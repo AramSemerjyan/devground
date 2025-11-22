@@ -35,7 +35,7 @@ class BottomToolBarVM implements BottomToolBarVMInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage =>
       _languageRepo.selectedLanguage;
 
-      @override
+  @override
   Future<AppInfo> getAppInfo() {
     return _appInfoService.getAppInfo();
   }
@@ -57,7 +57,16 @@ class BottomToolBarVM implements BottomToolBarVMInterface {
   void _setListeners() {
     EventService.instance.stream
         .where((e) => e.type == EventType.languageChanged)
-        .map((event) => event.data as SupportedLanguage?)
+        .map((event) {
+          switch (event.data) {
+            case SupportedLanguage value:
+              return value;
+            case AppFile value:
+              return value.language;
+            default:
+              ();
+          }
+        })
         .where((l) => l != null)
         .listen((language) {
           selectedLanguage.value = language;
