@@ -23,40 +23,84 @@ Future<TerminalProcess> runWithPty(
   String? workingDirectory,
 }) async {
   // Try PTY first
+  // try {
+  //   // Importing `pty` at runtime; if the package isn't available this will
+  //   // throw a TypeError at runtime. The user must add the dependency.
+  //   // We use a dynamic invocation to avoid hard compile-time coupling.
+  //   final ptyLib = await _tryStartPty(
+  //     executable,
+  //     args,
+  //     environment: environment,
+  //     workingDirectory: workingDirectory,
+  //   );
+  //   if (ptyLib != null) return ptyLib;
+  // } catch (_) {
+  //   // ignore and fallback
+  // }
+
+  // Try to use `stdbuf -oL` only when a usable `stdbuf` can be located.
   try {
-    // Importing `pty` at runtime; if the package isn't available this will
-    // throw a TypeError at runtime. The user must add the dependency.
-    // We use a dynamic invocation to avoid hard compile-time coupling.
-    final ptyLib = await _tryStartPty(
-      executable,
-      args,
-      environment: environment,
-      workingDirectory: workingDirectory,
-    );
-    if (ptyLib != null) return ptyLib;
+    final stdbufPath = await _findStdBuf();
+    if (stdbufPath != null) {
+      try {
+        final proc = await Process.start(
+          stdbufPath,
+          ['-oL', executable, ...args],
+          environment: environment,
+          workingDirectory: workingDirectory,
+        );
+        return _ProcessTerminal(proc);
+      } catch (e) {
+        try {
+          stderr.writeln('Warning: failed to start stdbuf at $stdbufPath: $e');
+        } catch (_) {}
+        // fall through to direct Process.start below
+      }
+    }
   } catch (_) {
-    // ignore and fallback
+    // ignore and fall through to direct Process.start below
   }
 
-  // Fallback: try running under `stdbuf -oL` (makes many programs line-buffered)
+  // Final fallback: direct Process.start
+  final proc = await Process.start(
+    executable,
+    args,
+    environment: environment,
+    workingDirectory: workingDirectory,
+  );
+  return _ProcessTerminal(proc);
+}
+
+/// Try to locate a usable `stdbuf` executable and return its absolute path,
+/// or `null` if none found. This probes `which` and a small set of common
+/// locations (Homebrew prefixes + system paths).
+Future<String?> _findStdBuf() async {
+  if (Platform.isWindows) return null;
+
   try {
-    final proc = await Process.start(
-      'stdbuf',
-      ['-oL', executable, ...args],
-      environment: environment,
-      workingDirectory: workingDirectory,
-    );
-    return _ProcessTerminal(proc);
+    final which = await Process.run('which', ['stdbuf']);
+    if (which.exitCode == 0) {
+      final out = (which.stdout as String).trim();
+      if (out.isNotEmpty) return out.split('\n').first.trim();
+    }
   } catch (_) {
-    // Final fallback: direct Process.start
-    final proc = await Process.start(
-      executable,
-      args,
-      environment: environment,
-      workingDirectory: workingDirectory,
-    );
-    return _ProcessTerminal(proc);
+    // ignore
   }
+
+  final candidates = <String>[
+    '/opt/homebrew/bin/stdbuf',
+    '/usr/local/bin/stdbuf',
+    '/usr/bin/stdbuf',
+    '/bin/stdbuf',
+  ];
+  for (final p in candidates) {
+    try {
+      final f = File(p);
+      if (await f.exists()) return p;
+    } catch (_) {}
+  }
+
+  return null;
 }
 
 // Implementation using Process pipes
