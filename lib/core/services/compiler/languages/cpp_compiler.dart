@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,14 +11,16 @@ import '../compiler_result.dart';
 import '../terminal_runner.dart';
 
 class CPPCompiler extends Compiler {
-  final String path;
-
-  CPPCompiler(this.path);
-
   final uuid = const Uuid();
+
+  String? _path;
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+        if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     try {
       // Simple formatting: add line breaks and indentation for nested tags
       // (You can use `html` package or prettier for more advanced formatting)
@@ -28,31 +31,19 @@ class CPPCompiler extends Compiler {
     }
   }
 
-  bool _looksLikeStdin(String code) {
-    final patterns = [
-      'cin>>',
-      'std::getline',
-      'getline(',
-      'scanf(',
-      'readline',
-    ];
-
-    final lower = code.toLowerCase();
-    for (final p in patterns) {
-      if (lower.contains(p.toLowerCase())) return true;
-    }
-    return false;
-  }
-
   @override
   Future<void> runCode(String code) async {
+        if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+    
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
       final file = File('${tmpDir.path}/snippet_c_$id.cpp');
       await file.writeAsString(code);
 
-      final cCompiler = path.isNotEmpty ? '$path/g++' : 'g++';
+      final cCompiler = _path!.isNotEmpty ? '$_path/g++' : 'g++';
 
       final compileProc = await Process.start(cCompiler, [
         file.path,
@@ -145,5 +136,28 @@ class CPPCompiler extends Compiler {
       clearSubscriptions();
       resultStream.add(CompilerResult.error(error: e));
     }
+  }
+
+  @override
+  Future<void> setPath(String? path) async {
+    _path = path;
+  }
+
+  
+
+    bool _looksLikeStdin(String code) {
+    final patterns = [
+      'cin>>',
+      'std::getline',
+      'getline(',
+      'scanf(',
+      'readline',
+    ];
+
+    final lower = code.toLowerCase();
+    for (final p in patterns) {
+      if (lower.contains(p.toLowerCase())) return true;
+    }
+    return false;
   }
 }

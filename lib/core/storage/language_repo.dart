@@ -85,14 +85,15 @@ class LanguageRepo implements LanguageRepoInterface {
   Future<Map<SupportedLanguageKey, SupportedLanguage>>
   getSupportedLanguages() async {
     final languages = await getAllLanguages();
-    return languages.entries.where((e) => e.value.type != SupportedLanguageType.custom).fold<
-        Map<SupportedLanguageKey, SupportedLanguage>>(
-      {},
-      (previousValue, element) {
-        previousValue[element.key] = element.value;
-        return previousValue;
-      },
-    );
+    return languages.entries
+        .where((e) => e.value.type != SupportedLanguageType.custom)
+        .fold<Map<SupportedLanguageKey, SupportedLanguage>>({}, (
+          previousValue,
+          element,
+        ) {
+          previousValue[element.key] = element.value;
+          return previousValue;
+        });
   }
 
   @override
@@ -154,6 +155,10 @@ class LanguageRepo implements LanguageRepoInterface {
     if (language != null) {
       language = language.addSDKPath(path);
       _supportedLanguages?[key] = language;
+    }
+
+    if (language?.key == _selectedLanguage.value?.key) {
+      _selectedLanguage.value = language;
     }
 
     return language;

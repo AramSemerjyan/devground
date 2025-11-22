@@ -158,7 +158,7 @@ class SupportedLanguage implements CommandPaletteItem {
       identical(this, other) ||
       other is SupportedLanguage &&
           runtimeType == other.runtimeType &&
-          key.value == other.key.value;
+          key.value == other.key.value && sdkPath == other.sdkPath;
 
   @override
   int get hashCode => key.value.hashCode;

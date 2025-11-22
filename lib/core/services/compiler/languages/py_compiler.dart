@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,20 +9,22 @@ import '../compiler_interface.dart';
 import '../compiler_result.dart';
 
 class PythonCompiler extends Compiler {
-  final String pythonPath;
+  String? _path;
   final uuid = const Uuid();
-
-  PythonCompiler(this.pythonPath);
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+                if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_fmt_$id.py');
     await file.writeAsString(code);
 
-    final pythonFormatter = pythonPath.isNotEmpty
-        ? '$pythonPath/black'
+    final pythonFormatter = _path!.isNotEmpty
+        ? '$_path/black'
         : 'black';
 
     // Run black formatter silently
@@ -40,13 +43,17 @@ class PythonCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
+                if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_$id.py');
     await file.writeAsString(code);
 
-    final pythonExecutable = pythonPath.isNotEmpty
-        ? '$pythonPath/python3'
+    final pythonExecutable = _path!.isNotEmpty
+        ? '$_path/python3'
         : 'python3'; // fallback to system Python
 
     final proc = await Process.start(pythonExecutable, [file.path]);
@@ -69,6 +76,11 @@ class PythonCompiler extends Compiler {
     }
 
     resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
+  }
+
+    @override
+  Future<void> setPath(String? path) async {
+    _path = path;
   }
 
   String _extractPythonError(String stderr) {

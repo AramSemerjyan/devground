@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,19 +9,21 @@ import '../compiler_interface.dart';
 import '../compiler_result.dart';
 
 class DartCompiler extends Compiler {
-  final String flutterPath;
+  String? _path;
   final uuid = const Uuid();
-
-  DartCompiler(this.flutterPath);
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+                if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_fmt_$id.dart');
     // final flutterPath = await SettingsManager.getFlutterPath();
-    final dartExecutable = flutterPath.isNotEmpty
-        ? '$flutterPath/bin/dart'
+    final dartExecutable = _path!.isNotEmpty
+        ? '$_path/bin/dart'
         : 'dart';
     await file.writeAsString(code);
     // run dart format -n does not write; run 'dart format' overwrites, but we want formatted output
@@ -37,6 +40,10 @@ class DartCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
+            if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_$id.dart');
@@ -45,8 +52,8 @@ class DartCompiler extends Compiler {
     final compiledPath = '${tmpDir.path}/snippet_$id.bin';
 
     // Run: dart compile exe <file> -o <compiledPath>
-    final dartExecutable = flutterPath.isNotEmpty
-        ? '$flutterPath/bin/dart'
+    final dartExecutable = _path!.isNotEmpty
+        ? '$_path/bin/dart'
         : 'dart'; // fallback to default if not set
 
     final compileProc = await Process.start(dartExecutable, [
@@ -102,6 +109,11 @@ class DartCompiler extends Compiler {
     } catch (e) {
       resultStream.sink.add(CompilerResult.error(error: e));
     }
+  }
+
+  @override
+  Future<void> setPath(String? path) async {
+    _path = path;
   }
 
   String _extractDartError(String stderr) {

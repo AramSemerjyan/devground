@@ -77,23 +77,6 @@ class EditorViewVM implements EditorViewVMInterface {
   final _output = StringBuffer();
 
   EditorViewVM(this._file, this._saveFileService, this._pagesService) {
-    _languageEditorController = LanguageEditorFactory.getController(
-      language: language,
-    );
-
-    _languageEditorController.onNavigationRequest = (request) {
-      if (request.url.startsWith('data:text/html') ||
-          request.url == 'about:blank') {
-        return NavigationDecision.navigate;
-      }
-
-      if (language.key == SupportedLanguageKey.json) {
-        _outputController.sink.add(request.url);
-      }
-
-      return NavigationDecision.prevent;
-    };
-
     _setUp();
   }
 
@@ -163,34 +146,12 @@ class EditorViewVM implements EditorViewVMInterface {
 
   void _setUp() async {
     settingUp.value = true;
-    try {
-      _compiler = await CompilerFactory.getCompiler(file.language);
-      await _languageEditorController.setUp();
-      await _languageEditorController.setLanguage(language: _file.language);
-      await _languageEditorController.setCode(code: _file.code);
 
-      _compiler.outputStream.listen((result) {
-        switch (result.status) {
-          case CompilerResultStatus.message:
-            _sendOutput(result.data);
-            break;
-          case CompilerResultStatus.error:
-            _sendOutput(result.error.toString());
-            EventService.error(
-              error: AppError(object: result.error),
-              msg: 'Error'
-            );
-            enableConsoleInput.value = false;
-            break;
-          case CompilerResultStatus.waitingForInput:
-            enableConsoleInput.value = true;
-            break;
-          case CompilerResultStatus.done:
-            _sendOutput(result.data);
-            enableConsoleInput.value = false;
-            break;
-        }
-      });
+    _setUpListeners();
+
+    try {
+      await _setUpMonacoController();
+      await _setUpCompiler();
     } on CompilerUpcomingSupport catch (e) {
       EventService.warning(msg: e.toString());
     } catch (e, s) {
@@ -201,6 +162,83 @@ class EditorViewVM implements EditorViewVMInterface {
       );
     }
     settingUp.value = false;
+  }
+
+  Future<void> _setUpMonacoController() async {
+    try {
+      _languageEditorController = LanguageEditorFactory.getController(
+        language: language,
+      );
+
+      _languageEditorController.onNavigationRequest = (request) {
+        if (request.url.startsWith('data:text/html') ||
+            request.url == 'about:blank') {
+          return NavigationDecision.navigate;
+        }
+
+        if (language.key == SupportedLanguageKey.json) {
+          _outputController.sink.add(request.url);
+        }
+
+        return NavigationDecision.prevent;
+      };
+
+      await _languageEditorController.setUp();
+      await _languageEditorController.setLanguage(language: _file.language);
+      await _languageEditorController.setCode(code: _file.code);
+    } catch (e, s) {
+      EventService.error(
+        error: AppError(object: e, stackTrace: s),
+        msg: e.toString(),
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
+  Future<void> _setUpCompiler() async {
+    _compiler = await CompilerFactory.getCompiler(file.language);
+    _compiler.outputStream.listen((result) {
+      switch (result.status) {
+        case CompilerResultStatus.message:
+          _sendOutput(result.data);
+          break;
+        case CompilerResultStatus.error:
+          _sendOutput(result.error.toString());
+          EventService.error(
+            error: AppError(object: result.error),
+            msg: 'Error',
+          );
+          enableConsoleInput.value = false;
+          break;
+        case CompilerResultStatus.waitingForInput:
+          enableConsoleInput.value = true;
+          break;
+        case CompilerResultStatus.done:
+          _sendOutput(result.data);
+          enableConsoleInput.value = false;
+          break;
+      }
+    });
+
+    if (file.language.sdkPath != null) {
+      await _compiler.setPath(file.language.sdkPath);
+    } else {
+      EventService.error(
+        msg: 'SDK path is not set for ${file.language.name} language.',
+      );
+    }
+  }
+
+  void _setUpListeners() {
+    EventService.instance.stream
+        .where((e) => e.type == EventType.sdkPathUpdated)
+        .listen((event) {
+          final language = event.data as SupportedLanguage;
+
+          if (language.key == _file.language.key) {
+            _compiler.setPath(language.sdkPath);
+          }
+        });
   }
 
   Future<void> _sendOutput(String s) async {

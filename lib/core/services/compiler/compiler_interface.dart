@@ -8,6 +8,7 @@ abstract class CompilerInterface {
   Sink<dynamic> get inputSink;
   Stream<CompilerResult> get outputStream;
 
+  Future<void> setPath(String? path);
   Future<void> runCode(String code);
   Future<void> stop();
   Future<CompilerResult> formatCode(String code);
@@ -36,6 +37,11 @@ class Compiler implements CompilerInterface {
   @override
   Future<void> runCode(String code) {
     throw CompilerNotSelected();
+  }
+
+  @override
+  Future<void> setPath(String? path) {
+    return Future.value();
   }
 
   void clearSubscriptions() {

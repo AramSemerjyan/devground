@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -9,14 +10,15 @@ import '../compiler_result.dart';
 import '../terminal_runner.dart';
 
 class SwiftCompiler extends Compiler {
-  final String path;
-
-  SwiftCompiler(this.path);
+  String? _path;
 
   final uuid = const Uuid();
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+                    if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
     try {
       // Simple formatting: add line breaks and indentation for nested tags
       // (You can use `html` package or prettier for more advanced formatting)
@@ -25,36 +27,21 @@ class SwiftCompiler extends Compiler {
     } catch (e) {
       return CompilerResult.error(error: e);
     }
-
-    // // Swift has no built-in code formatter CLI for snippets easily.
-    // // You can integrate `swift-format` if installed:
-    // final tmpDir = await getTemporaryDirectory();
-    // final file = File('${tmpDir.path}/snippet_fmt.swift');
-    // await file.writeAsString(code);
-    //
-    // final swiftFormatExecutable = '$swiftPath-format'; // optional, only if installed
-    // final proc = await Process.start(
-    //   swiftFormatExecutable,
-    //   [file.path],
-    // );
-    //
-    // final exitCode = await proc.exitCode;
-    // if (exitCode == 0) {
-    //   return CompilerResult(data: await file.readAsString());
-    // } else {
-    //   return CompilerResult(hasError: true, data: exitCode);
-    // }
   }
 
   @override
   Future<void> runCode(String code) async {
+                    if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
       final file = File('${tmpDir.path}/snippet_swift_$id.swift');
       await file.writeAsString(code);
 
-      final cCompiler = path.isNotEmpty ? '$path/swift' : 'swift';
+      final cCompiler = _path!.isNotEmpty ? '$_path/swift' : 'swift';
 
       final tp = await runWithPty(cCompiler, [file.path, file.path]);
 
@@ -120,6 +107,11 @@ class SwiftCompiler extends Compiler {
       clearSubscriptions();
       resultStream.add(CompilerResult.error(error: e));
     }
+  }
+
+    @override
+  Future<void> setPath(String? path) async {
+    _path = path;
   }
 
   bool _looksLikeStdin(String code) {

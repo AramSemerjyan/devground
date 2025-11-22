@@ -3,7 +3,7 @@ abstract class CompilerError implements Exception {
   CompilerError(this.message);
 
   @override
-  String toString() => "AIProviderError: $message";
+  String toString() => "CompilerError: $message";
 }
 
 class CompilerUpcomingSupport extends CompilerError {

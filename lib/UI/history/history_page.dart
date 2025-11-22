@@ -60,7 +60,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _searchController.dispose();
     super.dispose();
   }
 

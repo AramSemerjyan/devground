@@ -22,28 +22,26 @@ class CompilerFactory {
     if (sdkPath == null && language.needSDKPath) {
       if (language.supported == LanguageSupport.upcoming) {
         throw CompilerUpcomingSupport();
-      } else {
-        throw CompilerSDKPathMissing();
       }
     }
 
     switch (language.key) {
       case SupportedLanguageKey.dart:
-        return DartCompiler(language.sdkPath!);
+        return DartCompiler();
       case SupportedLanguageKey.shell:
-        return ShellCompiler(language.sdkPath!);
+        return ShellCompiler();
       case SupportedLanguageKey.html:
         return HTMLCompiler();
       case SupportedLanguageKey.js:
         return JsCompiler();
       case SupportedLanguageKey.c:
-        return CCompiler(language.sdkPath!);
+        return CCompiler();
       case SupportedLanguageKey.cpp:
-        return CPPCompiler(language.sdkPath!);
+        return CPPCompiler();
       case SupportedLanguageKey.python:
-        return PythonCompiler(language.sdkPath!);
+        return PythonCompiler();
       case SupportedLanguageKey.swift:
-        return SwiftCompiler(language.sdkPath!);
+        return SwiftCompiler();
       case SupportedLanguageKey.xml:
         return XMLCompiler();
       case SupportedLanguageKey.json:

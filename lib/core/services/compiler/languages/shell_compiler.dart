@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -7,14 +8,16 @@ import '../compiler_interface.dart';
 import '../compiler_result.dart';
 
 class ShellCompiler extends Compiler {
-  final String path;
+  String? _path;
   final uuid = const Uuid();
-
-  ShellCompiler(this.path);
 
   @override
   @override
   Future<void> runCode(String code) async {
+                    if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     try {
       // Write code to a temporary file
       final tmpDir = await getTemporaryDirectory();
@@ -22,7 +25,7 @@ class ShellCompiler extends Compiler {
       final tempFile = File('${tmpDir.path}/snippet_fmt_$id.dart');
       await tempFile.writeAsString(code);
 
-      final exe = path.isNotEmpty ? '$path/bash' : 'sh';
+      final exe = _path!.isNotEmpty ? '$_path/bash' : 'sh';
 
       // Ensure executable permissions
       if (Platform.isLinux || Platform.isMacOS) {
@@ -50,6 +53,10 @@ class ShellCompiler extends Compiler {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+                    if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     try {
       // Basic shell formatting:
       // - Trim trailing spaces
@@ -64,5 +71,10 @@ class ShellCompiler extends Compiler {
     } catch (e) {
       return CompilerResult.error(error: e.toString());
     }
+  }
+
+  @override
+  Future<void> setPath(String? path) async {
+    _path = path;
   }
 }

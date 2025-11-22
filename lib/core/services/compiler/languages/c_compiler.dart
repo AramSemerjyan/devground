@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,18 +11,16 @@ import '../compiler_result.dart';
 import '../terminal_runner.dart';
 
 class CCompiler extends Compiler {
-  final String path;
-
-  CCompiler(this.path) {
-    // Do not forward inpSink here; runCode will subscribe per-run so it can
-    // re-arm waiting timers after each input. This prevents duplicate writes
-    // and allows per-run cleanup.
-  }
-
   final uuid = const Uuid();
+
+  String? _path;
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+        if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+
     try {
       // Simple formatting: add line breaks and indentation for nested tags
       // (You can use `html` package or prettier for more advanced formatting)
@@ -34,13 +33,17 @@ class CCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
+    if (_path == null) {
+      throw CompilerSDKPathMissing();
+    }
+    
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
       final file = File('${tmpDir.path}/snippet_c_$id.c');
       await file.writeAsString(code);
 
-      final cCompiler = path.isNotEmpty ? '$path/gcc' : 'gcc';
+      final cCompiler = _path!.isNotEmpty ? '$_path/gcc' : 'gcc';
 
       final compileProc = await Process.start(cCompiler, [
         file.path,
@@ -133,6 +136,11 @@ class CCompiler extends Compiler {
       clearSubscriptions();
       resultStream.add(CompilerResult.error(error: e));
     }
+  }
+
+  @override
+  Future<void> setPath(String? path) async {
+    _path = path;
   }
 
   bool _looksLikeStdin(String code) {
