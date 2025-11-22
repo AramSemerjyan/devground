@@ -16,7 +16,7 @@ class SwiftCompiler extends Compiler {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-                    if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
     try {
@@ -31,7 +31,7 @@ class SwiftCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
-                    if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
 
@@ -109,7 +109,7 @@ class SwiftCompiler extends Compiler {
     }
   }
 
-    @override
+  @override
   Future<void> setPath(String? path) async {
     _path = path;
   }
