@@ -84,6 +84,6 @@ jobs:
             echo "Build successful - output found at ${{ matrix.build-path }}"
             ls -la "${{ matrix.build-path }}" || true
           else
-            echo "Build output directory not found at expected path"
+            echo "Build output directory not found at expected path: ${{ matrix.build-path }}"
             exit 1
           fi
