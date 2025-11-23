@@ -11,10 +11,12 @@ The `flutter-ci.yml` workflow automatically runs on every commit and pull reques
    - Runs static analysis with `flutter analyze`
    - Ensures code quality standards are met
 
-2. **Build Job** (runs on Linux, macOS, and Windows):
-   - Builds the application for each platform
+2. **Build Job** (runs on macOS):
+   - Builds the application for macOS
    - Verifies that the build completes successfully
    - Catches build-time errors before merging
+
+> **Note:** Linux and Windows builds are currently commented out as the application doesn't support these platforms yet. They can be enabled in the future by uncommenting the relevant sections in the workflow file.
 
 ### Running locally:
 
@@ -27,10 +29,8 @@ dart format .
 # Analyze your code
 flutter analyze
 
-# Build for your platform
-flutter build linux --release   # on Linux
-flutter build macos --release   # on macOS
-flutter build windows --release # on Windows
+# Build for macOS
+flutter build macos --release
 ```
 
 ### Troubleshooting:
