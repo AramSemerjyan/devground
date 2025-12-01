@@ -28,35 +28,7 @@ class ResultView extends StatefulWidget {
 
 class _ResultViewState extends State<ResultView> {
   final _controller = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    _fieldFocus.addListener(_onChange);
-  }
-
-  @override
-  void dispose() {
-    _fieldFocus.removeListener(_onChange);
-    _fieldFocus.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onChange() {
-    if (_fieldFocus.hasFocus) {
-      EventService.emit(type: EventType.dropEditorFocus);
-    }
-  }
-
-  void _onSend() {
-    widget.onInput?.call(_controller.text);
-    _controller.clear();
-  }
-
-  ValueNotifier<String> onInputChange = ValueNotifier('');
-  late final _fieldFocus = FocusNode(
+    late final _inputFieldFocus = FocusNode(
     onKeyEvent: (FocusNode node, KeyEvent evt) {
       if (evt.logicalKey == LogicalKeyboardKey.enter) {
         if (evt is KeyDownEvent) {
@@ -68,6 +40,44 @@ class _ResultViewState extends State<ResultView> {
       }
     },
   );
+  late final _resultFieldFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _inputFieldFocus.addListener(_onInputChange);
+    _resultFieldFocus.addListener(_onResultChange);
+  }
+
+  @override
+  void dispose() {
+    _inputFieldFocus.removeListener(_onInputChange);
+    _resultFieldFocus.removeListener(_onResultChange);
+    _inputFieldFocus.dispose();
+    _resultFieldFocus.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onInputChange() {
+    if (_inputFieldFocus.hasFocus) {
+      EventService.emit(type: EventType.dropEditorFocus);
+    }
+  }
+
+    void _onResultChange() {
+    if (_resultFieldFocus.hasFocus) {
+      EventService.emit(type: EventType.dropEditorFocus);
+    }
+  }
+
+  void _onSend() {
+    widget.onInput?.call(_controller.text);
+    _controller.clear();
+  }
+
+  ValueNotifier<String> onInputChange = ValueNotifier('');
 
   Widget _buildDefaultConsole() {
     return StreamBuilder(
@@ -78,6 +88,7 @@ class _ResultViewState extends State<ResultView> {
             SingleChildScrollView(
               padding: const EdgeInsets.all(8),
               child: SelectableText(
+                focusNode: _resultFieldFocus,
                 stream.data?.data ?? '',
                 style: TextStyle(
                   color: stream.data?.error != null ? Colors.redAccent : Colors.greenAccent,
@@ -97,7 +108,7 @@ class _ResultViewState extends State<ResultView> {
                       Container(height: 1, color: AppColor.mainGreyDark),
                       TextField(
                         controller: _controller,
-                        focusNode: _fieldFocus,
+                        focusNode: _inputFieldFocus,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
