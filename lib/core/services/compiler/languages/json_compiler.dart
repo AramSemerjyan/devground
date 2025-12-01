@@ -13,9 +13,9 @@ class JSONCompiler extends Compiler {
     try {
       final jsonObject = jsonDecode(code);
       const encoder = JsonEncoder.withIndent('  '); // 2 spaces
-      return CompilerResult.message(data: encoder.convert(jsonObject));
-    } catch (e) {
-      return CompilerResult.error(error: e);
+      return CompilerResult.message(data: encoder.convert(jsonObject), message: 'JSON formatted successfully');
+    } catch (e, s) {
+      return CompilerResult.error(error: e, stackTrace: s);
     }
   }
 

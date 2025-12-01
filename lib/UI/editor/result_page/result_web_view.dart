@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_result.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +11,7 @@ import '../../../core/services/event_service/app_error.dart';
 import '../../../core/services/event_service/event_service.dart';
 
 class ResultWebView extends StatefulWidget {
-  final Stream<String> outputStream;
+  final Stream<CompilerResult> outputStream;
 
   const ResultWebView({super.key, required this.outputStream});
 
@@ -105,7 +106,8 @@ class _ResultWebViewState extends State<ResultWebView> {
   void initState() {
     super.initState();
 
-    final sub = widget.outputStream.listen((path) {
+    final sub = widget.outputStream.listen((result) {
+      final path = result.data;
       final isUrl = path.contains('https://') || path.contains('https://');
       homePath = path;
 

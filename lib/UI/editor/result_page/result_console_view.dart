@@ -1,5 +1,6 @@
 import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
 import 'package:dartpad_lite/UI/editor/result_page/result_web_view.dart';
+import 'package:dartpad_lite/core/services/compiler/compiler_result.dart';
 import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ import '../../../core/storage/supported_language.dart';
 
 class ResultView extends StatefulWidget {
   final SupportedLanguage language;
-  final Stream<String> outputStream;
+  final Stream<CompilerResult> outputStream;
   final bool enableInput;
   final Function(String)? onInput;
 
@@ -71,15 +72,15 @@ class _ResultViewState extends State<ResultView> {
   Widget _buildDefaultConsole() {
     return StreamBuilder(
       stream: widget.outputStream,
-      builder: (_, value) {
+      builder: (_, stream) {
         return Stack(
           children: [
             SingleChildScrollView(
               padding: const EdgeInsets.all(8),
               child: SelectableText(
-                value.data ?? '',
-                style: const TextStyle(
-                  color: Colors.greenAccent,
+                stream.data?.data ?? '',
+                style: TextStyle(
+                  color: stream.data?.error != null ? Colors.redAccent : Colors.greenAccent,
                   fontFamily: 'monospace',
                   fontSize: 13,
                 ),
@@ -155,10 +156,10 @@ class _ResultViewState extends State<ResultView> {
       },
       floatingActionButton: StreamBuilder(
         stream: widget.outputStream,
-        builder: (_, value) {
-          final data = value.data;
+        builder: (_, stream) {
+          final compilerResult = stream.data;
 
-          if (data != null && data.isNotEmpty) {
+          if (compilerResult != null && compilerResult.data.isNotEmpty) {
             return Padding(
               padding: widget.enableInput
                   ? EdgeInsets.only(bottom: 60)
@@ -169,7 +170,7 @@ class _ResultViewState extends State<ResultView> {
                 mini: true,
                 icon: Icons.copy,
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: data));
+                  Clipboard.setData(ClipboardData(text: compilerResult.data));
                 },
               ),
             );

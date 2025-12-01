@@ -14,7 +14,7 @@ class ShellCompiler extends Compiler {
   @override
   @override
   Future<void> runCode(String code) async {
-                    if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
 
@@ -41,19 +41,30 @@ class ShellCompiler extends Compiler {
           : null;
 
       if (error != null) {
-        resultStream.sink.add(CompilerResult.error(data: error));
+        resultStream.sink.add(
+          CompilerResult.error(
+            data: error,
+            error: CompilerExecutionError('Shell script failed with errors'),
+            message: 'Shell script failed with errors',
+          ),
+        );
         return;
       }
 
-      resultStream.sink.add(CompilerResult.done(data: output));
-    } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e.toString()));
+      resultStream.sink.add(
+        CompilerResult.done(
+          data: output,
+          message: 'Shell script executed successfully',
+        ),
+      );
+    } catch (e, s) {
+      resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-                    if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
 

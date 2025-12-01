@@ -17,3 +17,7 @@ class CompilerSDKPathMissing extends CompilerError {
 class CompilerNotSelected extends CompilerError {
   CompilerNotSelected() : super("Compiler not selected");
 }
+
+class CompilerExecutionError extends CompilerError {
+  CompilerExecutionError(super.message);
+}

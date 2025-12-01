@@ -17,7 +17,7 @@ class CPPCompiler extends Compiler {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-        if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
 
@@ -33,10 +33,10 @@ class CPPCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
-        if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
-    
+
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
@@ -104,14 +104,20 @@ class CPPCompiler extends Compiler {
       });
       subscriptions.add(inputSub);
 
+      StringBuffer outputBuffer = StringBuffer();
+
       final subOut = tp.output.listen((chunk) {
         outputSeen = true;
         inputWaitTimer?.cancel();
         resultStream.add(CompilerResult.message(data: chunk));
+
+        outputBuffer.write(chunk);
+
         if (looksLikeStdin) {
           resultStream.add(
             CompilerResult(
               status: CompilerResultStatus.waitingForInput,
+              message: 'Process is waiting for input...',
               data: null,
             ),
           );
@@ -125,16 +131,23 @@ class CPPCompiler extends Compiler {
 
       if (rc != 0) {
         resultStream.add(
-          CompilerResult.error(data: 'Process exited with code $rc'),
+          CompilerResult.error(
+            data: outputBuffer.toString(),
+            error: CompilerExecutionError('Process exited with code $rc'),
+            message: 'Process exited with code $rc',
+          ),
         );
       } else {
         resultStream.add(
-          CompilerResult.done(data: 'Process exited with code 0'),
+          CompilerResult.done(
+            data: outputBuffer.toString(),
+            message: 'Process exited with code 0',
+          ),
         );
       }
-    } catch (e) {
+    } catch (e, s) {
       clearSubscriptions();
-      resultStream.add(CompilerResult.error(error: e));
+      resultStream.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
 
@@ -143,9 +156,7 @@ class CPPCompiler extends Compiler {
     _path = path;
   }
 
-  
-
-    bool _looksLikeStdin(String code) {
+  bool _looksLikeStdin(String code) {
     final patterns = [
       'cin>>',
       'std::getline',

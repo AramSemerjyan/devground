@@ -14,7 +14,7 @@ class DartCompiler extends Compiler {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-                if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
 
@@ -22,9 +22,7 @@ class DartCompiler extends Compiler {
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_fmt_$id.dart');
     // final flutterPath = await SettingsManager.getFlutterPath();
-    final dartExecutable = _path!.isNotEmpty
-        ? '$_path/bin/dart'
-        : 'dart';
+    final dartExecutable = _path!.isNotEmpty ? '$_path/bin/dart' : 'dart';
     await file.writeAsString(code);
     // run dart format -n does not write; run 'dart format' overwrites, but we want formatted output
     // Simplest: run `dart format <file>` then read file back.
@@ -40,7 +38,7 @@ class DartCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
-            if (_path == null) {
+    if (_path == null) {
       throw CompilerSDKPathMissing();
     }
 
@@ -79,6 +77,8 @@ class DartCompiler extends Compiler {
         resultStream.add(
           CompilerResult.error(
             data: _extractDartError(compileStderr.toString()),
+            message: 'Compilation failed',
+            error: CompilerExecutionError('Compilation failed'),
           ),
         );
         return;
@@ -100,14 +100,23 @@ class DartCompiler extends Compiler {
       final rc = await runProc.exitCode;
 
       if (rc != 0) {
-        resultStream.sink.add(CompilerResult.error(data: runProcStderr.toString()));
+        resultStream.sink.add(
+          CompilerResult.error(
+            data: runProcStderr.toString(),
+            error: CompilerExecutionError('Process exited with code $rc'),
+            message: 'Process exited with code $rc',
+          ),
+        );
       } else {
         resultStream.sink.add(
-          CompilerResult.done(data: runProcStdout.toString()),
+          CompilerResult.done(
+            data: runProcStdout.toString(),
+            message: 'Process exited with code 0',
+          ),
         );
       }
-    } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e));
+    } catch (e, s) {
+      resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
 

@@ -34,10 +34,10 @@ class XMLCompiler extends Compiler {
       // Load the temporary file into WebView
       final uri = Uri.file(file.path).path;
 
-      resultStream.sink.add(CompilerResult.done(data: uri));
+      resultStream.sink.add(CompilerResult.done(data: uri, message: 'XML file created at $uri'));
       return;
-    } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e));
+    } catch (e, s) {
+      resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
       return;
     }
   }

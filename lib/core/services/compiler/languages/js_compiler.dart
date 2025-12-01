@@ -17,9 +17,9 @@ class JsCompiler extends Compiler {
     try {
       // Evaluate code
       final result = _jsRuntime.evaluate(code);
-      resultStream.sink.add(CompilerResult.done(data: result.stringResult));
-    } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e.toString()));
+      resultStream.sink.add(CompilerResult.done(data: result.stringResult, message: 'Process exited with code 0'));
+    } catch (e, s) {
+      resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
 
@@ -28,8 +28,8 @@ class JsCompiler extends Compiler {
     try {
       final formatted = code.trim();
       return CompilerResult.message(data: formatted);
-    } catch (e) {
-      return CompilerResult.error(error: e.toString());
+    } catch (e, s) {
+      return CompilerResult.error(error: e, stackTrace: s);
     }
   }
 }

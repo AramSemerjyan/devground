@@ -30,9 +30,9 @@ class HTMLCompiler extends Compiler {
       await file.writeAsString(code);
 
       final uri = Uri.file(file.path).path;
-      resultStream.sink.add(CompilerResult.done(data: uri));
-    } catch (e) {
-      resultStream.sink.add(CompilerResult.error(error: e));
+      resultStream.sink.add(CompilerResult.done(data: uri, message: 'HTML file created at $uri'));
+    } catch (e, s) {
+      resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
 }

@@ -23,7 +23,7 @@ abstract class EditorViewVMInterface {
 
   SupportedLanguage get language;
 
-  Stream<String> get compileResultStream;
+  Stream<CompilerResult> get compileResultStream;
 
   ValueNotifier<bool> get runProgress;
   ValueNotifier<bool> get formatProgress;
@@ -55,7 +55,7 @@ class EditorViewVM implements EditorViewVMInterface {
   SupportedLanguage get language => _file.language;
 
   @override
-  Stream<String> get compileResultStream => _outputController.stream;
+  Stream<CompilerResult> get compileResultStream => _outputController.stream;
 
   @override
   ValueNotifier<bool> settingUp = ValueNotifier(false);
@@ -73,7 +73,7 @@ class EditorViewVM implements EditorViewVMInterface {
   @override
   LanguageEditorControllerInterface get controller => _languageEditorController;
 
-  final _outputController = StreamController<String>.broadcast();
+  final _outputController = StreamController<CompilerResult>.broadcast();
   final _output = StringBuffer();
 
   EditorViewVM(this._file, this._saveFileService, this._pagesService) {
@@ -88,7 +88,7 @@ class EditorViewVM implements EditorViewVMInterface {
     final code = await _languageEditorController.getValue();
 
     _output.clear();
-    _outputController.sink.add('');
+    _outputController.sink.add(CompilerResult.empty());
 
     try {
       await _compiler.runCode(code);
@@ -177,7 +177,7 @@ class EditorViewVM implements EditorViewVMInterface {
         }
 
         if (language.key == SupportedLanguageKey.json) {
-          _outputController.sink.add(request.url);
+          _outputController.sink.add(CompilerResult.message(data: request.url));
         }
 
         return NavigationDecision.prevent;
@@ -200,22 +200,24 @@ class EditorViewVM implements EditorViewVMInterface {
     _compiler.outputStream.listen((result) {
       switch (result.status) {
         case CompilerResultStatus.message:
-          _sendOutput(result.data);
+          _sendOutput(result);
           break;
         case CompilerResultStatus.error:
-          _sendOutput(result.error.toString());
+          _sendOutput(result);
           EventService.error(
             error: AppError(object: result.error),
-            msg: 'Error',
+            msg: 'Error: ${result.message}',
           );
+          enableConsoleInput.value = false;
+          break;
+        case CompilerResultStatus.done:
+          _sendOutput(result);
+          EventService.success(msg: 'Done: ${result.message}');
           enableConsoleInput.value = false;
           break;
         case CompilerResultStatus.waitingForInput:
           enableConsoleInput.value = true;
-          break;
-        case CompilerResultStatus.done:
-          _sendOutput(result.data);
-          enableConsoleInput.value = false;
+          EventService.warning(msg: 'Compiler: ${result.message}');
           break;
       }
     });
@@ -243,9 +245,9 @@ class EditorViewVM implements EditorViewVMInterface {
         });
   }
 
-  Future<void> _sendOutput(String s) async {
-    _output.write(s);
-    _outputController.sink.add(_output.toString());
+  Future<void> _sendOutput(CompilerResult result) async {
+    _output.write(result.data);
+    _outputController.sink.add(result);
   }
 
   @override
