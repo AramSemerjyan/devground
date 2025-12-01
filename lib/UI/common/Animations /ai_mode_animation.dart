@@ -21,3 +21,29 @@ class AIModeAnimation extends StatelessWidget {
     );
   }
 }
+
+class WorkTimerAnimation extends StatelessWidget {
+  final double? size;
+  final Color? color;
+
+  const WorkTimerAnimation({super.key, this.color, this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return LoopingIconAnimation(
+      duration: const Duration(seconds: 1),
+      icons: [
+        Icon(
+          Icons.hourglass_bottom_outlined,
+          color: color ?? Colors.white54,
+          size: size ?? 18,
+        ),
+        Icon(
+          Icons.hourglass_top_outlined,
+          color: color ?? Colors.white54,
+          size: size ?? 18,
+        ),
+      ],
+    );
+  }
+}

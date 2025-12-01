@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dartpad_lite/UI/common/Animations%20/ai_mode_animation.dart';
 import 'package:dartpad_lite/UI/common/system_info/system_info_view.dart';
+import 'package:dartpad_lite/UI/common/work_timer/work_timer_widget.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_state.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ui/think_animation_view.dart';
 import 'package:dartpad_lite/UI/tool_bar/bottom_tool_bar/tool_bar_container.dart';
@@ -251,6 +252,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
                   const Spacer(),
                   if (aiMode) _buildAI(),
                   _buildLanguageSelection(),
+                  WorkTimerWidget(),
                   const SizedBox(width: 8),
                   _buildAppInfo(),
                   const SizedBox(width: 15),
