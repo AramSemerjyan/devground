@@ -218,6 +218,36 @@ class CommandPalette {
     return completer.future;
   }
 
+  static Future<String?> show({
+    required BuildContext context,
+    required Widget child,
+  }) {
+    final completer = Completer<String?>();
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        return GestureDetector(
+          onTap: hide,
+          child: Material(
+            color: Colors.black54,
+            child: Center(
+              child: Material(
+                color: Colors.grey[900],
+                elevation: 12,
+                borderRadius: BorderRadius.circular(12),
+                child: child,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    return completer.future;
+  }
+
   /// Hide the palette
   static void hide() {
     _overlayEntry?.remove();
