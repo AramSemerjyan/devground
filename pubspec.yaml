@@ -48,6 +48,7 @@ dependencies:
   flutter_svg: ^2.2.2
   flutter_monaco: ^1.1.1
   package_info_plus: ^9.0.0
+  audioplayers: ^6.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -80,6 +81,10 @@ flutter:
     - assets/blank_html.html
     - assets/supported_languages.json
     - assets/monaco_editor.html
+    - assets/audio/work_end.mp3
+    - assets/audio/work_start.mp3
+    - assets/audio/compile_succeed.mp3
+    - assets/audio/compile_error.mp3
 
     # everything that lives directly under assets/monaco
     - assets/monaco/

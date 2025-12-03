@@ -1,12 +1,10 @@
+import 'package:dartpad_lite/UI/settings/options/work_timer/work_timer_state_audio_manager.dart';
 import 'package:dartpad_lite/core/services/work_timer/work_timer_service.dart';
 import 'package:flutter/material.dart';
 
 abstract class WorkTimerWidgetVMInterface {
   ValueNotifier<WorkSessionStatus> get onStateChange;
   ValueNotifier<Duration> get remainingTime;
-
-  void setWorkInterval(Duration duration);
-  void setBreakInterval(Duration duration);
 
   void startWorkSession();
   void pauseWorkSession();
@@ -20,6 +18,8 @@ abstract class WorkTimerWidgetVMInterface {
 }
 
 class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
+  final WorkTimerStateAudioManagerInterface _audioManager =
+      WorkTimerStateAudioManager();
   final WorkTimerServiceInterface _workTimerService = WorkTimerService();
 
   @override
@@ -28,6 +28,10 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
 
   @override
   ValueNotifier<Duration> get remainingTime => _workTimerService.remainingTime;
+
+  WorkTimerWidgetVM() {
+    _audioManager.start(onStateChange);
+  }
 
   @override
   void pauseBreakSession() {
@@ -50,22 +54,13 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
   }
 
   @override
-  void setBreakInterval(Duration duration) {
-    _workTimerService.setBreakInterval(duration);
-  }
-
-  @override
-  void setWorkInterval(Duration duration) {
-    _workTimerService.setWorkInterval(duration);
-  }
-
-  @override
   void startBreakSession() {
     _workTimerService.startBreakSession();
   }
 
   @override
-  void startWorkSession() {
+  void startWorkSession() async {
+    await _workTimerService.initialize();
     _workTimerService.startWorkSession();
   }
 
