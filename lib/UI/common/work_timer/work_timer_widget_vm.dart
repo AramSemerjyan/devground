@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 abstract class WorkTimerWidgetVMInterface {
   ValueNotifier<WorkSessionStatus> get onStateChange;
+  ValueNotifier<Duration> get remainingTime;
 
   void setWorkInterval(Duration duration);
   void setBreakInterval(Duration duration);
@@ -14,6 +15,8 @@ abstract class WorkTimerWidgetVMInterface {
   void startBreakSession();
   void pauseBreakSession();
   void resetBreakSession();
+
+  void onTap();
 }
 
 class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
@@ -22,6 +25,9 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
   @override
   ValueNotifier<WorkSessionStatus> get onStateChange =>
       _workTimerService.onStateChange;
+
+  @override
+  ValueNotifier<Duration> get remainingTime => _workTimerService.remainingTime;
 
   @override
   void pauseBreakSession() {
@@ -61,5 +67,28 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
   @override
   void startWorkSession() {
     _workTimerService.startWorkSession();
+  }
+
+@override
+  void onTap() {
+    switch (onStateChange.value) {
+      case WorkSessionStatus.idle:
+      case WorkSessionStatus.workPaused:
+        startWorkSession();
+        break;
+      case WorkSessionStatus.workInProgress:
+        pauseWorkSession();
+        break;
+      case WorkSessionStatus.workCompleted:
+      case WorkSessionStatus.breakPaused:
+        startBreakSession();
+        break;
+      case WorkSessionStatus.breakInProgress:
+        pauseBreakSession();
+        break;
+      case WorkSessionStatus.breakCompleted:
+        resetWorkSession();
+        break;
+    }
   }
 }

@@ -11,7 +11,7 @@ abstract class WorkTimerSettingVMInterface {
   Future<void> setBreakInterval(BreakInterval interval);
 }
 
-class WorkTimerSettingVM implements WorkTimerSettingVMInterface {
+class WorkTimerSettingVM implements WorkTimerSettingVMInterface { 
   final WorkTimerRepoInterface _workTimerRepo = WorkTimerRepo();
 
   WorkTimerSettingVM() {

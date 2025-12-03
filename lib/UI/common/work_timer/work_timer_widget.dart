@@ -14,9 +14,6 @@ class WorkTimerWidget extends StatefulWidget {
 class _WorkTimerWidgetState extends State<WorkTimerWidget> {
   final WorkTimerWidgetVMInterface _vm = WorkTimerWidgetVM();
 
-  void _onTap() {
-  }
-
   Widget _getIconForStatus(WorkSessionStatus status) {
     switch (status) {
       case .workInProgress:
@@ -29,15 +26,64 @@ class _WorkTimerWidgetState extends State<WorkTimerWidget> {
     }
   }
 
+  String _getTooltipForStatus(WorkSessionStatus status) {
+    switch (status) {
+      case .workInProgress:
+        return 'Press to pause work';
+      case .breakInProgress:
+        return 'Press to pause break';
+      case .workPaused:
+        return 'Press to resume work';
+      case .breakPaused:
+        return 'Press to resume break';
+      case .idle:
+      default:
+        return 'Work Timer';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: _vm.onStateChange,
       builder: (_, state, __) {
-        return Tooltip(message: 'Work Timer', child: InkWell(
-          onTap: _onTap,
-          child: _getIconForStatus(state),
-        ));
+        return Tooltip(
+          message: _getTooltipForStatus(state),
+          child: InkWell(
+            onTap: _vm.onTap,
+            child: Row(
+              spacing: 5,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _getIconForStatus(state),
+                if (state == WorkSessionStatus.workInProgress ||
+                    state == WorkSessionStatus.breakInProgress)
+                  ValueListenableBuilder(
+                    valueListenable: _vm.remainingTime,
+                    builder: (_, remaining, __) {
+                      String twoDigits(int n) => n.toString().padLeft(2, '0');
+                      final minutes = twoDigits(
+                        remaining.inMinutes.remainder(60),
+                      );
+                      final seconds = twoDigits(
+                        remaining.inSeconds.remainder(60),
+                      );
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 4.0),
+                        child: Text(
+                          '$minutes:$seconds',
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }

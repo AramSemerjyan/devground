@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:dartpad_lite/core/storage/work_timer_repo.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 abstract class WorkTimerServiceInterface {
   ValueNotifier<WorkSessionStatus> get onStateChange;
@@ -32,7 +34,7 @@ enum WorkSessionStatus {
   breakInProgress,
   breakPaused,
   workCompleted,
-  breakCompleted,
+  breakCompleted;
 }
 
 class WorkTimerService implements WorkTimerServiceInterface {
@@ -181,7 +183,6 @@ class WorkTimerService implements WorkTimerServiceInterface {
         );
         remainingTime.value = _currentSessionDuration;
       } else {
-        // Session completed
         _cancelTimer();
 
         if (onStateChange.value == WorkSessionStatus.workInProgress) {
