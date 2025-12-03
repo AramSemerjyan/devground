@@ -19,7 +19,7 @@ class _WorkTimerSettingsSectionState extends State<WorkTimerSettingsSection> {
   @override
   Widget build(BuildContext context) {
     return SettingSection(
-      title: 'Work Timer',
+      title: 'Focus Timer',
       children: [
         SettingOption(
           height: 100,

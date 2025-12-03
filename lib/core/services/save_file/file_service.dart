@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:process_run/shell.dart';
 
-import '../../storage/language_repo.dart';
+import '../../storage/compiler_repo.dart';
 import '../event_service/app_error.dart';
 import '../event_service/event_service.dart';
 
@@ -20,7 +20,7 @@ abstract class FileServiceInterface {
 }
 
 class FileService implements FileServiceInterface {
-  final LanguageRepoInterface _languageRepo;
+  final CompilerRepoInterface _languageRepo;
 
   FileService(this._languageRepo);
 

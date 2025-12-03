@@ -1,14 +1,15 @@
-import 'package:dartpad_lite/UI/settings/options/language/language_setting_option.dart';
+import 'package:dartpad_lite/UI/settings/options/compiler/compiler_section.dart';
+import 'package:dartpad_lite/UI/settings/options/compiler/language_setting_option.dart';
 import 'package:dartpad_lite/UI/settings/options/setting_section.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/storage/language_repo.dart';
+import '../../core/storage/compiler_repo.dart';
 import 'options/ai_section/ai_setting_section.dart';
 import 'options/work_timer/work_timer_serting_section.dart';
 
 class SettingsPage extends StatefulWidget {
-  final LanguageRepoInterface languageRepo;
+  final CompilerRepoInterface languageRepo;
 
   const SettingsPage({super.key, required this.languageRepo});
 
@@ -35,12 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
           spacing: 40,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SettingSection(
-              title: 'Compiler',
-              children: [
-                LanguageSettingOption(languageRepo: widget.languageRepo),
-              ],
-            ),
+            CompilerSection(languageRepo: widget.languageRepo),
             AISettingSection(),
             WorkTimerSettingsSection(),
           ],

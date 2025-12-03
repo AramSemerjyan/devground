@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import '../../../core/services/ai/ai_provider_service.dart';
 import '../../../core/services/event_service/event_service.dart';
 import '../../../core/services/import_file/imported_file.dart';
-import '../../../core/storage/language_repo.dart';
+import '../../../core/storage/compiler_repo.dart';
 import '../../../core/storage/supported_language.dart';
 
 abstract class BottomToolBarVMInterface {
@@ -19,7 +19,7 @@ abstract class BottomToolBarVMInterface {
 }
 
 class BottomToolBarVM implements BottomToolBarVMInterface {
-  final LanguageRepoInterface _languageRepo;
+  final CompilerRepoInterface _languageRepo;
   late final AiProviderServiceInterface _aiProviderService =
       AIProviderService.instance;
   final AppInfoServiceInterface _appInfoService = AppInfoService();

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../core/services/event_service/app_error.dart';
 import '../../../../core/services/event_service/event_service.dart';
-import '../../../../core/storage/language_repo.dart';
+import '../../../../core/storage/compiler_repo.dart';
 import '../../../../core/storage/supported_language.dart';
 
 abstract class LanguageSettingOptionVMInterface {
@@ -15,7 +15,7 @@ abstract class LanguageSettingOptionVMInterface {
 }
 
 class LanguageSettingOptionVM implements LanguageSettingOptionVMInterface {
-  final LanguageRepoInterface _languageStorage;
+  final CompilerRepoInterface _languageStorage;
 
   late final ValueNotifier<SupportedLanguage?> _selectedLanguage =
       ValueNotifier(_languageStorage.selectedLanguage.value);

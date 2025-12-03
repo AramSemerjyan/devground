@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/import_file/import_file_service.dart';
 import '../../../core/services/save_file/file_service.dart';
-import '../../../core/storage/language_repo.dart';
+import '../../../core/storage/compiler_repo.dart';
 
 class WelcomePage extends StatefulWidget {
-  final LanguageRepoInterface languageRepo;
+  final CompilerRepoInterface languageRepo;
   final ImportFileServiceInterface importFileService;
   final FileServiceInterface fileService;
 

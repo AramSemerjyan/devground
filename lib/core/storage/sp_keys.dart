@@ -1,7 +1,9 @@
 enum SPKeys {
   selectedSdkKey('selected_sdk'),
   sdkPathKey('sdk_path'),
-    workTimer('work_timer'),
+  compilerSound('compiler_sound'),
+
+  workTimer('work_timer'),
   breakTimer('break_timer');
 
   final String value;

@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../core/storage/language_repo.dart';
+import '../../core/storage/compiler_repo.dart';
 import '../../core/storage/supported_language.dart';
 
 abstract class SettingsPageVMInterface {
@@ -10,7 +10,7 @@ abstract class SettingsPageVMInterface {
 }
 
 class SettingsPageVM implements SettingsPageVMInterface {
-  final LanguageRepoInterface _languageStorage;
+  final CompilerRepoInterface _languageStorage;
 
   late final ValueNotifier<SupportedLanguage?> _selectedLanguage =
       ValueNotifier(_languageStorage.selectedLanguage.value);

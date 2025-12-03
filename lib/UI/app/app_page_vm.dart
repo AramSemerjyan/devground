@@ -9,13 +9,13 @@ import '../../core/services/event_service/event_service.dart';
 import '../../core/services/import_file/import_file_service.dart';
 import '../../core/services/import_file/imported_file.dart';
 import '../../core/services/save_file/file_service.dart';
-import '../../core/storage/language_repo.dart';
+import '../../core/storage/compiler_repo.dart';
 import '../../core/storage/supported_language.dart';
 
 enum SDKState { inProgress, ready, notReady }
 
 class AppPageVM {
-  late final LanguageRepo languageRepo = LanguageRepo();
+  late final CompilerRepo languageRepo = CompilerRepo();
   late final FileServiceInterface fileService = FileService(languageRepo);
   late final ImportFileServiceInterface importFileService = ImportFileService(
     languageRepo,

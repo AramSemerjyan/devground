@@ -14,17 +14,20 @@ import '../../../utils/app_colors.dart';
 import '../../command_palette/command_palette.dart';
 import '../../common/floating_progress_button.dart';
 import '../result_page/result_console_view.dart';
+import 'compiler_state_audio_manager.dart';
 
 class EditorView extends StatefulWidget {
   final AppFile file;
   final FileServiceInterface saveFileService;
   final PagesServiceInterface pagesService;
+  final CompilerStateAudioManagerInterface compilerAudioService;
 
   const EditorView({
     super.key,
     required this.pagesService,
     required this.saveFileService,
     required this.file,
+    required this.compilerAudioService,
   });
 
   @override
@@ -37,6 +40,7 @@ class _EditorViewState extends State<EditorView>
     widget.file,
     widget.saveFileService,
     widget.pagesService,
+    widget.compilerAudioService,
   );
 
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);

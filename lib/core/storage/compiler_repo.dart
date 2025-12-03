@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'supported_language.dart';
 
-abstract class LanguageRepoInterface {
+abstract class CompilerRepoInterface {
   ValueNotifier<SupportedLanguage?> get selectedLanguage;
 
   Future<void> setSelectedLanguage({required SupportedLanguageKey key});
@@ -19,9 +19,12 @@ abstract class LanguageRepoInterface {
     required String path,
   });
   Future<Map<SupportedLanguageKey, String?>> getSDKPaths();
+
+  Future<void> setEnableSound({required bool enabled});
+  Future<bool> getEnableSound();
 }
 
-class LanguageRepo implements LanguageRepoInterface {
+class CompilerRepo implements CompilerRepoInterface {
   Map<SupportedLanguageKey, SupportedLanguage>? _supportedLanguages;
   Map<SupportedLanguageKey, String?> _sdkPaths = {};
   final ValueNotifier<SupportedLanguage?> _selectedLanguage = ValueNotifier(
@@ -162,5 +165,18 @@ class LanguageRepo implements LanguageRepoInterface {
     }
 
     return language;
+  }
+
+  @override
+  Future<void> setEnableSound({required bool enabled}) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setBool(SPKeys.compilerSound.value, enabled);
+  }
+
+  @override
+  Future<bool> getEnableSound() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(SPKeys.compilerSound.value) ?? true;
   }
 }

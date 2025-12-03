@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 
-import '../../storage/language_repo.dart';
+import '../../storage/compiler_repo.dart';
 import '../event_service/app_error.dart';
 import '../event_service/event_service.dart';
 import 'imported_file.dart';
@@ -13,7 +13,7 @@ abstract class ImportFileServiceInterface {
 }
 
 class ImportFileService implements ImportFileServiceInterface {
-  final LanguageRepoInterface _languageRepo;
+  final CompilerRepoInterface _languageRepo;
 
   ImportFileService(this._languageRepo);
 

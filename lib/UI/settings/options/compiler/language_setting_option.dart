@@ -1,14 +1,14 @@
-import 'package:dartpad_lite/UI/settings/options/language/language_setting_option_vm.dart';
+import 'package:dartpad_lite/UI/settings/options/compiler/language_setting_option_vm.dart';
 import 'package:dartpad_lite/UI/settings/options/setting_option.dart';
 import 'package:dartpad_lite/UI/settings/widget/path_selector.dart';
-import 'package:dartpad_lite/core/storage/language_repo.dart';
+import 'package:dartpad_lite/core/storage/compiler_repo.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/storage/supported_language.dart';
 import '../../../command_palette/command_palette.dart';
 
 class LanguageSettingOption extends StatefulWidget {
-  final LanguageRepoInterface languageRepo;
+  final CompilerRepoInterface languageRepo;
   const LanguageSettingOption({super.key, required this.languageRepo});
 
   @override
@@ -16,7 +16,9 @@ class LanguageSettingOption extends StatefulWidget {
 }
 
 class _LanguageSettingOptionState extends State<LanguageSettingOption> {
-  late final LanguageSettingOptionVMInterface _vm = LanguageSettingOptionVM(widget.languageRepo);
+  late final LanguageSettingOptionVMInterface _vm = LanguageSettingOptionVM(
+    widget.languageRepo,
+  );
 
   void _selectDirectory(String? path) async {
     if (path != null) {
