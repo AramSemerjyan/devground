@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartpad_lite/core/services/work_timer/intervals.dart';
 import 'package:dartpad_lite/core/storage/work_timer_repo.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +8,13 @@ import 'package:flutter/material.dart';
 abstract class WorkTimerServiceInterface {
   ValueNotifier<WorkSessionStatus> get onStateChange;
   ValueNotifier<Duration> get remainingTime;
-  ValueNotifier<Duration> get workInterval;
-  ValueNotifier<Duration> get breakInterval;
+  ValueNotifier<WorkInterval> get workInterval;
+  ValueNotifier<BreakInterval> get breakInterval;
 
   Future<void> initialize();
 
-  void setWorkInterval(Duration duration);
-  void setBreakInterval(Duration duration);
+  void setWorkInterval(WorkInterval interval);
+  void setBreakInterval(BreakInterval interval);
 
   void startWorkSession();
   void pauseWorkSession();
@@ -33,7 +34,7 @@ enum WorkSessionStatus {
   breakInProgress,
   breakPaused,
   workCompleted,
-  breakCompleted;
+  breakCompleted,
 }
 
 class WorkTimerService implements WorkTimerServiceInterface {
@@ -45,13 +46,12 @@ class WorkTimerService implements WorkTimerServiceInterface {
     Duration.zero,
   );
   @override
-  final ValueNotifier<Duration> workInterval = ValueNotifier<Duration>(
-    const Duration(minutes: 30),
+  final ValueNotifier<WorkInterval> workInterval = ValueNotifier<WorkInterval>(
+    .work25,
   );
   @override
-  final ValueNotifier<Duration> breakInterval = ValueNotifier<Duration>(
-    const Duration(minutes: 15),
-  );
+  final ValueNotifier<BreakInterval> breakInterval =
+      ValueNotifier<BreakInterval>(.break5);
 
   final WorkTimerRepoInterface _workTimerRepo = WorkTimerRepo();
 
@@ -76,33 +76,34 @@ class WorkTimerService implements WorkTimerServiceInterface {
     final savedWorkInterval = await _workTimerRepo.getWorkInterval();
     final savedBreakInterval = await _workTimerRepo.getBreakInterval();
 
-    workInterval.value = savedWorkInterval;
-    breakInterval.value = savedBreakInterval;
+    // Convert saved Duration to enum
+    workInterval.value = _durationToWorkInterval(savedWorkInterval);
+    breakInterval.value = _durationToBreakInterval(savedBreakInterval);
     remainingTime.value = Duration.zero;
 
     _isInitialized = true;
   }
 
   @override
-  void setWorkInterval(Duration duration) {
-    workInterval.value = duration;
-    _workTimerRepo.setWorkInterval(duration);
+  void setWorkInterval(WorkInterval interval) {
+    workInterval.value = interval;
+    _workTimerRepo.setWorkInterval(interval.duration);
 
     // If currently in work session and paused/idle, update remaining time
     if (onStateChange.value == WorkSessionStatus.idle ||
         onStateChange.value == WorkSessionStatus.workPaused) {
-      remainingTime.value = duration;
+      remainingTime.value = interval.duration;
     }
   }
 
   @override
-  void setBreakInterval(Duration duration) {
-    breakInterval.value = duration;
-    _workTimerRepo.setBreakInterval(duration);
+  void setBreakInterval(BreakInterval interval) {
+    breakInterval.value = interval;
+    _workTimerRepo.setBreakInterval(interval.duration);
 
     // If currently in break session and paused/idle, update remaining time
     if (onStateChange.value == WorkSessionStatus.breakPaused) {
-      remainingTime.value = duration;
+      remainingTime.value = interval.duration;
     }
   }
 
@@ -114,7 +115,7 @@ class WorkTimerService implements WorkTimerServiceInterface {
     if (onStateChange.value == WorkSessionStatus.idle ||
         onStateChange.value == WorkSessionStatus.workCompleted ||
         onStateChange.value == WorkSessionStatus.breakCompleted) {
-      _currentSessionDuration = workInterval.value;
+      _currentSessionDuration = workInterval.value.duration;
       remainingTime.value = _currentSessionDuration;
     } else if (onStateChange.value == WorkSessionStatus.workPaused) {
       // Resuming from pause - keep current remaining time
@@ -136,7 +137,7 @@ class WorkTimerService implements WorkTimerServiceInterface {
   @override
   void resetWorkSession() {
     _cancelTimer();
-    remainingTime.value = workInterval.value;
+    remainingTime.value = workInterval.value.duration;
     onStateChange.value = WorkSessionStatus.idle;
   }
 
@@ -148,7 +149,7 @@ class WorkTimerService implements WorkTimerServiceInterface {
     if (onStateChange.value == WorkSessionStatus.idle ||
         onStateChange.value == WorkSessionStatus.workCompleted ||
         onStateChange.value == WorkSessionStatus.breakCompleted) {
-      _currentSessionDuration = breakInterval.value;
+      _currentSessionDuration = breakInterval.value.duration;
       remainingTime.value = _currentSessionDuration;
     } else if (onStateChange.value == WorkSessionStatus.breakPaused) {
       // Resuming from pause - keep current remaining time
@@ -170,7 +171,7 @@ class WorkTimerService implements WorkTimerServiceInterface {
   @override
   void resetBreakSession() {
     _cancelTimer();
-    remainingTime.value = breakInterval.value;
+    remainingTime.value = breakInterval.value.duration;
     onStateChange.value = WorkSessionStatus.idle;
   }
 
@@ -186,10 +187,10 @@ class WorkTimerService implements WorkTimerServiceInterface {
 
         if (onStateChange.value == WorkSessionStatus.workInProgress) {
           onStateChange.value = WorkSessionStatus.workCompleted;
-          remainingTime.value = Duration.zero;
+          remainingTime.value = workInterval.value.duration;
         } else if (onStateChange.value == WorkSessionStatus.breakInProgress) {
           onStateChange.value = WorkSessionStatus.breakCompleted;
-          remainingTime.value = Duration.zero;
+          remainingTime.value = workInterval.value.duration;
         }
       }
     });
@@ -198,6 +199,20 @@ class WorkTimerService implements WorkTimerServiceInterface {
   void _cancelTimer() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  WorkInterval _durationToWorkInterval(Duration duration) {
+    return WorkInterval.values.firstWhere(
+      (interval) => interval.duration == duration,
+      orElse: () => WorkInterval.work25,
+    );
+  }
+
+  BreakInterval _durationToBreakInterval(Duration duration) {
+    return BreakInterval.values.firstWhere(
+      (interval) => interval.duration == duration,
+      orElse: () => BreakInterval.break5,
+    );
   }
 
   @override

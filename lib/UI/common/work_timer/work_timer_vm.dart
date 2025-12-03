@@ -1,10 +1,15 @@
-import 'package:dartpad_lite/UI/settings/options/work_timer/work_timer_state_audio_manager.dart';
+import 'package:dartpad_lite/core/services/work_timer/intervals.dart';
 import 'package:dartpad_lite/core/services/work_timer/work_timer_service.dart';
 import 'package:flutter/material.dart';
 
-abstract class WorkTimerWidgetVMInterface {
+import 'work_timer_state_audio_manager.dart';
+
+abstract class WorkTimerVMInterface {
   ValueNotifier<WorkSessionStatus> get onStateChange;
   ValueNotifier<Duration> get remainingTime;
+
+  ValueNotifier<WorkInterval> get workInterval;
+  ValueNotifier<BreakInterval> get breakInterval;
 
   void startWorkSession();
   void pauseWorkSession();
@@ -17,7 +22,7 @@ abstract class WorkTimerWidgetVMInterface {
   void onTap();
 }
 
-class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
+class WorkTimerVM implements WorkTimerVMInterface {
   final WorkTimerStateAudioManagerInterface _audioManager =
       WorkTimerStateAudioManager();
   final WorkTimerServiceInterface _workTimerService = WorkTimerService();
@@ -27,9 +32,17 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
       _workTimerService.onStateChange;
 
   @override
+  ValueNotifier<BreakInterval> get breakInterval =>
+      _workTimerService.breakInterval;
+
+  @override
+  ValueNotifier<WorkInterval> get workInterval =>
+      _workTimerService.workInterval;
+
+  @override
   ValueNotifier<Duration> get remainingTime => _workTimerService.remainingTime;
 
-  WorkTimerWidgetVM() {
+  WorkTimerVM() {
     _audioManager.start(onStateChange);
   }
 
@@ -64,11 +77,12 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
     _workTimerService.startWorkSession();
   }
 
-@override
+  @override
   void onTap() {
     switch (onStateChange.value) {
       case WorkSessionStatus.idle:
       case WorkSessionStatus.workPaused:
+      case WorkSessionStatus.breakCompleted:
         startWorkSession();
         break;
       case WorkSessionStatus.workInProgress:
@@ -80,9 +94,6 @@ class WorkTimerWidgetVM implements WorkTimerWidgetVMInterface {
         break;
       case WorkSessionStatus.breakInProgress:
         pauseBreakSession();
-        break;
-      case WorkSessionStatus.breakCompleted:
-        resetWorkSession();
         break;
     }
   }

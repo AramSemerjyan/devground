@@ -47,7 +47,7 @@ class _EditorViewState extends State<EditorView>
 
   late final List<StreamSubscription> _subscriptions = [];
 
-    @override
+  @override
   bool get wantKeepAlive => true;
 
   @override
@@ -174,7 +174,6 @@ class _EditorViewState extends State<EditorView>
         return Stack(
           children: [
             _buildLanguageEditorView(),
-            // Floating buttons
             Positioned(bottom: 16, left: 16, child: _buildButtons()),
             ValueListenableBuilder(
               valueListenable: _isDragging,

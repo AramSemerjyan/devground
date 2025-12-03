@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dartpad_lite/UI/app/app_pages.dart';
+import 'package:dartpad_lite/UI/common/work_timer/work_timer_button.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_bar/side_bar_button.dart';
 import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -90,6 +91,8 @@ class _SideToolBarState extends State<SideToolBar> {
               child: Icon(Icons.add, color: AppColor.mainGreyLighter),
             ),
           ),
+          const SizedBox(height: 20),
+          WorkTimerButton(),
           const Spacer(),
           ValueListenableBuilder(
             valueListenable: _selectedPage,
