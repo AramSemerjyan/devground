@@ -1,5 +1,3 @@
-import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
-import 'package:dartpad_lite/UI/common/work_timer/work_timer_settings.dart';
 import 'package:dartpad_lite/UI/common/work_timer/work_timer_widget_vm.dart';
 import 'package:flutter/material.dart';
 
@@ -33,8 +31,6 @@ class _WorkTimerWidgetState extends State<WorkTimerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // _vm.onStateChange.value = WorkSessionStatus.workInProgress;
-
     return ValueListenableBuilder(
       valueListenable: _vm.onStateChange,
       builder: (_, state, __) {
