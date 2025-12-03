@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
+import 'package:dartpad_lite/core/services/audio_player/audio_player_service.dart';
 import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -43,7 +44,8 @@ abstract class EditorViewVMInterface {
 class EditorViewVM implements EditorViewVMInterface {
   final AppFile _file;
   final FileServiceInterface _saveFileService;
-  late final PagesServiceInterface _pagesService;
+  final PagesServiceInterface _pagesService;
+  final AudioPlayerServiceInterface _audioPlayerService = AudioPlayerService();
 
   late final LanguageEditorControllerInterface _languageEditorController;
   late final CompilerInterface _compiler;
@@ -208,10 +210,12 @@ class EditorViewVM implements EditorViewVMInterface {
             error: AppError(object: result.error),
             msg: 'Error: ${result.message}',
           );
+          _audioPlayerService.playAudio(.compileError, volume: 0.3);
           enableConsoleInput.value = false;
           break;
         case CompilerResultStatus.done:
           _sendOutput(result);
+          _audioPlayerService.playAudio(.compileSucceed, volume: 0.3);
           EventService.success(msg: 'Done: ${result.message}');
           enableConsoleInput.value = false;
           break;
@@ -264,6 +268,7 @@ class EditorViewVM implements EditorViewVMInterface {
   @override
   void dispose() {
     _compiler.dispose();
+    _audioPlayerService.dispose();
     _outputController.close();
   }
 }
