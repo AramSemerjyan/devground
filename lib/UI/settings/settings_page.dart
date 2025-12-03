@@ -1,6 +1,4 @@
 import 'package:dartpad_lite/UI/settings/options/compiler/compiler_section.dart';
-import 'package:dartpad_lite/UI/settings/options/compiler/language_setting_option.dart';
-import 'package:dartpad_lite/UI/settings/options/setting_section.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 

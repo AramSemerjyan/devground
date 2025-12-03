@@ -77,18 +77,21 @@ class _SideToolBarState extends State<SideToolBar> {
           const SizedBox(height: 15),
           Tooltip(
             message: 'New window',
-            child: InkWell(
-              onTap: () async {
-                final controller = await WindowController.create(
-                  WindowConfiguration(
-                    hiddenAtLaunch: false,
-                    arguments: 'YOUR_WINDOW_ARGUMENTS_HERE',
-                  ),
-                );
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: InkWell(
+                onTap: () async {
+                  final controller = await WindowController.create(
+                    WindowConfiguration(
+                      hiddenAtLaunch: false,
+                      arguments: 'YOUR_WINDOW_ARGUMENTS_HERE',
+                    ),
+                  );
 
-                await controller.show();
-              },
-              child: Icon(Icons.add, color: AppColor.mainGreyLighter),
+                  await controller.show();
+                },
+                child: Icon(Icons.add, color: AppColor.mainGreyLighter),
+              ),
             ),
           ),
           const SizedBox(height: 20),

@@ -82,65 +82,68 @@ class _WorkTimerButtonState extends State<WorkTimerButton> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: _vm.onTap,
-      child: ValueListenableBuilder<WorkSessionStatus>(
-        valueListenable: _vm.onStateChange,
-        builder: (context, status, _) {
-          return ValueListenableBuilder<Duration>(
-            valueListenable: _vm.remainingTime,
-            builder: (context, remainingTime, _) {
-              final totalDuration =
-                  status == WorkSessionStatus.breakInProgress ||
-                      status == WorkSessionStatus.breakPaused ||
-                      status == WorkSessionStatus.breakCompleted
-                  ? _vm.breakInterval.value.duration
-                  : _vm.workInterval.value.duration;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: _vm.onTap,
+        child: ValueListenableBuilder<WorkSessionStatus>(
+          valueListenable: _vm.onStateChange,
+          builder: (context, status, _) {
+            return ValueListenableBuilder<Duration>(
+              valueListenable: _vm.remainingTime,
+              builder: (context, remainingTime, _) {
+                final totalDuration =
+                    status == WorkSessionStatus.breakInProgress ||
+                        status == WorkSessionStatus.breakPaused ||
+                        status == WorkSessionStatus.breakCompleted
+                    ? _vm.breakInterval.value.duration
+                    : _vm.workInterval.value.duration;
 
-              final progress =
-                  remainingTime.inSeconds / totalDuration.inSeconds;
+                final progress =
+                    remainingTime.inSeconds / totalDuration.inSeconds;
 
-              final color = AppColor.mainGreyLighter;
+                final color = AppColor.mainGreyLighter;
 
-              return Tooltip(
-                message: _getTooltipForStatus(status),
-                child: SizedBox(
-                  width: 45,
-                  height: 45,
-                  child: CustomPaint(
-                    painter: CircularProgressPainter(
-                      progress: progress,
-                      color: color,
-                      backgroundColor: color.withValues(alpha: 0.2),
-                      strokeWidth: 3,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: .center,
-                      children: [
-                        const SizedBox(height: 4),
-                        _getIconForStatus(status, 12),
-                        const SizedBox(height: 1),
-                        Text(
-                          _formatDuration(remainingTime),
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: color,
+                return Tooltip(
+                  message: _getTooltipForStatus(status),
+                  child: SizedBox(
+                    width: 45,
+                    height: 45,
+                    child: CustomPaint(
+                      painter: CircularProgressPainter(
+                        progress: progress,
+                        color: color,
+                        backgroundColor: color.withValues(alpha: 0.2),
+                        strokeWidth: 3,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: .center,
+                        children: [
+                          const SizedBox(height: 4),
+                          _getIconForStatus(status, 12),
+                          const SizedBox(height: 1),
+                          Text(
+                            _formatDuration(remainingTime),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
                           ),
-                        ),
-                        Text(
-                          _getTitleForStatus(status),
-                          style: TextStyle(fontSize: 6, color: color),
-                        ),
-                        const SizedBox(height: 3),
-                      ],
+                          Text(
+                            _getTitleForStatus(status),
+                            style: TextStyle(fontSize: 6, color: color),
+                          ),
+                          const SizedBox(height: 3),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

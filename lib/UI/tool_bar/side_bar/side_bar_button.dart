@@ -20,18 +20,21 @@ class SideBarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Tooltip(
       message: toolTip,
-      child: InkWell(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColor.mainGreyLighter.withValues(alpha: 0.15)
-                : null,
-            borderRadius: BorderRadius.circular(8),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: InkWell(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColor.mainGreyLighter.withValues(alpha: 0.15)
+                  : null,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppColor.mainGreyLighter),
           ),
-          child: Icon(icon, color: AppColor.mainGreyLighter),
         ),
       ),
     );
