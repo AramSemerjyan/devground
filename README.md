@@ -1,4 +1,5 @@
-# DevGround (**This code contains AI generated content**)
+**This code contains AI generated content**
+# DevGround
 
 **A lightweight, cross-platform development playground and code editor built with Flutter**
 
