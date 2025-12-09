@@ -1,8 +1,8 @@
-# DevGround
+# DevGround (**This code contains AI generated content**)
 
 **A lightweight, cross-platform development playground and code editor built with Flutter**
 
-DevGround (formerly dartpad_lite) is a desktop application that provides an integrated development environment for quickly writing, compiling, and running code across multiple programming languages. Built with Flutter, it offers a native experience on macOS, Linux, and Windows.
+DevGround is a desktop application that provides an integrated development environment for quickly writing, compiling, and running code across multiple programming languages. Built with Flutter, it offers a native experience on macOS, Linux, and Windows.
 
 ## 🚀 Key Features
 
