@@ -108,6 +108,11 @@ class _ResultWebViewState extends State<ResultWebView> {
 
     final sub = widget.outputStream.listen((result) {
       final path = result.data;
+
+      if (path == null || path.isEmpty) {
+        return;
+      }
+
       final isUrl = path.contains('https://') || path.contains('https://');
       homePath = path;
 

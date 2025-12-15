@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
@@ -29,7 +30,7 @@ class JSONCompiler extends Compiler {
   Future<void> runCode(String code) async {
     // This compiler does not execute code; just report as not supported for run
     resultStream.sink.add(
-      CompilerResult.error(data: 'Run not supported for JSON'),
+      CompilerResult.error(compilerError: CompilerNotSupported('Code execution')),
     );
   }
 

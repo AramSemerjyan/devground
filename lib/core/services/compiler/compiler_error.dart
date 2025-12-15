@@ -18,6 +18,11 @@ class CompilerNotSelected extends CompilerError {
   CompilerNotSelected() : super("Compiler not selected");
 }
 
+class CompilerNotSupported extends CompilerError {
+  CompilerNotSupported(String feature)
+      : super("The feature '$feature' is not supported by the selected compiler.");
+} 
+
 class CompilerExecutionError extends CompilerError {
   CompilerExecutionError(super.message);
 }

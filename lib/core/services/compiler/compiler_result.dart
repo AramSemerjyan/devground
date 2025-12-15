@@ -1,3 +1,5 @@
+import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
+
 enum CompilerResultStatus { message, error, waitingForInput, done }
 
 class CompilerResult {
@@ -5,9 +7,10 @@ class CompilerResult {
   final String? message;
   final dynamic data;
   final Object? error;
+  final CompilerError? compilerError;
   final StackTrace? stackTrace;
   
-  CompilerResult({required this.status, this.message, this.data, this.error, this.stackTrace});
+  CompilerResult({required this.status, this.message, this.data, this.error, this.stackTrace, this.compilerError});
 
   factory CompilerResult.message({String? message, dynamic data}) {
     return CompilerResult(status: CompilerResultStatus.message, message: message, data: data);
@@ -17,9 +20,10 @@ class CompilerResult {
     return CompilerResult(status: CompilerResultStatus.done, message: message, data: data);
   }
 
-  factory CompilerResult.error({Object? error, dynamic data, String? message, StackTrace? stackTrace}) {
+  factory CompilerResult.error({Object? error, dynamic data, String? message, StackTrace? stackTrace, CompilerError? compilerError}) {
     return CompilerResult(
       status: CompilerResultStatus.error,
+      compilerError: compilerError,
       error: error,
       data: data,
       message: message,

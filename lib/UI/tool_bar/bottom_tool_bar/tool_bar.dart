@@ -42,17 +42,17 @@ class _BottomToolBarState extends State<BottomToolBar> {
       _onEvent.value = event;
     });
 
-    EventService.instance.stream
-        .where((e) => e.type == EventType.aiModeChanged)
-        .listen((event) {
-          _aiMode.value = event.data;
-        });
+    EventService.instance.stream.where((e) => e.type == .aiModeChanged).listen((
+      event,
+    ) {
+      _aiMode.value = event.data;
+    });
 
-    EventService.instance.stream
-        .where((e) => e.type == EventType.aiStateChanged)
-        .listen((event) {
-          _aiState.value = event.data;
-        });
+    EventService.instance.stream.where((e) => e.type == .aiStateChanged).listen(
+      (event) {
+        _aiState.value = event.data;
+      },
+    );
   }
 
   void _setUpTimer(Duration duration) {
@@ -60,7 +60,7 @@ class _BottomToolBarState extends State<BottomToolBar> {
     _timer = null;
 
     _timer = Timer(duration, () {
-      _onEvent.value = Event(status: StatusEvent.idle());
+      _onEvent.value = Event(status: .idle());
 
       _timer?.cancel();
       _timer = null;
@@ -245,10 +245,13 @@ class _BottomToolBarState extends State<BottomToolBar> {
                         fontWeight: FontWeight.normal,
                       ),
                       duration: const Duration(milliseconds: 100),
-                      child: Text(data.status?.msg ?? ''),
+                      child: Text(
+                        data.status?.msg ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   if (aiMode) _buildAI(),
                   _buildLanguageSelection(),
                   _buildAppInfo(),

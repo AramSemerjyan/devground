@@ -78,7 +78,12 @@ class EditorViewVM implements EditorViewVMInterface {
   final _outputController = StreamController<CompilerResult>.broadcast();
   final _output = StringBuffer();
 
-  EditorViewVM(this._file, this._saveFileService, this._pagesService, this._compilerAudioService) {
+  EditorViewVM(
+    this._file,
+    this._saveFileService,
+    this._pagesService,
+    this._compilerAudioService,
+  ) {
     _setUp();
   }
 
@@ -210,7 +215,8 @@ class EditorViewVM implements EditorViewVMInterface {
           _sendOutput(result);
           EventService.error(
             error: AppError(object: result.error),
-            msg: 'Error: ${result.message}',
+            msg:
+                'Error: ${result.compilerError?.message ?? result.message ?? result.data ?? result.error.toString()}',
           );
           enableConsoleInput.value = false;
           break;
@@ -250,8 +256,10 @@ class EditorViewVM implements EditorViewVMInterface {
   }
 
   Future<void> _sendOutput(CompilerResult result) async {
-    _output.write(result.data);
-    _outputController.sink.add(result);
+    if (result.data != null && result.data!.isNotEmpty) {
+      _output.write(result.data);
+      _outputController.sink.add(result);
+    }
   }
 
   @override
