@@ -13,31 +13,26 @@ class AINetworkProvider implements AIProviderInterface {
   final String _apiKey;
   late final Dio _dio;
 
-  late final request = '''
-  curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" 
-  -H 'Content-Type: application/json' 
-  -H 'X-goog-api-key: AIzaSyDbZsNwbliBc7ZbqEH4nLvlH5PoDhTG_GA' 
-  -X POST 
-  -d '{
-    "contents": [
-      {
-        "parts": [
-          {
-            "text": "Explain how AI works in a few words"
-          }
-        ]
-      }
-    ]
-  }'
-  ''';
-
   @override
-  AIProviderInfo get providerInfo => AIProviderInfo(name: 'gemini-2.0-flash');
+  AIProviderInfo get providerInfo =>
+      AIProviderInfo(name: 'gemini-2.0-flash-live');
 
   AINetworkProvider(this._apiKey) {
     _dio = Dio(
       BaseOptions(
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/',
+      ),
+    );
+
+    // Add interceptor BEFORE making any requests
+    _dio.interceptors.add(
+      LogInterceptor(
+        request: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        logPrint: print,
       ),
     );
   }
@@ -82,17 +77,6 @@ class AINetworkProvider implements AIProviderInterface {
         options: Options(headers: header),
       );
 
-      _dio.interceptors.add(
-        LogInterceptor(
-          request: true,
-          requestBody: true,
-          responseBody: true,
-          responseHeader: false,
-          error: true,
-          logPrint: print, // You can customize this
-        ),
-      );
-
       if (response.statusCode == 200) {
         // If the API returns a stream of tokens, you would yield them one by one
         // Example: yield each token as AIProviderResponse
@@ -105,8 +89,6 @@ class AINetworkProvider implements AIProviderInterface {
         );
       }
     } catch (e) {
-      // You can emit an error into the stream
-      // `yield* Stream.error(e)` would also work
       throw AIRequestFailedError(e.toString());
     }
   }

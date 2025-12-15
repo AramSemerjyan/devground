@@ -16,7 +16,7 @@
     "key": "shell",
     "name": "Shell",
     "extension": ".sh",
-    "icon": "https://img.icons8.com/ios/50/000000/console.png",
+    "icon": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/bash-unix-shell-icon.svg",
     "sdk_path": "/bin",
     "path": {
       "validation": "/bash",
@@ -150,7 +150,7 @@
     "key": "txt",
     "name": "Text File",
     "extension": ".txt",
-    "icon": "",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/2/23/Text-txt.svg",
     "path": {
       "validation": "",
       "hint": ""
@@ -163,7 +163,7 @@
     "key": "log",
     "name": "Log File",
     "extension": ".log",
-    "icon": "",
+    "icon": "https://www.svgrepo.com/show/127114/log-file-format.svg",
     "path": {
       "validation": "",
       "hint": ""
@@ -176,7 +176,7 @@
     "key": "ai",
     "name": "AI Response",
     "extension": ".ai",
-    "icon": "",
+    "icon": "https://assets.mediamodifier.com/icons/64702ad33b59ba2c105afef3/AI-brain.svg",
     "type": "custom",
     "path": {
       "validation": "",

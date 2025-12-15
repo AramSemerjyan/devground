@@ -12,7 +12,12 @@ class AudioPlayerService implements AudioPlayerServiceInterface {
 
   @override
   Future<void> playAudio(Audio audio, {double? volume}) async {
-    await _audioPlayer.play(AssetSource(audio.assetPath), volume: volume ?? 0.5);
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource(audio.assetPath), volume: volume ?? 0.5);
+    } catch (e) {
+      // Silently ignore errors (e.g., if audio file is missing)
+    }
   }
 
   @override

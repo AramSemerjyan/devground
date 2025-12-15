@@ -26,3 +26,26 @@ class AIModelNotFoundError extends AIProviderError {
 class AIRequestFailedError extends AIProviderError {
   AIRequestFailedError(super.message);
 }
+
+class AIRateLimitError extends AIProviderError {
+  final int? retryAfterSeconds;
+  final String? quotaMetric;
+
+  AIRateLimitError({
+    required String message,
+    this.retryAfterSeconds,
+    this.quotaMetric,
+  }) : super(message);
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('AIRateLimitError: $message');
+    if (retryAfterSeconds != null) {
+      buffer.write(' (Retry after ${retryAfterSeconds}s)');
+    }
+    if (quotaMetric != null) {
+      buffer.write(' [Quota: $quotaMetric]');
+    }
+    return buffer.toString();
+  }
+}
