@@ -4,6 +4,7 @@ import 'package:dartpad_lite/UI/common/Animations%20/animated_buttons_appear.dar
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
+import 'package:dartpad_lite/UI/editor/result_page/side_by_side/side_to_side_view.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,7 @@ class _EditorViewState extends State<EditorView>
   final ValueNotifier<double> _bottomBarHeight = ValueNotifier(300);
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
   final ValueNotifier<bool> _showAI = ValueNotifier(false);
+  final ValueNotifier<bool> _showSideToSide = ValueNotifier(false);
 
   late final List<StreamSubscription> _subscriptions = [];
 
@@ -108,62 +110,84 @@ class _EditorViewState extends State<EditorView>
   }
 
   Widget _buildButtons() {
-    return AnimatedButtonsRow(
-      buttons: [
-        FloatingProgressButton(
-          inProgress: _vm.runProgress,
-          heroTag: 'runBtn',
-          tooltip: 'Run',
-          mini: true,
-          icon: Icons.play_arrow_rounded,
-          onPressed: () {
-            if (_inProgress.value) return;
-            _inProgress.value = true;
-            _vm.runCode();
-          },
-        ),
-        FloatingProgressButton(
-          inProgress: _vm.formatProgress,
-          heroTag: 'formatBtn',
-          tooltip: 'Format',
-          mini: true,
-          icon: Icons.format_align_left,
-          onPressed: () {
-            _vm.formatCode();
-          },
-        ),
-        FloatingProgressButton(
-          inProgress: _vm.saveProgress,
-          heroTag: 'saveBtn',
-          tooltip: 'Save',
-          mini: true,
-          icon: Icons.save_rounded,
-          onPressed: () async {
-            final name = await CommandPalette.showRename(
-              context,
-              initialValue: _vm.file.name,
-            );
-
-            if (name != null) _vm.save(name: name);
-
-            _vm.dropEditorFocus();
-          },
-        ),
+    return Column(
+      crossAxisAlignment: .start,
+      mainAxisSize: .min,
+      spacing: 10,
+      children: [
         ValueListenableBuilder(
-          valueListenable: _showAI,
+          valueListenable: _showSideToSide,
           builder: (_, show, __) {
             return FloatingProgressButton(
-              heroTag: 'aiBtn',
-              tooltip: 'AI boost',
+              heroTag: 'sideToSideBtn',
+              tooltip: 'Side to side view',
               mini: true,
-              icon: !show ? Icons.accessible : Icons.accessible_forward,
+              isSelected: show,
+              icon: Icons.compare_arrows_rounded,
               onPressed: () async {
-                _showAI.value = !_showAI.value;
-
-                _vm.onAIBoosModeChange(state: _showAI.value);
+                _showSideToSide.value = !_showSideToSide.value;
               },
             );
           },
+        ),
+        AnimatedButtonsRow(
+          buttons: [
+            FloatingProgressButton(
+              inProgress: _vm.runProgress,
+              heroTag: 'runBtn',
+              tooltip: 'Run',
+              mini: true,
+              icon: Icons.play_arrow_rounded,
+              onPressed: () {
+                if (_inProgress.value) return;
+                _inProgress.value = true;
+                _vm.runCode();
+              },
+            ),
+            FloatingProgressButton(
+              inProgress: _vm.formatProgress,
+              heroTag: 'formatBtn',
+              tooltip: 'Format',
+              mini: true,
+              icon: Icons.format_align_left,
+              onPressed: () {
+                _vm.formatCode();
+              },
+            ),
+            FloatingProgressButton(
+              inProgress: _vm.saveProgress,
+              heroTag: 'saveBtn',
+              tooltip: 'Save',
+              mini: true,
+              icon: Icons.save_rounded,
+              onPressed: () async {
+                final name = await CommandPalette.showRename(
+                  context,
+                  initialValue: _vm.file.name,
+                );
+
+                if (name != null) _vm.save(name: name);
+
+                _vm.dropEditorFocus();
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: _showAI,
+              builder: (_, show, __) {
+                return FloatingProgressButton(
+                  heroTag: 'aiBtn',
+                  tooltip: 'AI boost',
+                  mini: true,
+                  icon: !show ? Icons.accessible : Icons.accessible_forward,
+                  onPressed: () async {
+                    _showAI.value = !_showAI.value;
+
+                    _vm.onAIBoosModeChange(state: _showAI.value);
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ],
     );
@@ -206,11 +230,19 @@ class _EditorViewState extends State<EditorView>
               child: ValueListenableBuilder(
                 valueListenable: _vm.enableConsoleInput,
                 builder: (_, value, __) {
-                  return ResultView(
-                    language: _vm.language,
-                    outputStream: _vm.compileResultStream,
-                    enableInput: value,
-                    onInput: _vm.onConsoleInput,
+                  return ValueListenableBuilder(
+                    valueListenable: _showSideToSide,
+                    builder: (_, showSideToSide, _) {
+                      if (showSideToSide) {
+                        return SideToSideView(language: _vm.language,);
+                      }
+                      return ResultView(
+                        language: _vm.language,
+                        outputStream: _vm.compileResultStream,
+                        enableInput: value,
+                        onInput: _vm.onConsoleInput,
+                      );
+                    },
                   );
                 },
               ),

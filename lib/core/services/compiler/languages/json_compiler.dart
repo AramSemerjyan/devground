@@ -11,9 +11,10 @@ class JSONCompiler extends Compiler {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
+    String? fixedCode;
     try {
       // First, try to fix common JSON issues
-      final fixedCode = _fixInvalidJson(code);
+      fixedCode = _fixInvalidJson(code);
 
       final jsonObject = jsonDecode(fixedCode);
       const encoder = JsonEncoder.withIndent('  '); // 2 spaces
@@ -30,7 +31,9 @@ class JSONCompiler extends Compiler {
   Future<void> runCode(String code) async {
     // This compiler does not execute code; just report as not supported for run
     resultStream.sink.add(
-      CompilerResult.error(compilerError: CompilerNotSupported('Code execution')),
+      CompilerResult.error(
+        compilerError: CompilerNotSupported('Code execution'),
+      ),
     );
   }
 
@@ -40,44 +43,218 @@ class JSONCompiler extends Compiler {
     json = json.replaceAll(RegExp(r'//.*?$', multiLine: true), '');
     json = json.replaceAll(RegExp(r'/\*.*?\*/', dotAll: true), '');
 
+    // Add basic formatting if JSON is on a single line (makes other fixes work)
+    json = _addBasicFormatting(json);
+
+    // Fix incomplete quoted strings (missing opening or closing quotes)
+    json = _fixIncompleteQuotes(json);
+
+    // Fix misplaced closing braces (e.g., },\n}\n"key": where the first } should be removed)
+    json = _fixMisplacedBrackets(json);
+
     // Fix missing opening brackets BEFORE fixing quotes
     json = _fixMissingOpeningBrackets(json);
 
-    // Fix unquoted keys (including numeric keys): match any unquoted identifier before colon
+    // Fix unquoted keys (including numeric keys and UUIDs): match any unquoted identifier before colon
     // Pattern: after {, [, comma, or newline followed by whitespace, capture identifier, then colon
     json = json.replaceAllMapped(
       RegExp(
-        r'([{,\[\n]\s*)([a-zA-Z_$0-9][a-zA-Z0-9_$]*)\s*:',
+        r'([{,\[\n]\s*)([a-zA-Z_$0-9][a-zA-Z0-9_$\-]*)\s*:',
         multiLine: true,
       ),
       (match) => '${match.group(1)}"${match.group(2)}":',
     );
 
-    // Fix unquoted string values (but not numbers, booleans, or null)
-    // Pattern: colon followed by unquoted word that's not true/false/null/number
+    // Fix unquoted string values (including Unicode/Cyrillic characters)
+    // This includes UUIDs, identifiers like "brand-block-xyz", "field_metrics_bb", etc.
+    // Don't match structural characters like { } [ ]
     json = json.replaceAllMapped(
-      RegExp(r':\s*([a-zA-Z_][a-zA-Z0-9_\s]*?)(\s*[,}\]])'),
+      RegExp(r':\s*([^\s,}\]":[{]+(?:\s+[^\s,}\]":[{]+)*)(\s*[,}\]])'),
       (match) {
         final value = match.group(1)!.trim();
+
+        // Skip empty values
+        if (value.isEmpty) {
+          return ':${match.group(2)}';
+        }
 
         // Don't quote reserved words or numbers
         if (value == 'true' ||
             value == 'false' ||
             value == 'null' ||
             RegExp(r'^-?\d+\.?\d*$').hasMatch(value)) {
-          return ':${match.group(1)}${match.group(2)}';
+          return ': $value${match.group(2)}';
         }
 
-        // Quote the value
+        // Don't quote if it's already part of a quoted string
+        if (value.startsWith('"') || value.endsWith('"')) {
+          return ': $value${match.group(2)}';
+        }
+
+        // Quote the value (including Unicode characters)
         return ': "$value"${match.group(2)}';
       },
     );
+
+    // Fix missing commas between properties
+    json = _fixMissingCommas(json);
 
     // Fix trailing commas
     json = json.replaceAll(RegExp(r',(\s*[}\]])'), r'$1');
 
     // Fix missing closing brackets/braces
     json = _fixMissingBrackets(json);
+
+    return json;
+  }
+
+  /// Add basic formatting to single-line JSON to enable other fixes
+  String _addBasicFormatting(String json) {
+    // Check if JSON is mostly on one line (few newlines)
+    final newlineCount = '\n'.allMatches(json).length;
+    final jsonLength = json.length;
+
+    // If there are already plenty of newlines, skip this step
+    if (jsonLength < 500 || newlineCount > jsonLength / 100) {
+      return json;
+    }
+
+    // Add line breaks after structural characters (but not within strings)
+    bool inString = false;
+    bool escapeNext = false;
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < json.length; i++) {
+      final char = json[i];
+
+      if (escapeNext) {
+        buffer.write(char);
+        escapeNext = false;
+        continue;
+      }
+
+      if (char == '\\') {
+        buffer.write(char);
+        escapeNext = true;
+        continue;
+      }
+
+      if (char == '"') {
+        buffer.write(char);
+        inString = !inString;
+        continue;
+      }
+
+      if (!inString) {
+        // Add newline after opening braces/brackets
+        if (char == '{' || char == '[') {
+          buffer.write(char);
+          if (i + 1 < json.length && json[i + 1] != '\n') {
+            buffer.write('\n');
+          }
+          continue;
+        }
+
+        // Add newline before closing braces/brackets
+        if (char == '}' || char == ']') {
+          if (buffer.isNotEmpty &&
+              buffer.toString()[buffer.length - 1] != '\n') {
+            buffer.write('\n');
+          }
+          buffer.write(char);
+          continue;
+        }
+
+        // Add newline after commas
+        if (char == ',') {
+          buffer.write(char);
+          if (i + 1 < json.length && json[i + 1] != '\n') {
+            buffer.write('\n');
+          }
+          continue;
+        }
+      }
+
+      buffer.write(char);
+    }
+
+    return buffer.toString();
+  }
+
+  /// Fix missing commas between key-value pairs
+  String _fixMissingCommas(String json) {
+    // Pattern: value (number, string, boolean, null, }, ]) followed by newline and a key
+    // without a comma between them
+
+    // Fix: "value"\n"key": pattern (missing comma after quoted string value)
+    json = json.replaceAllMapped(
+      RegExp(r'("[^"]*")\s*\n\s*("[^"]+"\s*:)', multiLine: true),
+      (match) => '${match.group(1)},\n        ${match.group(2)}',
+    );
+
+    // Fix: number\n"key": pattern (missing comma after number)
+    json = json.replaceAllMapped(
+      RegExp(r'(\d+\.?\d*)\s*\n\s*("[^"]+"\s*:)', multiLine: true),
+      (match) => '${match.group(1)},\n        ${match.group(2)}',
+    );
+
+    // Fix: boolean/null\n"key": pattern (missing comma after boolean or null)
+    json = json.replaceAllMapped(
+      RegExp(r'\b(true|false|null)\s*\n\s*("[^"]+"\s*:)', multiLine: true),
+      (match) => '${match.group(1)},\n        ${match.group(2)}',
+    );
+
+    // Fix: }\n"key": pattern (missing comma after closing brace)
+    json = json.replaceAllMapped(
+      RegExp(r'(})\s*\n\s*("[^"]+"\s*:)', multiLine: true),
+      (match) => '${match.group(1)},\n        ${match.group(2)}',
+    );
+
+    // Fix: ]\n"key": pattern (missing comma after closing bracket)
+    json = json.replaceAllMapped(
+      RegExp(r'(\])\s*\n\s*("[^"]+"\s*:)', multiLine: true),
+      (match) => '${match.group(1)},\n        ${match.group(2)}',
+    );
+
+    return json;
+  }
+
+  /// Fix incomplete quoted strings (e.g., "key: or key":)
+  String _fixIncompleteQuotes(String json) {
+    // Fix keys with opening quote but missing closing quote before colon
+    // Pattern: "identifier: (missing closing quote)
+    json = json.replaceAllMapped(
+      RegExp(r'"([a-zA-Z_$0-9][a-zA-Z0-9_$\-]*)\s*:', multiLine: true),
+      (match) => '"${match.group(1)}":',
+    );
+
+    // Fix keys with closing quote but missing opening quote
+    // Pattern: identifier": (missing opening quote)
+    json = json.replaceAllMapped(
+      RegExp(
+        r'([{,\[\n]\s*)([a-zA-Z_$0-9][a-zA-Z0-9_$\-]*)":',
+        multiLine: true,
+      ),
+      (match) => '${match.group(1)}"${match.group(2)}":',
+    );
+
+    return json;
+  }
+
+  /// Fix misplaced closing brackets (e.g., },\n}\n"key": pattern)
+  String _fixMisplacedBrackets(String json) {
+    // Pattern: closing brace with comma, followed by closing brace on next line,
+    // followed by a key-value pair (indicating the first brace was misplaced)
+    json = json.replaceAllMapped(
+      RegExp(
+        r'},\s*\n\s*}\s*\n\s*("[^"]+"|[a-zA-Z_$0-9][a-zA-Z0-9_$\-]*)\s*:',
+        multiLine: true,
+      ),
+      (match) {
+        // Remove the first closing brace and comma, keep the second one
+        return '},\n        ${match.group(1)}:';
+      },
+    );
 
     return json;
   }

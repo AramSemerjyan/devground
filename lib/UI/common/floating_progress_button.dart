@@ -9,6 +9,7 @@ class FloatingProgressButton extends StatelessWidget {
   final String? tooltip;
   final String? heroTag;
   final bool mini;
+  final bool isSelected;
 
   const FloatingProgressButton({
     super.key,
@@ -18,6 +19,7 @@ class FloatingProgressButton extends StatelessWidget {
     this.tooltip,
     this.heroTag,
     this.mini = false,
+    this.isSelected = false,
   });
 
   @override
@@ -38,6 +40,7 @@ class FloatingProgressButton extends StatelessWidget {
       tooltip: tooltip,
       mini: mini,
       onPressed: loading ? null : onPressed,
+      backgroundColor: isSelected ? AppColor.aiBlue : null,
       child: loading
           ? SizedBox(
               height: 20,
@@ -47,7 +50,7 @@ class FloatingProgressButton extends StatelessWidget {
                 color: AppColor.blue,
               ),
             )
-          : Icon(icon, color: AppColor.blue),
+          : Icon(icon, color: isSelected ? AppColor.white : AppColor.blue),
     );
   }
 }
