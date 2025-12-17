@@ -45,22 +45,6 @@
     <script>
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.37.1/min/vs' } });
         window.editor = null;
-        require(['vs/editor/editor.main'], function () {
-            window.editor = monaco.editor.create(document.getElementById('editor'), {
-                value: [
-                    "void main() {",
-                    "  print('Hello from Dart!');",
-                    "}"
-                ].join('\n'),
-                language: 'dart',
-                automaticLayout: true,
-                theme: 'vs-dark',
-                fontSize: 14,
-                minimap: {
-                    enabled: false,
-                }
-            });
-        });
 
         const output = document.getElementById('output');
         const status = document.getElementById('status');
@@ -95,18 +79,47 @@
                 console.error(e);
             }
         };
+
+        require(['vs/editor/editor.main'], function () {
+            window.editor = monaco.editor.create(document.getElementById('editor'), {
+                value: [
+                    "void main() {",
+                    "  print('Hello from Dart!');",
+                    "}"
+                ].join('\n'),
+                language: 'dart',
+                automaticLayout: true,
+                theme: 'vs-dark',
+                fontSize: 14,
+                minimap: {
+                    enabled: false,
+                }
+            });
+
+            // Listen for editor focus events - MUST be inside require callback
+            window.editor.onDidFocusEditorText(function () {
+                console.log('Editor focused');
+                sendToFlutter({ type: 'editorFocused' });
+            });
+
+            // Listen for editor blur (lost focus) events
+            window.editor.onDidBlurEditorText(function () {
+                console.log('Editor blurred');
+                sendToFlutter({ type: 'editorBlurred' });
+            });
+        });
     </script>
     <script src="https://unpkg.com/vscode-ws-jsonrpc/dist/browser.js"></script>
     <script src="https://unpkg.com/monaco-languageclient/lib/monaco-languageclient.js"></script>
     <script>
-        window.setEditorLanguage = function(language) {
-          if (!window.editor) return;
-          try {
-            monaco.editor.setModelLanguage(window.editor.getModel(), language);
-            console.log("Language changed to", language);
-          } catch (e) {
-            console.error("Failed to change language", e);
-          }
+        window.setEditorLanguage = function (language) {
+            if (!window.editor) return;
+            try {
+                monaco.editor.setModelLanguage(window.editor.getModel(), language);
+                console.log("Language changed to", language);
+            } catch (e) {
+                console.error("Failed to change language", e);
+            }
         };
     </script>
 </body>

@@ -14,6 +14,7 @@ enum EventType {
   importedFile,
 
   dropEditorFocus,
+  editorFocused,
 
   aiModeChanged,
   aiStateChanged,

@@ -27,11 +27,29 @@
   <script>
     require.config({ paths: { 'vs': 'monaco/vs' } });
     require(['vs/editor/editor.main'], function () {
-      window.editor = monaco.editor.create(document.getElementById('container'), {
-        value: '// Monaco Editor loaded in Flutter WebView\n',
-        language: 'dart',
+      // window.editor = monaco.editor.create(document.getElementById('container'), {
+      //   value: '// Monaco Editor loaded in Flutter WebView\n',
+      //   language: 'dart',
+      //   theme: 'vs-dark',
+      //   automaticLayout: true
+      // });
+      window.editor = monaco.editor.createDiffEditor(document.getElementById('container'), {
+        automaticLayout: true,
         theme: 'vs-dark',
-        automaticLayout: true
+        renderSideBySide: true, // false for inline view
+        readOnly: false
+      });
+
+      // Set the original and modified texts
+      window.editor.setModel({
+        original: monaco.editor.createModel('originalText', 'javascript'),
+        modified: monaco.editor.createModel('modifiedText', 'javascript')
+      });
+
+      // Navigate between differences
+      const diffNavigator = monaco.editor.createDiffNavigator(window.editor, {
+        followsCaret: true,
+        ignoreCharChanges: true
       });
       // Optional: Expose functions for Flutter-JS communication
       window.getEditorValue = function () {
@@ -71,6 +89,24 @@
           console.error(e);
         }
       };
+
+      // Listen for editor focus events
+      window.editor.onDidFocusEditorText(function () {
+        console.log('Editor focused');
+        // Send message to Flutter
+        if (EditorChannel && EditorChannel.postMessage) {
+          EditorChannel.postMessage(JSON.stringify({ type: 'editorFocused' }));
+        }
+      });
+
+      // Listen for editor blur (lost focus) events
+      window.editor.onDidBlurEditorText(function () {
+        console.log('Editor blurred');
+        // Send message to Flutter
+        if (EditorChannel && EditorChannel.postMessage) {
+          EditorChannel.postMessage(JSON.stringify({ type: 'editorBlurred' }));
+        }
+      });
     });
   </script>
 </body>

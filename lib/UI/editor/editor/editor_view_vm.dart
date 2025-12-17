@@ -148,6 +148,8 @@ class EditorViewVM implements EditorViewVMInterface {
   Future<void> dropEditorFocus() {
     if (settingUp.value) return Future.value();
 
+    print('_dropping focus for editor uuid: ${_languageEditorController.uuid}');
+
     return _languageEditorController.dropFocus();
   }
 
@@ -188,6 +190,12 @@ class EditorViewVM implements EditorViewVMInterface {
         }
 
         return NavigationDecision.prevent;
+      };
+
+      _languageEditorController.editorFocusedCallback = (uuid) {
+        if (uuid == _languageEditorController.uuid) {
+          EventService.emit(type: EventType.editorFocused, data: uuid);
+        }
       };
 
       await _languageEditorController.setUp();
@@ -252,6 +260,16 @@ class EditorViewVM implements EditorViewVMInterface {
           if (language.key == _file.language.key) {
             _compiler.setPath(language.sdkPath);
           }
+        });
+
+    EventService.instance.stream
+        .where(
+          (e) =>
+              e.type == EventType.editorFocused &&
+              e.data != _languageEditorController.uuid,
+        )
+        .listen((_) {
+          dropEditorFocus();
         });
   }
 

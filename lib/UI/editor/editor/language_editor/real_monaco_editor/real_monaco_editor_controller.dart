@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../../core/storage/supported_language.dart';
@@ -15,6 +16,12 @@ class RealMonacoEditorController implements LanguageEditorControllerInterface {
 
   @override
   NavigationDecision Function(NavigationRequest)? onNavigationRequest;
+
+  @override
+  String uuid = Uuid().v4();
+
+  @override
+  void Function(String)? editorFocusedCallback;
 
   @override
   Future<void> setUp() async {
@@ -113,7 +120,7 @@ class RealMonacoEditorController implements LanguageEditorControllerInterface {
   Future<void> reload() async {
     final monacoPath = await copyMonacoAssetsToLocalDir();
 
-    final html = await rootBundle.loadString('assets/monaco_editor.html');
+    final html = await rootBundle.loadString('assets/index.html');
 
     await controller.loadHtmlString(html, baseUrl: 'file://$monacoPath/');
   }

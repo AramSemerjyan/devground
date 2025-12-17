@@ -11,7 +11,6 @@ class AIResponseEditorController implements LanguageEditorControllerInterface {
 
   @override
   Future<void> debug() {
-    // TODO: implement debug
     throw UnimplementedError();
   }
 
@@ -20,25 +19,21 @@ class AIResponseEditorController implements LanguageEditorControllerInterface {
 
   @override
   Future<void> formatCode() {
-    // TODO: implement formatCode
     throw UnimplementedError();
   }
 
   @override
   Future<String> getValue() {
-    // TODO: implement getValue
     throw UnimplementedError();
   }
 
   @override
   Future<void> reload() {
-    // TODO: implement reload
     throw UnimplementedError();
   }
 
   @override
   Future<void> runCode() {
-    // TODO: implement runCode
     throw UnimplementedError();
   }
 
@@ -52,4 +47,10 @@ class AIResponseEditorController implements LanguageEditorControllerInterface {
 
   @override
   Future<void> setUp() async {}
+  
+  @override
+  void Function(String)? editorFocusedCallback;
+  
+  @override
+  String get uuid => throw UnimplementedError();
 }

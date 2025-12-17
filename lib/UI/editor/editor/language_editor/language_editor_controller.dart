@@ -5,6 +5,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/storage/supported_language.dart';
 
 abstract class LanguageEditorControllerInterface {
+  String get uuid;
+
   Future<void> setUp();
   Future<void> formatCode();
   Future<void> runCode();
@@ -16,4 +18,5 @@ abstract class LanguageEditorControllerInterface {
   Future<void> debug();
 
   NavigationDecision Function(NavigationRequest)? onNavigationRequest;
+  void Function(String)? editorFocusedCallback;
 }

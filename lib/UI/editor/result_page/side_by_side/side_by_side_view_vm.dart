@@ -37,6 +37,12 @@ class SideBySideViewVM implements SideBySideViewVMInterface {
   void setUp() async {
     try {
       await _languageEditorController.setUp();
+
+      _languageEditorController.editorFocusedCallback = (uuid) {
+        if (uuid == _languageEditorController.uuid) {
+          EventService.emit(type: EventType.editorFocused, data: uuid);
+        }
+      };
     } catch (e, s) {
       EventService.error(
         msg: e.toString(),
@@ -57,6 +63,16 @@ class SideBySideViewVM implements SideBySideViewVMInterface {
         .listen((_) {
           if (settingUp.value) return;
 
+          _languageEditorController.dropFocus();
+        });
+
+    EventService.instance.stream
+        .where(
+          (e) =>
+              e.type == EventType.editorFocused &&
+              e.data != _languageEditorController.uuid,
+        )
+        .listen((_) {
           _languageEditorController.dropFocus();
         });
   }

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
+import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../../core/storage/supported_language.dart';
@@ -12,6 +14,14 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
 
   @override
   NavigationDecision Function(NavigationRequest)? onNavigationRequest;
+
+  @override
+  void Function(String)? editorFocusedCallback;
+  @override
+  void Function(String)? editorBlurredCallback;
+
+  @override
+  String uuid = Uuid().v4();
 
   @override
   Future<void> setUp() async {
@@ -62,7 +72,17 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
     await completer.future;
   }
 
-  Future<void> handleEditorMessage(Map<String, dynamic> msg) async {}
+  Future<void> handleEditorMessage(Map<String, dynamic> msg) async {
+    if (msg['type'] == 'editorFocused') {
+      editorFocusedCallback?.call(uuid);
+      return;
+    }
+
+    if (msg['type'] == 'editorBlurred') {
+      editorBlurredCallback?.call(uuid);
+      return;
+    }
+  }
 
   Future<void> sendStatus(String s) async {
     final payload = jsonEncode({'type': 'status', 'payload': s});
