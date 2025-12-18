@@ -91,14 +91,57 @@
                 automaticLayout: true,
                 theme: 'vs-dark',
                 fontSize: 14,
+
+                // Minimap
                 minimap: {
                     enabled: false,
                 },
+
+                // Code Folding
                 folding: true,
                 showFoldingControls: 'mouseover',
-                foldingStrategy: 'auto',                
+                foldingStrategy: 'auto',
                 foldingHighlight: true,
                 unfoldOnClickAfterEndOfLine: false,
+                bracketPairColorization: {
+                    enabled: true,
+                },
+                guides: {
+                    bracketPairs: true,
+                    indentation: true,
+                },
+                matchBrackets: 'always',
+                scrollBeyondLastLine: false,
+                smoothScrolling: true,
+                mouseWheelZoom: true,
+                wordWrap: 'off',
+                wordWrapColumn: 80,
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                multiCursorModifier: 'alt',
+                quickSuggestions: true,
+                suggestOnTriggerCharacters: true,
+                acceptSuggestionOnEnter: 'on',
+                tabCompletion: 'on',
+                formatOnPaste: true,
+                formatOnType: false,
+                autoClosingBrackets: 'languageDefined',
+                links: true,
+                hover: {
+                    enabled: true,
+                    delay: 300,
+                },
+                find: {
+                    seedSearchStringFromSelection: 'selection',
+                    autoFindInSelection: 'never',
+                },
+                contextmenu: true,
+                renderWhitespace: 'selection',
+                renderLineHighlight: 'all',
+                selectOnLineNumbers: true,
+                lineNumbersMinChars: 3,
+                glyphMargin: true,
+                renderValidationDecorations: 'on',
             });
 
             // Listen for editor focus events - MUST be inside require callback
