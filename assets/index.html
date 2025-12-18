@@ -93,7 +93,12 @@
                 fontSize: 14,
                 minimap: {
                     enabled: false,
-                }
+                },
+                folding: true,
+                showFoldingControls: 'mouseover',
+                foldingStrategy: 'auto',                
+                foldingHighlight: true,
+                unfoldOnClickAfterEndOfLine: false,
             });
 
             // Listen for editor focus events - MUST be inside require callback

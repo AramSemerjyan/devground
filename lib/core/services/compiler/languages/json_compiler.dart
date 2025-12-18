@@ -55,8 +55,17 @@ class JSONCompiler extends Compiler {
     // Fix missing opening brackets BEFORE fixing quotes
     json = _fixMissingOpeningBrackets(json);
 
-    // Fix unquoted keys (including numeric keys and UUIDs): match any unquoted identifier before colon
-    // Pattern: after {, [, comma, or newline followed by whitespace, capture identifier, then colon
+    // Fix unquoted keys (including numeric keys, UUIDs, and keys with spaces)
+    // First pass: keys with spaces (must be done before single-word keys)
+    json = json.replaceAllMapped(
+      RegExp(
+        r'([{,\[\n]\s*)([a-zA-Z_$0-9][a-zA-Z0-9_$\-]*(?:\s+[a-zA-Z0-9_$\-]+)+)\s*:',
+        multiLine: true,
+      ),
+      (match) => '${match.group(1)}"${match.group(2)}":',
+    );
+
+    // Second pass: single-word keys
     json = json.replaceAllMapped(
       RegExp(
         r'([{,\[\n]\s*)([a-zA-Z_$0-9][a-zA-Z0-9_$\-]*)\s*:',
@@ -65,36 +74,69 @@ class JSONCompiler extends Compiler {
       (match) => '${match.group(1)}"${match.group(2)}":',
     );
 
-    // Fix unquoted string values (including Unicode/Cyrillic characters)
-    // This includes UUIDs, identifiers like "brand-block-xyz", "field_metrics_bb", etc.
-    // Don't match structural characters like { } [ ]
-    json = json.replaceAllMapped(
-      RegExp(r':\s*([^\s,}\]":[{]+(?:\s+[^\s,}\]":[{]+)*)(\s*[,}\]])'),
-      (match) {
-        final value = match.group(1)!.trim();
+    // Fix unquoted string values (including Unicode/Cyrillic characters and complex strings)
+    // Match any unquoted value that's not a structural character or already quoted
+    // This handles simple values and complex strings with special characters
+    json = json.replaceAllMapped(RegExp(r':\s*([^,}\]"[{]+?)(\s*[,}\]])'), (
+      match,
+    ) {
+      final value = match.group(1)!.trim();
 
-        // Skip empty values
-        if (value.isEmpty) {
-          return ':${match.group(2)}';
-        }
+      // Skip empty values
+      if (value.isEmpty) {
+        return ':${match.group(2)}';
+      }
 
-        // Don't quote reserved words or numbers
-        if (value == 'true' ||
-            value == 'false' ||
-            value == 'null' ||
-            RegExp(r'^-?\d+\.?\d*$').hasMatch(value)) {
-          return ': $value${match.group(2)}';
-        }
+      // Don't quote reserved words or numbers
+      if (value == 'true' ||
+          value == 'false' ||
+          value == 'null' ||
+          RegExp(r'^-?\d+\.?\d*$').hasMatch(value)) {
+        return ': $value${match.group(2)}';
+      }
 
-        // Don't quote if it's already part of a quoted string
-        if (value.startsWith('"') || value.endsWith('"')) {
-          return ': $value${match.group(2)}';
-        }
+      // Don't quote if it's already quoted
+      if (value.startsWith('"') && value.endsWith('"')) {
+        return ': $value${match.group(2)}';
+      }
 
-        // Quote the value (including Unicode characters)
-        return ': "$value"${match.group(2)}';
-      },
-    );
+      // Quote the value (including Unicode characters and special chars)
+      // Escape any existing quotes in the value
+      final escapedValue = value.replaceAll('"', '\\"');
+      return ': "$escapedValue"${match.group(2)}';
+    });
+
+    // Fix unquoted values inside arrays (after [ or , but not after :)
+    // Need to run this multiple times to catch all array values
+    for (int i = 0; i < 3; i++) {
+      json = json.replaceAllMapped(
+        RegExp(r'([\[,])\s*\n?\s*([a-zA-Z_0-9\-]+)\s*([,\]])', multiLine: true),
+        (match) {
+          final value = match.group(2)!.trim();
+
+          // Skip empty values
+          if (value.isEmpty) {
+            return '${match.group(1)}${match.group(3)}';
+          }
+
+          // Don't quote reserved words or numbers
+          if (value == 'true' ||
+              value == 'false' ||
+              value == 'null' ||
+              RegExp(r'^-?\d+\.?\d*$').hasMatch(value)) {
+            return '${match.group(1)} $value${match.group(3)}';
+          }
+
+          // Don't quote if it's already quoted
+          if (value.startsWith('"') && value.endsWith('"')) {
+            return '${match.group(1)} $value${match.group(3)}';
+          }
+
+          // Quote the value
+          return '${match.group(1)} "$value"${match.group(3)}';
+        },
+      );
+    }
 
     // Fix missing commas between properties
     json = _fixMissingCommas(json);
