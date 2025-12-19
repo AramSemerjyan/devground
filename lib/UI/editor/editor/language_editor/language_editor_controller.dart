@@ -19,4 +19,5 @@ abstract class LanguageEditorControllerInterface {
 
   NavigationDecision Function(NavigationRequest)? onNavigationRequest;
   void Function(String)? editorFocusedCallback;
+  void Function(String)? editorBlurredCallback;
 }

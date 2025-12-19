@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_controller.dart';
-import 'package:dartpad_lite/core/services/event_service/event_service.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';

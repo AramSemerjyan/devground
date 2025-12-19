@@ -1,4 +1,3 @@
-import 'package:dartpad_lite/core/services/event_service/logger/console_logger.dart';
 import 'package:dartpad_lite/core/storage/supported_language.dart';
 import 'package:flutter/material.dart';
 

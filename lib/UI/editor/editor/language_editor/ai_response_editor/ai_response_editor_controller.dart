@@ -53,4 +53,7 @@ class AIResponseEditorController implements LanguageEditorControllerInterface {
   
   @override
   String get uuid => throw UnimplementedError();
+  
+  @override
+  void Function(String)? editorBlurredCallback;
 }

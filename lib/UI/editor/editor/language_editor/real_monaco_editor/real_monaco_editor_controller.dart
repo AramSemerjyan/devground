@@ -169,4 +169,7 @@ class RealMonacoEditorController implements LanguageEditorControllerInterface {
 
     return monacoDir.path;
   }
+  
+  @override
+  void Function(String)? editorBlurredCallback;
 }
