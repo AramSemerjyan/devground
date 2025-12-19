@@ -148,8 +148,6 @@ class EditorViewVM implements EditorViewVMInterface {
   Future<void> dropEditorFocus() {
     if (settingUp.value) return Future.value();
 
-    print('_dropping focus for editor uuid: ${_languageEditorController.uuid}');
-
     return _languageEditorController.dropFocus();
   }
 
