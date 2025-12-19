@@ -25,18 +25,18 @@ class SideBySideViewVM implements SideBySideViewVMInterface {
   final settingUp = ValueNotifier(false);
 
   SideBySideViewVM(this._language) {
-    settingUp.value = true;
-    _languageEditorController = LanguageEditorFactory.getController(
-      language: _language,
-    );
-
     _setListeners();
     setUp();
   }
 
   void setUp() async {
+    settingUp.value = true;
+        _languageEditorController = LanguageEditorFactory.getController(
+      language: _language,
+    );
     try {
       await _languageEditorController.setUp();
+      await _languageEditorController.setLanguage(language: _language);
 
       _languageEditorController.editorFocusedCallback = (uuid) {
         if (uuid == _languageEditorController.uuid) {
