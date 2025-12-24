@@ -72,6 +72,7 @@ class EditorTabView extends StatelessWidget {
   final Function(int)? onClose;
   final Function(int)? onCloseOthers;
   final VoidCallback? onCloseAll;
+  final VoidCallback? onSideBarTap;
 
   const EditorTabView({
     super.key,
@@ -81,6 +82,7 @@ class EditorTabView extends StatelessWidget {
     this.onClose,
     this.onCloseAll,
     this.onCloseOthers,
+    this.onSideBarTap,
   });
 
   void _showContextMenu(
@@ -144,24 +146,50 @@ class EditorTabView extends StatelessWidget {
       color: AppColor.mainGrey,
       height: 35,
       width: double.infinity,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: pages.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 3),
-        itemBuilder: (_, i) {
-          final page = pages[i];
-          return GestureDetector(
-            onSecondaryTapDown: (details) =>
-                _showContextMenu(context, details, i),
-            child: EditorTab(
-              key: ValueKey(page.id),
-              page: page,
-              onTap: () => onSelect?.call(i),
-              onClose: () => onClose?.call(i),
-              isSelected: i == selectedTab,
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: pages.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 3),
+              itemBuilder: (_, i) {
+                final page = pages[i];
+                return GestureDetector(
+                  onSecondaryTapDown: (details) =>
+                      _showContextMenu(context, details, i),
+                  child: EditorTab(
+                    key: ValueKey(page.id),
+                    page: page,
+                    onTap: () => onSelect?.call(i),
+                    onClose: () => onClose?.call(i),
+                    isSelected: i == selectedTab,
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          const SizedBox(width: 5),
+          Tooltip(
+            message: 'Toggle Sidebar',
+            child: GestureDetector(
+              onTap: onSideBarTap,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: AppColor.mainGreyDark,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Icon(
+                  Icons.vertical_split,
+                  color: AppColor.mainGreyLighter,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 5),
+        ],
       ),
     );
   }

@@ -94,6 +94,7 @@ class SupportedLanguage implements CommandPaletteItem {
   final String snippet;
   final LanguageSupport supported;
   final bool needSDKPath;
+  final bool needCompiler;
   final String? sdkPath;
 
   SupportedLanguage({
@@ -106,6 +107,7 @@ class SupportedLanguage implements CommandPaletteItem {
     required this.snippet,
     required this.supported,
     required this.needSDKPath,
+    required this.needCompiler,
     this.sdkPath,
   });
 
@@ -119,6 +121,7 @@ class SupportedLanguage implements CommandPaletteItem {
       path: Path.fromJson(json['path']),
       snippet: json['snippet'],
       needSDKPath: json['need_sdk_path'],
+      needCompiler: json['need_compiler'] ?? true,
       supported: LanguageSupport.fromJson(json['supported']),
       sdkPath: json['sdk_path'],
     );
@@ -134,6 +137,7 @@ class SupportedLanguage implements CommandPaletteItem {
       'path': path.toJson(),
       'supported': supported.value,
       'need_sdk_path': needSDKPath,
+      'need_compiler': needCompiler,
       'sdk_path': sdkPath,
     };
   }
@@ -149,6 +153,7 @@ class SupportedLanguage implements CommandPaletteItem {
       snippet: snippet,
       supported: supported,
       needSDKPath: needSDKPath,
+      needCompiler: needCompiler,
       sdkPath: sdkPath,
     );
   }
@@ -158,7 +163,8 @@ class SupportedLanguage implements CommandPaletteItem {
       identical(this, other) ||
       other is SupportedLanguage &&
           runtimeType == other.runtimeType &&
-          key.value == other.key.value && sdkPath == other.sdkPath;
+          key.value == other.key.value &&
+          sdkPath == other.sdkPath;
 
   @override
   int get hashCode => key.value.hashCode;

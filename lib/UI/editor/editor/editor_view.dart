@@ -22,6 +22,7 @@ class EditorView extends StatefulWidget {
   final FileServiceInterface saveFileService;
   final PagesServiceInterface pagesService;
   final CompilerStateAudioManagerInterface compilerAudioService;
+  final ValueNotifier<bool> sideBarToggle;
 
   const EditorView({
     super.key,
@@ -29,6 +30,7 @@ class EditorView extends StatefulWidget {
     required this.saveFileService,
     required this.file,
     required this.compilerAudioService,
+    required this.sideBarToggle,
   });
 
   @override
@@ -61,6 +63,10 @@ class _EditorViewState extends State<EditorView>
     super.initState();
     _setListeners();
     PagesService().onPagesUpdate.addListener(_onPageUpdate);
+
+    if (!widget.file.language.needCompiler) {
+      widget.sideBarToggle.value = false;
+    }
   }
 
   @override
@@ -126,6 +132,9 @@ class _EditorViewState extends State<EditorView>
               icon: Icons.compare_arrows_rounded,
               onPressed: () async {
                 _showSideToSide.value = !_showSideToSide.value;
+                if (!widget.sideBarToggle.value) {
+                  widget.sideBarToggle.value = true;
+                }
               },
             );
           },
@@ -234,7 +243,7 @@ class _EditorViewState extends State<EditorView>
                     valueListenable: _showSideToSide,
                     builder: (_, showSideToSide, _) {
                       if (showSideToSide) {
-                        return SideToSideView(language: _vm.language,);
+                        return SideToSideView(language: _vm.language);
                       }
                       return ResultView(
                         language: _vm.language,
@@ -384,8 +393,16 @@ class _EditorViewState extends State<EditorView>
           child: Row(
             children: [
               Expanded(child: _buildEditor()),
-              _buildResizeSeparator(),
-              _buildResultView(),
+              ValueListenableBuilder(
+                valueListenable: widget.sideBarToggle,
+                builder: (_, value, __) {
+                  if (!value) return SizedBox();
+
+                  return Row(
+                    children: [_buildResizeSeparator(), _buildResultView()],
+                  );
+                },
+              ),
             ],
           ),
         ),

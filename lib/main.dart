@@ -10,6 +10,10 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Devground', home: const AppMainPage());
+    return MaterialApp(
+      title: 'Devground',
+      home: const AppMainPage(),
+      debugShowCheckedModeBanner: false,
+    );
   }
 }
