@@ -30,7 +30,6 @@ class EditorPage extends StatefulWidget {
 class _EditorPageState extends State<EditorPage> {
   late final EditorPageVMInterface _vm = EditorPageVM(widget.pagesService);
   final PageController _pageController = PageController();
-  final ValueNotifier<bool> _sideBarToggled = ValueNotifier<bool>(true);
 
   @override
   void dispose() {
@@ -75,7 +74,6 @@ class _EditorPageState extends State<EditorPage> {
                         compilerAudioService: CompilerStateAudioManager(
                           widget.languageRepo,
                         ),
-                        sideBarToggle: _sideBarToggled,
                       ),
                     )
                     .toList(),
@@ -94,9 +92,6 @@ class _EditorPageState extends State<EditorPage> {
                   onClose: (i) => _vm.onClose(i),
                   onCloseAll: () => _vm.onCloseAll(),
                   onCloseOthers: (i) => _vm.onCloseOthers(i),
-                  onSideBarTap: () {
-                    _sideBarToggled.value = !_sideBarToggled.value;
-                  },
                 ),
               ),
           ],

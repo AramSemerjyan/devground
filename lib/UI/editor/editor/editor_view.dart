@@ -22,7 +22,6 @@ class EditorView extends StatefulWidget {
   final FileServiceInterface saveFileService;
   final PagesServiceInterface pagesService;
   final CompilerStateAudioManagerInterface compilerAudioService;
-  final ValueNotifier<bool> sideBarToggle;
 
   const EditorView({
     super.key,
@@ -30,7 +29,6 @@ class EditorView extends StatefulWidget {
     required this.saveFileService,
     required this.file,
     required this.compilerAudioService,
-    required this.sideBarToggle,
   });
 
   @override
@@ -52,6 +50,7 @@ class _EditorViewState extends State<EditorView>
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
   final ValueNotifier<bool> _showAI = ValueNotifier(false);
   final ValueNotifier<bool> _showSideToSide = ValueNotifier(false);
+  final ValueNotifier<bool> _sideBarToggle = ValueNotifier(true);
 
   late final List<StreamSubscription> _subscriptions = [];
 
@@ -64,9 +63,7 @@ class _EditorViewState extends State<EditorView>
     _setListeners();
     PagesService().onPagesUpdate.addListener(_onPageUpdate);
 
-    if (!widget.file.language.needCompiler) {
-      widget.sideBarToggle.value = false;
-    }
+    _sideBarToggle.value = widget.file.language.needCompiler;
   }
 
   @override
@@ -125,6 +122,21 @@ class _EditorViewState extends State<EditorView>
           valueListenable: _showSideToSide,
           builder: (_, show, __) {
             return FloatingProgressButton(
+              heroTag: 'sideBarToggleBtn',
+              tooltip: 'Side bar toggle',
+              mini: true,
+              isSelected: show,
+              icon: Icons.vertical_split,
+              onPressed: () async {
+                _sideBarToggle.value = !_sideBarToggle.value;
+              },
+            );
+          },
+        ),
+        ValueListenableBuilder(
+          valueListenable: _showSideToSide,
+          builder: (_, show, __) {
+            return FloatingProgressButton(
               heroTag: 'sideToSideBtn',
               tooltip: 'Side to side view',
               mini: true,
@@ -132,8 +144,8 @@ class _EditorViewState extends State<EditorView>
               icon: Icons.compare_arrows_rounded,
               onPressed: () async {
                 _showSideToSide.value = !_showSideToSide.value;
-                if (!widget.sideBarToggle.value) {
-                  widget.sideBarToggle.value = true;
+                if (!_sideBarToggle.value) {
+                  _sideBarToggle.value = true;
                 }
               },
             );
@@ -394,7 +406,7 @@ class _EditorViewState extends State<EditorView>
             children: [
               Expanded(child: _buildEditor()),
               ValueListenableBuilder(
-                valueListenable: widget.sideBarToggle,
+                valueListenable: _sideBarToggle,
                 builder: (_, value, __) {
                   if (!value) return SizedBox();
 
