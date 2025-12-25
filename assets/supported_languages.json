@@ -1,7 +1,7 @@
 [
   {
     "key": "dart",
-    "name": "Dart SDK",
+    "name": "Dart",
     "extension": ".dart",
     "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dart/dart-original.svg",
     "path": {
