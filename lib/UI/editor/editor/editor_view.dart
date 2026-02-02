@@ -113,26 +113,8 @@ class _EditorViewState extends State<EditorView>
   }
 
   Widget _buildButtons() {
-    return Column(
-      crossAxisAlignment: .start,
-      mainAxisSize: .min,
-      spacing: 10,
-      children: [
-        ValueListenableBuilder(
-          valueListenable: _showSideToSide,
-          builder: (_, show, __) {
-            return FloatingProgressButton(
-              heroTag: 'sideBarToggleBtn',
-              tooltip: 'Side bar toggle',
-              mini: true,
-              isSelected: show,
-              icon: Icons.vertical_split,
-              onPressed: () async {
-                _sideBarToggle.value = !_sideBarToggle.value;
-              },
-            );
-          },
-        ),
+    return AnimatedButtonsRow(
+      verticalButtons: [
         ValueListenableBuilder(
           valueListenable: _showSideToSide,
           builder: (_, show, __) {
@@ -151,64 +133,77 @@ class _EditorViewState extends State<EditorView>
             );
           },
         ),
-        AnimatedButtonsRow(
-          buttons: [
-            FloatingProgressButton(
-              inProgress: _vm.runProgress,
-              heroTag: 'runBtn',
-              tooltip: 'Run',
+        ValueListenableBuilder(
+          valueListenable: _showSideToSide,
+          builder: (_, show, __) {
+            return FloatingProgressButton(
+              heroTag: 'sideBarToggleBtn',
+              tooltip: 'Side bar toggle',
               mini: true,
-              icon: Icons.play_arrow_rounded,
-              onPressed: () {
-                if (_inProgress.value) return;
-                _inProgress.value = true;
-                _vm.runCode();
-              },
-            ),
-            FloatingProgressButton(
-              inProgress: _vm.formatProgress,
-              heroTag: 'formatBtn',
-              tooltip: 'Format',
-              mini: true,
-              icon: Icons.format_align_left,
-              onPressed: () {
-                _vm.formatCode();
-              },
-            ),
-            FloatingProgressButton(
-              inProgress: _vm.saveProgress,
-              heroTag: 'saveBtn',
-              tooltip: 'Save',
-              mini: true,
-              icon: Icons.save_rounded,
+              isSelected: show,
+              icon: Icons.vertical_split,
               onPressed: () async {
-                final name = await CommandPalette.showRename(
-                  context,
-                  initialValue: _vm.file.name,
-                );
-
-                if (name != null) _vm.save(name: name);
-
-                _vm.dropEditorFocus();
+                _sideBarToggle.value = !_sideBarToggle.value;
               },
-            ),
-            ValueListenableBuilder(
-              valueListenable: _showAI,
-              builder: (_, show, __) {
-                return FloatingProgressButton(
-                  heroTag: 'aiBtn',
-                  tooltip: 'AI boost',
-                  mini: true,
-                  icon: !show ? Icons.accessible : Icons.accessible_forward,
-                  onPressed: () async {
-                    _showAI.value = !_showAI.value;
+            );
+          },
+        ),
+      ],
+      buttons: [
+        FloatingProgressButton(
+          inProgress: _vm.runProgress,
+          heroTag: 'runBtn',
+          tooltip: 'Run',
+          mini: true,
+          icon: Icons.play_arrow_rounded,
+          onPressed: () {
+            if (_inProgress.value) return;
+            _inProgress.value = true;
+            _vm.runCode();
+          },
+        ),
+        FloatingProgressButton(
+          inProgress: _vm.formatProgress,
+          heroTag: 'formatBtn',
+          tooltip: 'Format',
+          mini: true,
+          icon: Icons.format_align_left,
+          onPressed: () {
+            _vm.formatCode();
+          },
+        ),
+        FloatingProgressButton(
+          inProgress: _vm.saveProgress,
+          heroTag: 'saveBtn',
+          tooltip: 'Save',
+          mini: true,
+          icon: Icons.save_rounded,
+          onPressed: () async {
+            final name = await CommandPalette.showRename(
+              context,
+              initialValue: _vm.file.name,
+            );
 
-                    _vm.onAIBoosModeChange(state: _showAI.value);
-                  },
-                );
+            if (name != null) _vm.save(name: name);
+
+            _vm.dropEditorFocus();
+          },
+        ),
+        ValueListenableBuilder(
+          valueListenable: _showAI,
+          builder: (_, show, __) {
+            return FloatingProgressButton(
+              heroTag: 'aiBtn',
+              tooltip: 'AI boost',
+              mini: true,
+              icon: !show ? Icons.accessible : Icons.accessible_forward,
+              onPressed: () async {
+                _showAI.value = !_showAI.value;
+
+                _vm.onAIBoosModeChange(state: _showAI.value);
               },
-            ),
-          ],
+            );
+          },
         ),
       ],
     );
