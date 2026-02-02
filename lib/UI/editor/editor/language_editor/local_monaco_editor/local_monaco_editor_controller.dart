@@ -110,7 +110,7 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
 
   @override
   Future<void> setLanguage({required SupportedLanguage language}) async {
-    final jsLang = language.key.value;
+    final jsLang = language.key.monacoKey;
     await controller.runJavaScript('setEditorLanguage("$jsLang");');
 
     setCode(code: language.snippet);

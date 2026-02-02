@@ -13,15 +13,24 @@ class JSONCompiler extends Compiler {
   Future<CompilerResult> formatCode(String code) async {
     String? fixedCode;
     try {
-      // First, try to fix common JSON issues
-      fixedCode = _fixInvalidJson(code);
-
-      final jsonObject = jsonDecode(fixedCode);
-      const encoder = JsonEncoder.withIndent('  '); // 2 spaces
-      return CompilerResult.message(
-        data: encoder.convert(jsonObject),
-        message: 'JSON formatted successfully',
-      );
+      // First, try parsing as-is without any fixes
+      try {
+        final jsonObject = jsonDecode(code);
+        const encoder = JsonEncoder.withIndent('  '); // 2 spaces
+        return CompilerResult.message(
+          data: encoder.convert(jsonObject),
+          message: 'JSON formatted successfully',
+        );
+      } catch (_) {
+        // If it fails, try to fix common JSON issues
+        fixedCode = _fixInvalidJson(code);
+        final jsonObject = jsonDecode(fixedCode);
+        const encoder = JsonEncoder.withIndent('  '); // 2 spaces
+        return CompilerResult.message(
+          data: encoder.convert(jsonObject),
+          message: 'JSON formatted successfully',
+        );
+      }
     } catch (e, s) {
       return CompilerResult.error(error: e, stackTrace: s);
     }

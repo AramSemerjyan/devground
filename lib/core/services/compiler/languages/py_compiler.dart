@@ -14,71 +14,62 @@ class PythonCompiler extends Compiler {
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-                if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
-
-    final tmpDir = await getTemporaryDirectory();
-    final id = uuid.v4();
-    final file = File('${tmpDir.path}/snippet_fmt_$id.py');
-    await file.writeAsString(code);
-
-    final pythonFormatter = _path!.isNotEmpty
-        ? '$_path/black'
-        : 'black';
-
-    // Run black formatter silently
-    final proc = await Process.start(pythonFormatter, ['--quiet', file.path]);
-
-    final exitCode = await proc.exitCode;
-    if (exitCode == 0) {
-      final formatted = await file.readAsString();
-      return CompilerResult.message(data: formatted);
-    } else {
-      return CompilerResult.error(
-        data: 'Python formatting failed with exit code $exitCode',
-      );
-    }
+    return CompilerResult.warning(message: 'No formatting available for Python.');
   }
 
   @override
   Future<void> runCode(String code) async {
-                if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
+    try {
+      if (_path == null) {
+        throw CompilerSDKPathMissing();
+      }
 
-    final tmpDir = await getTemporaryDirectory();
-    final id = uuid.v4();
-    final file = File('${tmpDir.path}/snippet_$id.py');
-    await file.writeAsString(code);
+      final tmpDir = await getTemporaryDirectory();
+      final id = uuid.v4();
+      final file = File('${tmpDir.path}/snippet_$id.py');
+      await file.writeAsString(code);
 
-    final pythonExecutable = _path!.isNotEmpty
-        ? '$_path/python3'
-        : 'python3'; // fallback to system Python
+      final pythonExecutable = _path!.isNotEmpty
+          ? '$_path/python3'
+          : 'python3'; // fallback to system Python
 
-    final proc = await Process.start(pythonExecutable, [file.path]);
+      final proc = await Process.start(pythonExecutable, [file.path]);
 
-    final stdoutBuffer = StringBuffer();
-    final stderrBuffer = StringBuffer();
+      final stdoutBuffer = StringBuffer();
+      final stderrBuffer = StringBuffer();
 
-    proc.stdout.transform(utf8.decoder).listen(stdoutBuffer.write);
-    proc.stderr.transform(utf8.decoder).listen(stderrBuffer.write);
+      proc.stdout.transform(utf8.decoder).listen(stdoutBuffer.write);
+      proc.stderr.transform(utf8.decoder).listen(stderrBuffer.write);
 
-    final exitCode = await proc.exitCode;
+      final exitCode = await proc.exitCode;
 
-    if (exitCode != 0) {
-      resultStream.sink.add(
-        CompilerResult.error(
-          data: _extractPythonError(stderrBuffer.toString()),
+      if (exitCode != 0) {
+        resultStream.sink.add(
+          CompilerResult.error(
+            data: stdoutBuffer.toString(),
+            error: CompilerExecutionError(
+              _extractPythonError(stderrBuffer.toString()),
+            ),
+            message: 'Process exited with code $exitCode',
+          ),
+        );
+        return;
+      }
+
+      resultStream.add(
+        CompilerResult.done(
+          data: stdoutBuffer.toString(),
+          message: 'Process exited with code 0',
         ),
       );
-      return;
-    }
 
-    resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
+      resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
+    } catch (e, s) {
+      resultStream.sink.add(CompilerResult.error(error: e, data: s.toString()));
+    }
   }
 
-    @override
+  @override
   Future<void> setPath(String? path) async {
     _path = path;
   }

@@ -235,6 +235,10 @@ class EditorViewVM implements EditorViewVMInterface {
           enableConsoleInput.value = true;
           EventService.warning(msg: 'Compiler: ${result.message}');
           break;
+        case CompilerResultStatus.warning:
+          EventService.warning(msg: result.message ?? 'Warning from compiler.');
+          enableConsoleInput.value = false;
+          break;
       }
     });
 

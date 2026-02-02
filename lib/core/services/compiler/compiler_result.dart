@@ -1,6 +1,6 @@
 import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
 
-enum CompilerResultStatus { message, error, waitingForInput, done }
+enum CompilerResultStatus { message, error, waitingForInput, done, warning }
 
 class CompilerResult {
   final CompilerResultStatus status;
@@ -9,18 +9,39 @@ class CompilerResult {
   final Object? error;
   final CompilerError? compilerError;
   final StackTrace? stackTrace;
-  
-  CompilerResult({required this.status, this.message, this.data, this.error, this.stackTrace, this.compilerError});
+
+  CompilerResult({
+    required this.status,
+    this.message,
+    this.data,
+    this.error,
+    this.stackTrace,
+    this.compilerError,
+  });
 
   factory CompilerResult.message({String? message, dynamic data}) {
-    return CompilerResult(status: CompilerResultStatus.message, message: message, data: data);
+    return CompilerResult(
+      status: CompilerResultStatus.message,
+      message: message,
+      data: data,
+    );
   }
 
   factory CompilerResult.done({String? message, dynamic data}) {
-    return CompilerResult(status: CompilerResultStatus.done, message: message, data: data);
+    return CompilerResult(
+      status: CompilerResultStatus.done,
+      message: message,
+      data: data,
+    );
   }
 
-  factory CompilerResult.error({Object? error, dynamic data, String? message, StackTrace? stackTrace, CompilerError? compilerError}) {
+  factory CompilerResult.error({
+    Object? error,
+    dynamic data,
+    String? message,
+    StackTrace? stackTrace,
+    CompilerError? compilerError,
+  }) {
     return CompilerResult(
       status: CompilerResultStatus.error,
       compilerError: compilerError,
@@ -28,6 +49,14 @@ class CompilerResult {
       data: data,
       message: message,
       stackTrace: stackTrace,
+    );
+  }
+
+  factory CompilerResult.warning({String? message, dynamic data}) {
+    return CompilerResult(
+      status: CompilerResultStatus.warning,
+      message: message,
+      data: data,
     );
   }
 

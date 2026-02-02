@@ -46,6 +46,13 @@ enum SupportedLanguageKey {
   }
 
   String toJson() => value;
+
+  String get monacoKey {
+    switch (this) {
+      case .python: return 'python';
+      default: return value;
+    }
+  }
 }
 
 enum LanguageSupport {

@@ -65,10 +65,10 @@
     "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
     "path": {
       "validation": "/python3",
-      "hint": "/usr/local/bin/python3"
+      "hint": "/usr/bin/python3"
     },
     "snippet": "def main():\n    print(\"Hello from Python!\")\n\nif __name__ == \"__main__\":\n    main()",
-    "supported": "upcoming",
+    "supported": "supported",
     "need_sdk_path": true,
     "need_compiler": true
   },
