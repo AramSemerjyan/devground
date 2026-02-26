@@ -14,6 +14,7 @@ class CCompiler extends Compiler {
   final uuid = const Uuid();
 
   String? _path;
+  String? _resolvedCExecutable;
 
   @override
   Future<CompilerResult> formatCode(String code) async {
@@ -33,17 +34,13 @@ class CCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
-    if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
-
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
       final file = File('${tmpDir.path}/snippet_c_$id.c');
       await file.writeAsString(code);
 
-      final cCompiler = _path!.isNotEmpty ? '$_path/gcc' : 'gcc';
+      final cCompiler = await _resolveCExecutable();
 
       final compileProc = await Process.start(cCompiler, [
         file.path,
@@ -153,6 +150,7 @@ class CCompiler extends Compiler {
   @override
   Future<void> setPath(String? path) async {
     _path = path;
+    _resolvedCExecutable = null;
   }
 
   bool _looksLikeStdin(String code) {
@@ -171,5 +169,23 @@ class CCompiler extends Compiler {
       if (lower.contains(p.toLowerCase())) return true;
     }
     return false;
+  }
+
+  Future<String> _resolveCExecutable() async {
+    final cached = _resolvedCExecutable;
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    final resolved = await resolveCompilerExecutable(
+      configuredPath: _path,
+      configuredCandidates: (path) => [path, '$path/gcc'],
+      whichCandidates: const ['gcc'],
+    );
+
+    if (resolved == null) {
+      throw CompilerSDKPathMissing();
+    }
+
+    _resolvedCExecutable = resolved;
+    return resolved;
   }
 }

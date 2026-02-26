@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
+import 'package:dartpad_lite/core/services/compiler/compiler_executable_resolver.dart';
 import 'package:dartpad_lite/core/services/compiler/compiler_result.dart';
 
 abstract class CompilerInterface {
@@ -15,7 +16,7 @@ abstract class CompilerInterface {
   void dispose();
 }
 
-class Compiler implements CompilerInterface {
+class Compiler with CompilerExecutableResolver implements CompilerInterface {
   late StreamController<dynamic> inpSink = StreamController.broadcast();
   late StreamController<CompilerResult> resultStream = StreamController();
 

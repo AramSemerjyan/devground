@@ -9,23 +9,19 @@ import '../compiler_result.dart';
 
 class ShellCompiler extends Compiler {
   String? _path;
+  String? _resolvedShellExecutable;
   final uuid = const Uuid();
 
   @override
-  @override
   Future<void> runCode(String code) async {
-    if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
-
     try {
       // Write code to a temporary file
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
-      final tempFile = File('${tmpDir.path}/snippet_fmt_$id.dart');
+      final tempFile = File('${tmpDir.path}/snippet_shell_$id.sh');
       await tempFile.writeAsString(code);
 
-      final exe = _path!.isNotEmpty ? '$_path/bash' : 'sh';
+      final exe = await _resolveShellExecutable();
 
       // Ensure executable permissions
       if (Platform.isLinux || Platform.isMacOS) {
@@ -87,5 +83,24 @@ class ShellCompiler extends Compiler {
   @override
   Future<void> setPath(String? path) async {
     _path = path;
+    _resolvedShellExecutable = null;
+  }
+
+  Future<String> _resolveShellExecutable() async {
+    final cached = _resolvedShellExecutable;
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    final resolved = await resolveCompilerExecutable(
+      configuredPath: _path,
+      configuredCandidates: (path) => [path, '$path/bash'],
+      whichCandidates: const ['bash'],
+    );
+
+    if (resolved == null) {
+      throw CompilerSDKPathMissing();
+    }
+
+    _resolvedShellExecutable = resolved;
+    return resolved;
   }
 }

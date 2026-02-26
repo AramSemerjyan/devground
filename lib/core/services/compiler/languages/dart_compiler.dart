@@ -10,19 +10,15 @@ import '../compiler_result.dart';
 
 class DartCompiler extends Compiler {
   String? _path;
+  String? _resolvedDartExecutable;
   final uuid = const Uuid();
 
   @override
   Future<CompilerResult> formatCode(String code) async {
-    if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
-
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_fmt_$id.dart');
-    // final flutterPath = await SettingsManager.getFlutterPath();
-    final dartExecutable = _path!.isNotEmpty ? '$_path/bin/dart' : 'dart';
+    final dartExecutable = await _resolveDartExecutable();
     await file.writeAsString(code);
     // run dart format -n does not write; run 'dart format' overwrites, but we want formatted output
     // Simplest: run `dart format <file>` then read file back.
@@ -38,10 +34,6 @@ class DartCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
-    if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
-
     final tmpDir = await getTemporaryDirectory();
     final id = uuid.v4();
     final file = File('${tmpDir.path}/snippet_$id.dart');
@@ -50,9 +42,7 @@ class DartCompiler extends Compiler {
     final compiledPath = '${tmpDir.path}/snippet_$id.bin';
 
     // Run: dart compile exe <file> -o <compiledPath>
-    final dartExecutable = _path!.isNotEmpty
-        ? '$_path/bin/dart'
-        : 'dart'; // fallback to default if not set
+    final dartExecutable = await _resolveDartExecutable();
 
     final compileProc = await Process.start(dartExecutable, [
       'compile',
@@ -123,6 +113,7 @@ class DartCompiler extends Compiler {
   @override
   Future<void> setPath(String? path) async {
     _path = path;
+    _resolvedDartExecutable = null;
   }
 
   String _extractDartError(String stderr) {
@@ -146,5 +137,23 @@ class DartCompiler extends Compiler {
     }
 
     return slice;
+  }
+
+  Future<String> _resolveDartExecutable() async {
+    final cached = _resolvedDartExecutable;
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    final resolved = await resolveCompilerExecutable(
+      configuredPath: _path,
+      configuredCandidates: (path) => [path, '$path/bin/dart', '$path/dart'],
+      whichCandidates: const ['dart'],
+    );
+
+    if (resolved == null) {
+      throw CompilerSDKPathMissing();
+    }
+
+    _resolvedDartExecutable = resolved;
+    return resolved;
   }
 }

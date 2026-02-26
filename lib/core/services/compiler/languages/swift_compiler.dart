@@ -11,6 +11,7 @@ import '../terminal_runner.dart';
 
 class SwiftCompiler extends Compiler {
   String? _path;
+  String? _resolvedSwiftExecutable;
 
   final uuid = const Uuid();
 
@@ -31,17 +32,13 @@ class SwiftCompiler extends Compiler {
 
   @override
   Future<void> runCode(String code) async {
-    if (_path == null) {
-      throw CompilerSDKPathMissing();
-    }
-
     try {
       final tmpDir = await getTemporaryDirectory();
       final id = uuid.v4();
       final file = File('${tmpDir.path}/snippet_swift_$id.swift');
       await file.writeAsString(code);
 
-      final cCompiler = _path!.isNotEmpty ? '$_path/swift' : 'swift';
+      final cCompiler = await _resolveSwiftExecutable();
 
       final tp = await runWithPty(cCompiler, [file.path, file.path]);
 
@@ -109,7 +106,10 @@ class SwiftCompiler extends Compiler {
         );
       } else {
         resultStream.add(
-          CompilerResult.done(data: outputBuffer.toString(), message: 'Process exited with code 0',),
+          CompilerResult.done(
+            data: outputBuffer.toString(),
+            message: 'Process exited with code 0',
+          ),
         );
       }
     } catch (e, s) {
@@ -121,6 +121,7 @@ class SwiftCompiler extends Compiler {
   @override
   Future<void> setPath(String? path) async {
     _path = path;
+    _resolvedSwiftExecutable = null;
   }
 
   bool _looksLikeStdin(String code) {
@@ -138,5 +139,23 @@ class SwiftCompiler extends Compiler {
       if (lower.contains(p)) return true;
     }
     return false;
+  }
+
+  Future<String> _resolveSwiftExecutable() async {
+    final cached = _resolvedSwiftExecutable;
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    final resolved = await resolveCompilerExecutable(
+      configuredPath: _path,
+      configuredCandidates: (path) => [path, '$path/swift'],
+      whichCandidates: const ['swift'],
+    );
+
+    if (resolved == null) {
+      throw CompilerSDKPathMissing();
+    }
+
+    _resolvedSwiftExecutable = resolved;
+    return resolved;
   }
 }
