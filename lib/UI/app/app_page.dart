@@ -8,6 +8,7 @@ import 'package:dartpad_lite/UI/command_palette/command_palette.dart';
 import 'package:dartpad_lite/UI/editor/editor_page.dart';
 import 'package:dartpad_lite/UI/history/history_page.dart';
 import 'package:dartpad_lite/UI/settings/settings_page.dart';
+import 'package:dartpad_lite/UI/terminal/terminal_page.dart';
 import 'package:dartpad_lite/UI/tool_bar/side_bar/side_tool_bar.dart';
 import 'package:dartpad_lite/utils/app_colors.dart';
 import 'package:desktop_drop/desktop_drop.dart';
@@ -81,6 +82,9 @@ class _AppMainPageState extends State<AppMainPage> with WidgetsBindingObserver {
             break;
           case 'Settings':
             builder = (context) => SettingsPage(languageRepo: _vm.languageRepo);
+            break;
+          case 'Terminal':
+            builder = (context) => const TerminalPage();
             break;
           case 'History':
             builder = (context) => HistoryPage(

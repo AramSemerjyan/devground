@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 enum AppPages {
   editor('Editor'),
+  terminal('Terminal'),
   settings('Settings'),
   history('History');
 
@@ -15,6 +16,8 @@ enum AppPages {
         return Icons.copy_sharp;
       case AppPages.history:
         return Icons.history_edu;
+      case AppPages.terminal:
+        return Icons.terminal_rounded;
       case AppPages.settings:
         return Icons.settings;
     }
@@ -26,6 +29,8 @@ enum AppPages {
         return AppPages.editor;
       case 'History':
         return AppPages.history;
+      case 'Terminal':
+        return AppPages.terminal;
       case 'Settings':
         return AppPages.settings;
       default:

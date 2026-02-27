@@ -14,7 +14,68 @@ abstract class TerminalProcess {
   Stream<String> get output;
   Sink<String> get input;
   Future<int> get exitCode;
+  void resize(int rows, int cols) {}
   Future<void> kill([ProcessSignal signal = ProcessSignal.sigterm]);
+}
+
+class _ShellLaunch {
+  final String executable;
+  final List<String> args;
+
+  const _ShellLaunch(this.executable, this.args);
+}
+
+Future<TerminalProcess> startUserShell({
+  String? workingDirectory,
+  Map<String, String>? environment,
+}) async {
+  final candidates = _shellCandidates();
+
+  for (final candidate in candidates) {
+    try {
+      return await runWithPty(
+        candidate.executable,
+        candidate.args,
+        workingDirectory: workingDirectory,
+        environment: environment,
+      );
+    } catch (_) {}
+  }
+
+  throw ProcessException(
+    'shell',
+    candidates.map((c) => c.executable).toList(),
+    'Unable to start shell session',
+    127,
+  );
+}
+
+List<_ShellLaunch> _shellCandidates() {
+  if (Platform.isWindows) {
+    return const [
+      _ShellLaunch('pwsh', ['-NoLogo']),
+      _ShellLaunch('powershell', ['-NoLogo']),
+      _ShellLaunch('cmd.exe', []),
+    ];
+  }
+
+  final shellFromEnv = Platform.environment['SHELL']?.trim();
+  final candidates = <_ShellLaunch>[];
+  if (shellFromEnv != null && shellFromEnv.isNotEmpty) {
+    final interactiveArgs =
+        shellFromEnv.endsWith('zsh') || shellFromEnv.endsWith('bash')
+        ? const ['-il']
+        : const ['-i'];
+    candidates.add(_ShellLaunch(shellFromEnv, interactiveArgs));
+  }
+
+  candidates.addAll(const [
+    _ShellLaunch('/bin/zsh', ['-il']),
+    _ShellLaunch('/bin/bash', ['-il']),
+    _ShellLaunch('/bin/sh', ['-i']),
+  ]);
+
+  return candidates;
 }
 
 /// Try to start a PTY-backed terminal process. If PTY is unavailable,
@@ -199,6 +260,9 @@ class _ProcessTerminal implements TerminalProcess {
     } catch (_) {}
     await _disposeStreams(cancelOutputSubs: true);
   }
+
+  @override
+  void resize(int rows, int cols) {}
 }
 
 // Try to start a pty using the `flutter_pty` package. Returns null if not available.
@@ -301,6 +365,13 @@ class _PtyTerminal implements TerminalProcess {
       _pty.kill(signal);
     } catch (_) {}
     await _disposeStreams(cancelOutputSub: true);
+  }
+
+  @override
+  void resize(int rows, int cols) {
+    try {
+      _pty.resize(rows, cols);
+    } catch (_) {}
   }
 }
 

@@ -18,6 +18,7 @@ class AppRouteObserver extends NavigatorObserver {
 
   @override
   void didPop(Route route, Route? previousRoute) {
+    _routeStack.remove(route);
     _onRouteChange.sink.add(
       AppPages.fromString(previousRoute?.settings.name ?? ''),
     );
@@ -27,6 +28,7 @@ class AppRouteObserver extends NavigatorObserver {
   @override
   void didPush(Route route, Route? previousRoute) async {
     _routeStack.add(route);
+    _onRouteChange.sink.add(AppPages.fromString(route.settings.name ?? ''));
     super.didPush(route, previousRoute);
   }
 

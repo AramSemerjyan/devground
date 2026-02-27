@@ -21,6 +21,7 @@ class SideToolBar extends StatefulWidget {
 class _SideToolBarState extends State<SideToolBar> {
   final List<AppPages> _pages = [
     AppPages.editor,
+    AppPages.terminal,
     AppPages.history,
     AppPages.settings,
   ];
