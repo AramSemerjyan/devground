@@ -41,6 +41,7 @@ dependencies:
   desktop_drop: ^0.7.0
   intl: ^0.20.2
   process_run: ^1.2.4
+  flutter_pty: ^0.4.2
   flutter_js: ^0.8.5
   xml: ^6.6.1
   dio: ^5.9.0

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
 import '../compiler_result.dart';
+import '../terminal_runner.dart';
 
 class DartCompiler extends Compiler {
   String? _path;
@@ -77,22 +79,64 @@ class DartCompiler extends Compiler {
 
     // run the compiled binary
     try {
-      final runProc = await Process.start(compiledPath, []);
-      final runProcStdout = StringBuffer();
-      final runProcStderr = StringBuffer();
+      final tp = await runWithPty(compiledPath, []);
+      final looksLikeStdin = _looksLikeStdin(code);
+      bool outputSeen = false;
+      Timer? inputWaitTimer;
 
-      runProc.stdout
-          .transform(utf8.decoder)
-          .listen((d) => runProcStdout.write(d));
-      runProc.stderr
-          .transform(utf8.decoder)
-          .listen((d) => runProcStderr.write(d));
-      final rc = await runProc.exitCode;
+      void armTimer() {
+        inputWaitTimer?.cancel();
+        if (!looksLikeStdin) return;
+        inputWaitTimer = Timer(const Duration(milliseconds: 250), () {
+          if (!outputSeen) {
+            resultStream.add(
+              CompilerResult(
+                status: CompilerResultStatus.waitingForInput,
+                data: null,
+              ),
+            );
+          }
+        });
+      }
+
+      armTimer();
+
+      final inputSub = inpSink.stream.listen((input) {
+        try {
+          tp.input.add(input);
+        } catch (_) {}
+        outputSeen = false;
+        armTimer();
+      });
+      subscriptions.add(inputSub);
+
+      final outputBuffer = StringBuffer();
+      final subOut = tp.output.listen((chunk) {
+        outputSeen = true;
+        inputWaitTimer?.cancel();
+        outputBuffer.write(chunk);
+        resultStream.add(CompilerResult.message(data: chunk));
+
+        if (looksLikeStdin) {
+          resultStream.add(
+            CompilerResult(
+              status: CompilerResultStatus.waitingForInput,
+              message: 'Process is waiting for input...',
+              data: null,
+            ),
+          );
+        }
+      });
+      subscriptions.add(subOut);
+
+      final rc = await tp.exitCode;
+      inputWaitTimer?.cancel();
+      clearSubscriptions();
 
       if (rc != 0) {
         resultStream.sink.add(
           CompilerResult.error(
-            data: runProcStderr.toString(),
+            data: outputBuffer.toString(),
             error: CompilerExecutionError('Process exited with code $rc'),
             message: 'Process exited with code $rc',
           ),
@@ -100,12 +144,13 @@ class DartCompiler extends Compiler {
       } else {
         resultStream.sink.add(
           CompilerResult.done(
-            data: runProcStdout.toString(),
+            data: outputBuffer.toString(),
             message: 'Process exited with code 0',
           ),
         );
       }
     } catch (e, s) {
+      clearSubscriptions();
       resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
@@ -155,5 +200,22 @@ class DartCompiler extends Compiler {
 
     _resolvedDartExecutable = resolved;
     return resolved;
+  }
+
+  bool _looksLikeStdin(String code) {
+    final patterns = [
+      'stdin.readlinesync',
+      'stdin.readbytesync',
+      'stdin.readbyte',
+      'stdin.first',
+      'stdin.listen',
+      'stdin.transform',
+    ];
+
+    final lower = code.toLowerCase();
+    for (final p in patterns) {
+      if (lower.contains(p)) return true;
+    }
+    return false;
   }
 }

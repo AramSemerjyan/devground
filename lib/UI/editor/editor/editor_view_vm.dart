@@ -77,6 +77,7 @@ class EditorViewVM implements EditorViewVMInterface {
 
   final _outputController = StreamController<CompilerResult>.broadcast();
   final _output = StringBuffer();
+  var _inputWaitNotified = false;
 
   EditorViewVM(
     this._file,
@@ -95,6 +96,7 @@ class EditorViewVM implements EditorViewVMInterface {
     final code = await _languageEditorController.getValue();
 
     _output.clear();
+    _inputWaitNotified = false;
     _outputController.sink.add(CompilerResult.empty());
 
     try {
@@ -225,19 +227,37 @@ class EditorViewVM implements EditorViewVMInterface {
                 'Error: ${result.compilerError?.message ?? result.message ?? result.data ?? result.error.toString()}',
           );
           enableConsoleInput.value = false;
+          _inputWaitNotified = false;
           break;
         case CompilerResultStatus.done:
           _sendOutput(result);
           EventService.success(msg: 'Done: ${result.message}');
           enableConsoleInput.value = false;
+          _inputWaitNotified = false;
           break;
         case CompilerResultStatus.waitingForInput:
           enableConsoleInput.value = true;
-          EventService.warning(msg: 'Compiler: ${result.message}');
+          final waitMessage =
+              result.message ?? 'Process is waiting for input...';
+          if (!_inputWaitNotified) {
+            _inputWaitNotified = true;
+            EventService.warning(msg: 'Compiler: $waitMessage');
+          }
+          _outputController.sink.add(
+            CompilerResult(
+              status: result.status,
+              message: waitMessage,
+              data: _output.toString(),
+              error: result.error,
+              stackTrace: result.stackTrace,
+              compilerError: result.compilerError,
+            ),
+          );
           break;
         case CompilerResultStatus.warning:
           EventService.warning(msg: result.message ?? 'Warning from compiler.');
           enableConsoleInput.value = false;
+          _inputWaitNotified = false;
           break;
       }
     });
@@ -276,10 +296,31 @@ class EditorViewVM implements EditorViewVMInterface {
   }
 
   Future<void> _sendOutput(CompilerResult result) async {
-    if (result.data != null && result.data!.isNotEmpty) {
-      _output.write(result.data);
-      _outputController.sink.add(result);
+    final outputChunk = result.data?.toString();
+    if (outputChunk != null && outputChunk.isNotEmpty) {
+      final current = _output.toString();
+
+      if (current.isEmpty) {
+        _output.write(outputChunk);
+      } else if (outputChunk.startsWith(current)) {
+        _output
+          ..clear()
+          ..write(outputChunk);
+      } else {
+        _output.write(outputChunk);
+      }
     }
+
+    _outputController.sink.add(
+      CompilerResult(
+        status: result.status,
+        message: result.message,
+        data: _output.toString(),
+        error: result.error,
+        stackTrace: result.stackTrace,
+        compilerError: result.compilerError,
+      ),
+    );
   }
 
   @override

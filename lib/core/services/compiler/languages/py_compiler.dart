@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
 import '../compiler_result.dart';
+import '../terminal_runner.dart';
 
 class PythonCompiler extends Compiler {
   String? _path;
@@ -29,24 +30,67 @@ class PythonCompiler extends Compiler {
       await file.writeAsString(code);
 
       final pythonExecutable = await _resolvePythonExecutable();
+      final tp = await runWithPty(pythonExecutable, [file.path]);
+      final looksLikeStdin = _looksLikeStdin(code);
 
-      final proc = await Process.start(pythonExecutable, [file.path]);
+      bool outputSeen = false;
+      Timer? inputWaitTimer;
 
-      final stdoutBuffer = StringBuffer();
-      final stderrBuffer = StringBuffer();
+      void armTimer() {
+        inputWaitTimer?.cancel();
+        if (!looksLikeStdin) return;
+        inputWaitTimer = Timer(const Duration(milliseconds: 250), () {
+          if (!outputSeen) {
+            resultStream.add(
+              CompilerResult(
+                status: CompilerResultStatus.waitingForInput,
+                data: null,
+              ),
+            );
+          }
+        });
+      }
 
-      proc.stdout.transform(utf8.decoder).listen(stdoutBuffer.write);
-      proc.stderr.transform(utf8.decoder).listen(stderrBuffer.write);
+      armTimer();
 
-      final exitCode = await proc.exitCode;
+      final inputSub = inpSink.stream.listen((input) {
+        try {
+          tp.input.add(input);
+        } catch (_) {}
+        outputSeen = false;
+        armTimer();
+      });
+      subscriptions.add(inputSub);
+
+      final outputBuffer = StringBuffer();
+      final subOut = tp.output.listen((chunk) {
+        outputSeen = true;
+        inputWaitTimer?.cancel();
+        outputBuffer.write(chunk);
+        resultStream.add(CompilerResult.message(data: chunk));
+
+        if (looksLikeStdin) {
+          resultStream.add(
+            CompilerResult(
+              status: CompilerResultStatus.waitingForInput,
+              message: 'Process is waiting for input...',
+              data: null,
+            ),
+          );
+        }
+      });
+      subscriptions.add(subOut);
+
+      final exitCode = await tp.exitCode;
+      inputWaitTimer?.cancel();
+      clearSubscriptions();
 
       if (exitCode != 0) {
-        resultStream.sink.add(
+        final output = outputBuffer.toString();
+        resultStream.add(
           CompilerResult.error(
-            data: stdoutBuffer.toString(),
-            error: CompilerExecutionError(
-              _extractPythonError(stderrBuffer.toString()),
-            ),
+            data: output,
+            error: CompilerExecutionError(_extractPythonError(output)),
             message: 'Process exited with code $exitCode',
           ),
         );
@@ -55,13 +99,12 @@ class PythonCompiler extends Compiler {
 
       resultStream.add(
         CompilerResult.done(
-          data: stdoutBuffer.toString(),
+          data: outputBuffer.toString(),
           message: 'Process exited with code 0',
         ),
       );
-
-      resultStream.sink.add(CompilerResult.done(data: stdoutBuffer.toString()));
     } catch (e, s) {
+      clearSubscriptions();
       resultStream.sink.add(CompilerResult.error(error: e, data: s.toString()));
     }
   }
@@ -78,6 +121,16 @@ class PythonCompiler extends Compiler {
     if (lines.isEmpty) return stderr;
     final lastLine = lines.last;
     return '${lines.take(3).join('\n')}\n→ $lastLine';
+  }
+
+  bool _looksLikeStdin(String code) {
+    final patterns = ['input(', 'sys.stdin', 'stdin.readline', 'readline('];
+
+    final lower = code.toLowerCase();
+    for (final p in patterns) {
+      if (lower.contains(p)) return true;
+    }
+    return false;
   }
 
   Future<String> _resolvePythonExecutable() async {

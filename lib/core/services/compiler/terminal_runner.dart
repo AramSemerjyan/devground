@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
-// PTY support. Requires adding `pty` package to pubspec.yaml.
+import 'package:flutter_pty/flutter_pty.dart';
+
+// PTY support. Requires adding `flutter_pty` package to pubspec.yaml.
 // This file exposes a small abstraction `TerminalProcess` and a factory
 // `runWithPty` which will try to start a real PTY and fall back to a
 // regular `Process` (optionally via `stdbuf -oL`).
@@ -23,20 +26,19 @@ Future<TerminalProcess> runWithPty(
   String? workingDirectory,
 }) async {
   // Try PTY first
-  // try {
-  //   // Importing `pty` at runtime; if the package isn't available this will
-  //   // throw a TypeError at runtime. The user must add the dependency.
-  //   // We use a dynamic invocation to avoid hard compile-time coupling.
-  //   final ptyLib = await _tryStartPty(
-  //     executable,
-  //     args,
-  //     environment: environment,
-  //     workingDirectory: workingDirectory,
-  //   );
-  //   if (ptyLib != null) return ptyLib;
-  // } catch (_) {
-  //   // ignore and fallback
-  // }
+  try {
+    // Importing `pty` at runtime; if the package isn't available this will
+    // throw and we will fallback to stdbuf/direct process.
+    final ptyLib = await _tryStartPty(
+      executable,
+      args,
+      environment: environment,
+      workingDirectory: workingDirectory,
+    );
+    if (ptyLib != null) return ptyLib;
+  } catch (_) {
+    // ignore and fallback
+  }
 
   // Try to use `stdbuf -oL` only when a usable `stdbuf` can be located.
   try {
@@ -108,15 +110,70 @@ class _ProcessTerminal implements TerminalProcess {
   final Process _proc;
   final StreamController<String> _out = StreamController.broadcast();
   final StreamController<String> _in = StreamController();
+  final Completer<void> _outputDone = Completer<void>();
+  late final StreamSubscription<String> _stdinSub;
+  late final StreamSubscription<String> _stdoutSub;
+  late final StreamSubscription<String> _stderrSub;
+  var _completedOutputPipes = 0;
+  var _disposed = false;
 
   _ProcessTerminal(this._proc) {
-    _proc.stdout.transform(utf8.decoder).listen(_out.add, onDone: _out.close);
-    _proc.stderr.transform(utf8.decoder).listen(_out.add);
-    _in.stream.listen((s) {
+    _stdoutSub = _proc.stdout
+        .transform(utf8.decoder)
+        .listen(_safeAddOutput, onDone: _onPipeDone, onError: _safeAddError);
+    _stderrSub = _proc.stderr
+        .transform(utf8.decoder)
+        .listen(_safeAddOutput, onDone: _onPipeDone, onError: _safeAddError);
+    _stdinSub = _in.stream.listen((s) {
       try {
-        _proc.stdin.writeln(s);
+        _proc.stdin.write(s);
       } catch (_) {}
     });
+  }
+
+  void _safeAddOutput(String data) {
+    if (!_out.isClosed) {
+      _out.add(data);
+    }
+  }
+
+  void _safeAddError(Object error, [StackTrace? stackTrace]) {
+    if (!_out.isClosed) {
+      _out.addError(error, stackTrace);
+    }
+  }
+
+  void _onPipeDone() {
+    _completedOutputPipes++;
+    if (_completedOutputPipes >= 2 && !_out.isClosed) {
+      _out.close();
+    }
+    if (_completedOutputPipes >= 2 && !_outputDone.isCompleted) {
+      _outputDone.complete();
+    }
+  }
+
+  Future<void> _disposeStreams({required bool cancelOutputSubs}) async {
+    if (_disposed) return;
+    _disposed = true;
+
+    try {
+      await _stdinSub.cancel();
+    } catch (_) {}
+    if (cancelOutputSubs) {
+      try {
+        await _stdoutSub.cancel();
+      } catch (_) {}
+      try {
+        await _stderrSub.cancel();
+      } catch (_) {}
+    }
+    try {
+      await _in.close();
+    } catch (_) {}
+    if (!_out.isClosed) {
+      await _out.close();
+    }
   }
 
   @override
@@ -126,17 +183,25 @@ class _ProcessTerminal implements TerminalProcess {
   Stream<String> get output => _out.stream;
 
   @override
-  Future<int> get exitCode => _proc.exitCode;
+  Future<int> get exitCode async {
+    final code = await _proc.exitCode;
+    try {
+      await _outputDone.future;
+    } catch (_) {}
+    await _disposeStreams(cancelOutputSubs: false);
+    return code;
+  }
 
   @override
   Future<void> kill([ProcessSignal signal = ProcessSignal.sigterm]) async {
     try {
       _proc.kill(signal);
     } catch (_) {}
+    await _disposeStreams(cancelOutputSubs: true);
   }
 }
 
-// Try to start a pty using the `pty` package. Returns null if not available.
+// Try to start a pty using the `flutter_pty` package. Returns null if not available.
 Future<TerminalProcess?> _tryStartPty(
   String executable,
   List<String> args, {
@@ -144,10 +209,6 @@ Future<TerminalProcess?> _tryStartPty(
   String? workingDirectory,
 }) async {
   try {
-    // `Pty` API from package:pty
-    // import 'package:pty/pty.dart';
-    // final pty = Pty.start(executable, args, environment: environment, workingDirectory: workingDirectory);
-    // Since we want to avoid compile error if package missing, use dynamic invocation.
     final ptyLib = await _startPtyDynamic(
       executable,
       args,
@@ -160,20 +221,100 @@ Future<TerminalProcess?> _tryStartPty(
   }
 }
 
-// Dynamic PTY start implemented separately so compile doesn't fail if
-// `pty` package isn't present. This still requires the package at runtime.
+class _PtyTerminal implements TerminalProcess {
+  final Pty _pty;
+  final StreamController<String> _out = StreamController.broadcast();
+  final StreamController<String> _in = StreamController();
+  final Completer<void> _outputDone = Completer<void>();
+  late final StreamSubscription<String> _stdinSub;
+  late final StreamSubscription<Uint8List> _stdoutSub;
+  var _disposed = false;
+
+  _PtyTerminal(this._pty) {
+    _stdoutSub = _pty.output.listen(
+      (chunk) {
+        if (!_out.isClosed) {
+          _out.add(utf8.decode(chunk, allowMalformed: true));
+        }
+      },
+      onDone: () {
+        if (!_outputDone.isCompleted) {
+          _outputDone.complete();
+        }
+        if (!_out.isClosed) {
+          _out.close();
+        }
+      },
+      onError: (error, stackTrace) {
+        if (!_out.isClosed) {
+          _out.addError(error, stackTrace);
+        }
+      },
+    );
+
+    _stdinSub = _in.stream.listen((text) {
+      try {
+        _pty.write(Uint8List.fromList(utf8.encode(text)));
+      } catch (_) {}
+    });
+  }
+
+  Future<void> _disposeStreams({required bool cancelOutputSub}) async {
+    if (_disposed) return;
+    _disposed = true;
+
+    try {
+      await _stdinSub.cancel();
+    } catch (_) {}
+    if (cancelOutputSub) {
+      try {
+        await _stdoutSub.cancel();
+      } catch (_) {}
+    }
+    try {
+      await _in.close();
+    } catch (_) {}
+    if (!_out.isClosed) {
+      await _out.close();
+    }
+  }
+
+  @override
+  Sink<String> get input => _in.sink;
+
+  @override
+  Stream<String> get output => _out.stream;
+
+  @override
+  Future<int> get exitCode async {
+    final code = await _pty.exitCode;
+    try {
+      await _outputDone.future;
+    } catch (_) {}
+    await _disposeStreams(cancelOutputSub: false);
+    return code;
+  }
+
+  @override
+  Future<void> kill([ProcessSignal signal = ProcessSignal.sigterm]) async {
+    try {
+      _pty.kill(signal);
+    } catch (_) {}
+    await _disposeStreams(cancelOutputSub: true);
+  }
+}
+
 Future<TerminalProcess?> _startPtyDynamic(
   String executable,
   List<String> args, {
   Map<String, String>? environment,
   String? workingDirectory,
 }) async {
-  // This code expects `package:pty/pty.dart` to exist. If not, it will
-  // throw and be handled by caller.
-  // We intentionally import here to make failures local.
-  // NOTE: Replace this placeholder with a direct implementation using
-  // `package:pty` after adding the dependency to `pubspec.yaml`.
-  throw UnsupportedError(
-    'PTY dynamic start not implemented. Add package:pty and implement _startPtyDynamic.',
+  final pty = Pty.start(
+    executable,
+    arguments: args,
+    environment: environment,
+    workingDirectory: workingDirectory,
   );
+  return _PtyTerminal(pty);
 }

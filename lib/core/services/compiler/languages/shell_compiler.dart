@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dartpad_lite/core/services/compiler/compiler_error.dart';
@@ -6,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../compiler_interface.dart';
 import '../compiler_result.dart';
+import '../terminal_runner.dart';
 
 class ShellCompiler extends Compiler {
   String? _path;
@@ -28,20 +30,69 @@ class ShellCompiler extends Compiler {
         await Process.run('chmod', ['+x', tempFile.path]);
       }
 
-      // Run the shell script
-      final result = await Process.run(exe, [tempFile.path]);
+      final tp = await runWithPty(exe, [tempFile.path]);
+      final looksLikeStdin = _looksLikeStdin(code);
 
-      final output = result.stdout.toString();
-      final error = result.stderr.toString().isNotEmpty
-          ? result.stderr.toString()
-          : null;
+      bool outputSeen = false;
+      Timer? inputWaitTimer;
 
-      if (error != null) {
+      void armTimer() {
+        inputWaitTimer?.cancel();
+        if (!looksLikeStdin) return;
+        inputWaitTimer = Timer(const Duration(milliseconds: 250), () {
+          if (!outputSeen) {
+            resultStream.add(
+              CompilerResult(
+                status: CompilerResultStatus.waitingForInput,
+                data: null,
+              ),
+            );
+          }
+        });
+      }
+
+      armTimer();
+
+      final inputSub = inpSink.stream.listen((input) {
+        try {
+          tp.input.add(input);
+        } catch (_) {}
+        outputSeen = false;
+        armTimer();
+      });
+      subscriptions.add(inputSub);
+
+      final outputBuffer = StringBuffer();
+      final subOut = tp.output.listen((chunk) {
+        outputSeen = true;
+        inputWaitTimer?.cancel();
+        outputBuffer.write(chunk);
+        resultStream.add(CompilerResult.message(data: chunk));
+
+        if (looksLikeStdin) {
+          resultStream.add(
+            CompilerResult(
+              status: CompilerResultStatus.waitingForInput,
+              message: 'Process is waiting for input...',
+              data: null,
+            ),
+          );
+        }
+      });
+      subscriptions.add(subOut);
+
+      final rc = await tp.exitCode;
+      inputWaitTimer?.cancel();
+      clearSubscriptions();
+
+      final output = outputBuffer.toString();
+
+      if (rc != 0) {
         resultStream.sink.add(
           CompilerResult.error(
-            data: error,
-            error: CompilerExecutionError('Shell script failed with errors'),
-            message: 'Shell script failed with errors',
+            data: output,
+            error: CompilerExecutionError('Process exited with code $rc'),
+            message: 'Process exited with code $rc',
           ),
         );
         return;
@@ -50,10 +101,11 @@ class ShellCompiler extends Compiler {
       resultStream.sink.add(
         CompilerResult.done(
           data: output,
-          message: 'Shell script executed successfully',
+          message: 'Process exited with code 0',
         ),
       );
     } catch (e, s) {
+      clearSubscriptions();
       resultStream.sink.add(CompilerResult.error(error: e, stackTrace: s));
     }
   }
@@ -102,5 +154,15 @@ class ShellCompiler extends Compiler {
 
     _resolvedShellExecutable = resolved;
     return resolved;
+  }
+
+  bool _looksLikeStdin(String code) {
+    final patterns = ['read ', 'select ', 'readarray', 'mapfile'];
+
+    final lower = code.toLowerCase();
+    for (final p in patterns) {
+      if (lower.contains(p)) return true;
+    }
+    return false;
   }
 }

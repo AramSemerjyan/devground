@@ -28,16 +28,19 @@ class ResultView extends StatefulWidget {
 
 class _ResultViewState extends State<ResultView> {
   final _controller = TextEditingController();
-    late final _inputFieldFocus = FocusNode(
+  final _scrollController = ScrollController();
+  final ValueNotifier<String> onInputChange = ValueNotifier('');
+  var _lastOutput = '';
+
+  late final _inputFieldFocus = FocusNode(
     onKeyEvent: (FocusNode node, KeyEvent evt) {
       if (evt.logicalKey == LogicalKeyboardKey.enter) {
         if (evt is KeyDownEvent) {
           _onSend();
         }
         return KeyEventResult.handled;
-      } else {
-        return KeyEventResult.ignored;
       }
+      return KeyEventResult.ignored;
     },
   );
   late final _resultFieldFocus = FocusNode();
@@ -45,7 +48,6 @@ class _ResultViewState extends State<ResultView> {
   @override
   void initState() {
     super.initState();
-
     _inputFieldFocus.addListener(_onInputChange);
     _resultFieldFocus.addListener(_onResultChange);
   }
@@ -56,7 +58,9 @@ class _ResultViewState extends State<ResultView> {
     _resultFieldFocus.removeListener(_onResultChange);
     _inputFieldFocus.dispose();
     _resultFieldFocus.dispose();
+    _scrollController.dispose();
     _controller.dispose();
+    onInputChange.dispose();
     super.dispose();
   }
 
@@ -66,32 +70,56 @@ class _ResultViewState extends State<ResultView> {
     }
   }
 
-    void _onResultChange() {
+  void _onResultChange() {
     if (_resultFieldFocus.hasFocus) {
       EventService.emit(type: EventType.dropEditorFocus);
     }
   }
 
   void _onSend() {
-    widget.onInput?.call(_controller.text);
+    final raw = _controller.text;
+    widget.onInput?.call(raw.isEmpty ? '\n' : '$raw\n');
     _controller.clear();
+    onInputChange.value = '';
   }
 
-  ValueNotifier<String> onInputChange = ValueNotifier('');
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+  }
 
   Widget _buildDefaultConsole() {
-    return StreamBuilder(
+    return StreamBuilder<CompilerResult>(
       stream: widget.outputStream,
       builder: (_, stream) {
+        final compilerResult = stream.data;
+        final output = compilerResult?.data?.toString() ?? '';
+        final isError =
+            compilerResult?.status == CompilerResultStatus.error ||
+            compilerResult?.error != null;
+
+        if (output != _lastOutput) {
+          _lastOutput = output;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToBottom();
+          });
+        }
+
         return Stack(
           children: [
             SingleChildScrollView(
-              padding: const EdgeInsets.all(8),
+              controller: _scrollController,
+              padding: EdgeInsets.fromLTRB(
+                8,
+                8,
+                8,
+                widget.enableInput ? 58 : 8,
+              ),
               child: SelectableText(
+                output,
                 focusNode: _resultFieldFocus,
-                stream.data?.data ?? '',
                 style: TextStyle(
-                  color: stream.data?.error != null ? Colors.redAccent : Colors.greenAccent,
+                  color: isError ? Colors.redAccent : Colors.greenAccent,
                   fontFamily: 'monospace',
                   fontSize: 13,
                 ),
@@ -106,38 +134,56 @@ class _ResultViewState extends State<ResultView> {
                   child: Column(
                     children: [
                       Container(height: 1, color: AppColor.mainGreyDark),
-                      TextField(
-                        controller: _controller,
-                        focusNode: _inputFieldFocus,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          isDense: true,
-                          hint: Text(
-                            'Input...',
-                            style: TextStyle(color: AppColor.mainGrey),
+                      Row(
+                        children: [
+                          const SizedBox(width: 8),
+                          Text(
+                            '>',
+                            style: TextStyle(
+                              color: AppColor.mainGreyLighter,
+                              fontFamily: 'monospace',
+                              fontSize: 14,
+                            ),
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          suffix: ValueListenableBuilder(
-                            valueListenable: onInputChange,
-                            builder: (_, value, __) {
-                              if (value.isEmpty) return SizedBox();
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              focusNode: _inputFieldFocus,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                isDense: true,
+                                hintText: 'Input...',
+                                hintStyle: TextStyle(color: AppColor.mainGrey),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                                suffix: ValueListenableBuilder<String>(
+                                  valueListenable: onInputChange,
+                                  builder: (_, value, __) {
+                                    if (value.isEmpty) {
+                                      return const SizedBox();
+                                    }
 
-                              return IconButton(
-                                icon: Icon(Icons.send, color: AppColor.blue),
-                                onPressed: _onSend,
-                              );
-                            },
+                                    return IconButton(
+                                      icon: Icon(
+                                        Icons.send,
+                                        color: AppColor.blue,
+                                      ),
+                                      onPressed: _onSend,
+                                    );
+                                  },
+                                ),
+                              ),
+                              onChanged: (input) {
+                                onInputChange.value = input;
+                              },
+                              style: TextStyle(color: AppColor.mainGreyLighter),
+                            ),
                           ),
-                        ),
-                        onChanged: (input) {
-                          onInputChange.value = input;
-                        },
-                        style: TextStyle(color: AppColor.mainGreyLighter),
+                        ],
                       ),
                     ],
                   ),
@@ -165,29 +211,26 @@ class _ResultViewState extends State<ResultView> {
         ),
         _ => _buildDefaultConsole(),
       },
-      floatingActionButton: StreamBuilder(
+      floatingActionButton: StreamBuilder<CompilerResult>(
         stream: widget.outputStream,
         builder: (_, stream) {
-          final compilerResult = stream.data;
+          final output = stream.data?.data?.toString() ?? '';
+          if (output.isEmpty) return Container();
 
-          if (compilerResult != null && compilerResult.data.isNotEmpty) {
-            return Padding(
-              padding: widget.enableInput
-                  ? EdgeInsets.only(bottom: 60)
-                  : EdgeInsets.zero,
-              child: FloatingProgressButton(
-                heroTag: 'copyBtn',
-                tooltip: 'Copy',
-                mini: true,
-                icon: Icons.copy,
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: compilerResult.data));
-                },
-              ),
-            );
-          }
-
-          return Container();
+          return Padding(
+            padding: widget.enableInput
+                ? const EdgeInsets.only(bottom: 60)
+                : EdgeInsets.zero,
+            child: FloatingProgressButton(
+              heroTag: 'copyBtn',
+              tooltip: 'Copy',
+              mini: true,
+              icon: Icons.copy,
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: output));
+              },
+            ),
+          );
         },
       ),
     );
