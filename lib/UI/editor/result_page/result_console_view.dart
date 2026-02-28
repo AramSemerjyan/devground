@@ -135,6 +135,7 @@ class _ResultViewState extends State<ResultView> {
                     children: [
                       Container(height: 1, color: AppColor.mainGreyDark),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const SizedBox(width: 8),
                           Text(
@@ -149,6 +150,7 @@ class _ResultViewState extends State<ResultView> {
                             child: TextField(
                               controller: _controller,
                               focusNode: _inputFieldFocus,
+                              textAlignVertical: TextAlignVertical.center,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                                 enabledBorder: InputBorder.none,
@@ -158,23 +160,7 @@ class _ResultViewState extends State<ResultView> {
                                 hintStyle: TextStyle(color: AppColor.mainGrey),
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10,
-                                  vertical: 8,
-                                ),
-                                suffix: ValueListenableBuilder<String>(
-                                  valueListenable: onInputChange,
-                                  builder: (_, value, __) {
-                                    if (value.isEmpty) {
-                                      return const SizedBox();
-                                    }
-
-                                    return IconButton(
-                                      icon: Icon(
-                                        Icons.send,
-                                        color: AppColor.blue,
-                                      ),
-                                      onPressed: _onSend,
-                                    );
-                                  },
+                                  vertical: 12,
                                 ),
                               ),
                               onChanged: (input) {
@@ -182,6 +168,24 @@ class _ResultViewState extends State<ResultView> {
                               },
                               style: TextStyle(color: AppColor.mainGreyLighter),
                             ),
+                          ),
+                          ValueListenableBuilder<String>(
+                            valueListenable: onInputChange,
+                            builder: (_, value, __) {
+                              if (value.isEmpty) {
+                                return const SizedBox(width: 8);
+                              }
+
+                              return IconButton(
+                                visualDensity: VisualDensity.compact,
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
+                                icon: Icon(Icons.send, color: AppColor.blue),
+                                onPressed: _onSend,
+                              );
+                            },
                           ),
                         ],
                       ),
