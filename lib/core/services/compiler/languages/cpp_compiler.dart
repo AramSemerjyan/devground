@@ -157,6 +157,8 @@ class CPPCompiler extends Compiler {
   bool _looksLikeStdin(String code) {
     final patterns = [
       'cin>>',
+      'cin >>',
+      'std::cin',
       'std::getline',
       'getline(',
       'scanf(',

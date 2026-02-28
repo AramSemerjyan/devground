@@ -161,6 +161,8 @@ class CCompiler extends Compiler {
       'getchar(',
       'getline(',
       'cin>>', // in case of mixed C/C++ code
+      'cin >>',
+      'std::cin',
       'std::getline',
     ];
 
