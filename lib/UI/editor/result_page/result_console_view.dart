@@ -1,4 +1,4 @@
-import 'package:dartpad_lite/UI/common/floating_progress_button.dart';
+import 'package:dartpad_lite/UI/common/app_button.dart';
 import 'package:dartpad_lite/UI/editor/result_page/result_web_view.dart';
 import 'package:dartpad_lite/core/services/compiler/compiler_result.dart';
 import 'package:dartpad_lite/core/services/event_service/event_service.dart';
@@ -225,10 +225,9 @@ class _ResultViewState extends State<ResultView> {
             padding: widget.enableInput
                 ? const EdgeInsets.only(bottom: 60)
                 : EdgeInsets.zero,
-            child: FloatingProgressButton(
+            child: AppButton(
               heroTag: 'copyBtn',
               tooltip: 'Copy',
-              mini: true,
               icon: Icons.copy,
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: output));

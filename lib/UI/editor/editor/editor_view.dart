@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dartpad_lite/UI/common/Animations%20/animated_buttons_appear.dart';
+import 'package:dartpad_lite/UI/common/buttons_row.dart';
 import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
@@ -13,7 +13,7 @@ import '../../../core/services/event_service/event_service.dart';
 import '../../../core/services/save_file/file_service.dart';
 import '../../../utils/app_colors.dart';
 import '../../command_palette/command_palette.dart';
-import '../../common/floating_progress_button.dart';
+import '../../common/app_button.dart';
 import '../result_page/result_console_view.dart';
 import 'compiler_state_audio_manager.dart';
 
@@ -113,15 +113,50 @@ class _EditorViewState extends State<EditorView>
   }
 
   Widget _buildButtons() {
-    return AnimatedButtonsRow(
-      verticalButtons: [
+    return ButtonsRow(
+      buttons: [
+        AppButton(
+          inProgress: _vm.runProgress,
+          heroTag: 'runBtn',
+          tooltip: 'Run',
+          icon: Icons.play_arrow_rounded,
+          onPressed: () {
+            if (_inProgress.value) return;
+            _inProgress.value = true;
+            _vm.runCode();
+          },
+        ),
+        AppButton(
+          inProgress: _vm.formatProgress,
+          heroTag: 'formatBtn',
+          tooltip: 'Format',
+          icon: Icons.format_align_left,
+          onPressed: () {
+            _vm.formatCode();
+          },
+        ),
+        AppButton(
+          inProgress: _vm.saveProgress,
+          heroTag: 'saveBtn',
+          tooltip: 'Save',
+          icon: Icons.save_rounded,
+          onPressed: () async {
+            final name = await CommandPalette.showRename(
+              context,
+              initialValue: _vm.file.name,
+            );
+
+            if (name != null) _vm.save(name: name);
+
+            _vm.dropEditorFocus();
+          },
+        ),
         ValueListenableBuilder(
           valueListenable: _showSideToSide,
           builder: (_, show, __) {
-            return FloatingProgressButton(
+            return AppButton(
               heroTag: 'sideToSideBtn',
               tooltip: 'Side to side view',
-              mini: true,
               isSelected: show,
               icon: Icons.compare_arrows_rounded,
               onPressed: () async {
@@ -136,10 +171,9 @@ class _EditorViewState extends State<EditorView>
         ValueListenableBuilder(
           valueListenable: _showSideToSide,
           builder: (_, show, __) {
-            return FloatingProgressButton(
+            return AppButton(
               heroTag: 'sideBarToggleBtn',
               tooltip: 'Side bar toggle',
-              mini: true,
               isSelected: show,
               icon: Icons.vertical_split,
               onPressed: () async {
@@ -148,54 +182,12 @@ class _EditorViewState extends State<EditorView>
             );
           },
         ),
-      ],
-      buttons: [
-        FloatingProgressButton(
-          inProgress: _vm.runProgress,
-          heroTag: 'runBtn',
-          tooltip: 'Run',
-          mini: true,
-          icon: Icons.play_arrow_rounded,
-          onPressed: () {
-            if (_inProgress.value) return;
-            _inProgress.value = true;
-            _vm.runCode();
-          },
-        ),
-        FloatingProgressButton(
-          inProgress: _vm.formatProgress,
-          heroTag: 'formatBtn',
-          tooltip: 'Format',
-          mini: true,
-          icon: Icons.format_align_left,
-          onPressed: () {
-            _vm.formatCode();
-          },
-        ),
-        FloatingProgressButton(
-          inProgress: _vm.saveProgress,
-          heroTag: 'saveBtn',
-          tooltip: 'Save',
-          mini: true,
-          icon: Icons.save_rounded,
-          onPressed: () async {
-            final name = await CommandPalette.showRename(
-              context,
-              initialValue: _vm.file.name,
-            );
-
-            if (name != null) _vm.save(name: name);
-
-            _vm.dropEditorFocus();
-          },
-        ),
         ValueListenableBuilder(
           valueListenable: _showAI,
           builder: (_, show, __) {
-            return FloatingProgressButton(
+            return AppButton(
               heroTag: 'aiBtn',
               tooltip: 'AI boost',
-              mini: true,
               icon: !show ? Icons.accessible : Icons.accessible_forward,
               onPressed: () async {
                 _showAI.value = !_showAI.value;
@@ -218,7 +210,7 @@ class _EditorViewState extends State<EditorView>
         return Stack(
           children: [
             _buildLanguageEditorView(),
-            Positioned(bottom: 16, left: 16, child: _buildButtons()),
+            Positioned(bottom: 4, left: 28, child: _buildButtons()),
             ValueListenableBuilder(
               valueListenable: _isDragging,
               builder: (_, isDragging, __) {
