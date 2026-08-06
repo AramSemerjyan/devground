@@ -171,6 +171,20 @@
     "need_sdk_path": false,
     "need_compiler": false
   },
+    {
+    "key": "csv",
+    "name": "CSV File",
+    "extension": ".csv",
+    "icon": "https://www.svgrepo.com/show/375309/csv-document.svg",
+    "path": {
+      "validation": "",
+      "hint": ""
+    },
+    "snippet": "",
+    "supported": "supported",
+    "need_sdk_path": false,
+    "need_compiler": false
+  },
   {
     "key": "log",
     "name": "Log File",
