@@ -45,6 +45,8 @@
     <script>
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.37.1/min/vs' } });
         window.editor = null;
+        window.editorReady = false;
+        window.pendingEditorMessages = [];
 
         const output = document.getElementById('output');
         const status = document.getElementById('status');
@@ -58,26 +60,49 @@
             }
         }
 
+        function applyMessageToEditor(msg) {
+            if (msg.type === 'output') {
+                output.textContent += msg.payload + '\n';
+            } else if (msg.type === 'status') {
+                if (status) {
+                    status.textContent = msg.payload;
+                }
+            } else if (msg.type === 'replaceCode') {
+                if (window.editor) {
+                    window.editor.setValue(msg.payload);
+                }
+            } else if (msg.type === 'clearOutput') {
+                output.textContent = '';
+            } else if (msg.type === 'setDiagnostics') {
+                output.textContent += 'DIAGNOSTICS:\\n' + JSON.stringify(msg.payload, null, 2) + '\\n';
+            } else if (msg.type === 'setLanguage') {
+                if (window.editor) {
+                    monaco.editor.setModelLanguage(window.editor.getModel(), msg.payload);
+                }
+            }
+        }
+
         // Messages FROM Flutter: Flutter will call `evaluateJavascript` that executes window.postMessageToEditor(...)
         window.postMessageToEditor = function (message) {
             try {
                 const msg = typeof message === 'string' ? JSON.parse(message) : message;
-                if (msg.type === 'output') {
-                    output.textContent += msg.payload + '\n';
-                } else if (msg.type === 'status') {
-                    status.textContent = msg.payload;
-                } else if (msg.type === 'replaceCode') {
-                    window.editor.setValue(msg.payload);
-                } else if (msg.type === 'clearOutput') {
-                    output.textContent = '';
-                } else if (msg.type === 'setDiagnostics') {
-                    // You could implement monaco.editor.setModelMarkers here to show errors inline.
-                    // Keep it simple for now: print them to output
-                    output.textContent += 'DIAGNOSTICS:\\n' + JSON.stringify(msg.payload, null, 2) + '\\n';
+                if (!window.editorReady && (msg.type === 'replaceCode' || msg.type === 'setLanguage')) {
+                    window.pendingEditorMessages.push(msg);
+                    return;
                 }
+                applyMessageToEditor(msg);
             } catch (e) {
                 console.error(e);
             }
+        };
+
+        window.getEditorValue = function () {
+            if (!window.editor) return '';
+            return window.editor.getValue();
+        };
+
+        window.setEditorLanguage = function (language) {
+            window.postMessageToEditor({ type: 'setLanguage', payload: language });
         };
 
         require(['vs/editor/editor.main'], function () {
@@ -144,6 +169,12 @@
                 renderValidationDecorations: 'on',
             });
 
+            window.editorReady = true;
+            while (window.pendingEditorMessages.length > 0) {
+                applyMessageToEditor(window.pendingEditorMessages.shift());
+            }
+            sendToFlutter({ type: 'editorReady' });
+
             // Listen for editor focus events - MUST be inside require callback
             window.editor.onDidFocusEditorText(function () {
                 console.log('Editor focused');
@@ -159,17 +190,6 @@
     </script>
     <script src="https://unpkg.com/vscode-ws-jsonrpc/dist/browser.js"></script>
     <script src="https://unpkg.com/monaco-languageclient/lib/monaco-languageclient.js"></script>
-    <script>
-        window.setEditorLanguage = function (language) {
-            if (!window.editor) return;
-            try {
-                monaco.editor.setModelLanguage(window.editor.getModel(), language);
-                console.log("Language changed to", language);
-            } catch (e) {
-                console.error("Failed to change language", e);
-            }
-        };
-    </script>
 </body>
 
 </html>

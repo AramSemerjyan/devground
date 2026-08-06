@@ -109,7 +109,12 @@ class AIHelperVM implements AIHelperVMInterface {
       switch (aiType) {
         case AIType.local:
           final path = await aiRepoInterface.getModelPath();
-          await _aiProviderService.loadFromFile(modelPath: path ?? '');
+          final contextLimit =
+              await aiRepoInterface.getLocalContextLimit() ?? 10;
+          await _aiProviderService.loadFromFile(
+            modelPath: path ?? '',
+            contextLimit: contextLimit,
+          );
           break;
         case AIType.remote:
           final key = await aiRepoInterface.getApiKey();

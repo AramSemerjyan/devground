@@ -20,7 +20,7 @@ class ModelPathOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return SettingOption(
       title: 'Llama',
-      height: 200,
+      height: 150,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

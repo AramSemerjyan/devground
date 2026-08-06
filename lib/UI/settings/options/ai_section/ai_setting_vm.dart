@@ -54,6 +54,7 @@ abstract class AISettingVMInterface {
   Future<void> setApiKey(String key);
   Future<void> setAIType(AIType type);
   Future<void> setModelPath(String path);
+  Future<void> setLocalContextLimit(String limit);
 }
 
 class AISettingVM implements AISettingVMInterface {
@@ -104,5 +105,17 @@ class AISettingVM implements AISettingVMInterface {
     EventService.success(msg: 'Model path Set');
 
     onSettingsUpdate.value = onSettingsUpdate.value.copy(modelPath: path);
+  }
+
+  @override
+  Future<void> setLocalContextLimit(String? limit) async {
+    if (limit == null) return;
+    
+    final intLimit = int.tryParse(limit);
+    if (intLimit == null) {
+      EventService.error(msg: 'Invalid limit value');
+      return;
+    }
+    await _aiRepo.setLocalContextLimit(intLimit);
   }
 }

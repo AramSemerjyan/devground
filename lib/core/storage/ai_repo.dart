@@ -10,6 +10,8 @@ abstract class AIRepoInterface {
   Future<void> setApiKey(String key);
   Future<String?> getModelPath();
   Future<void> setModelPath(String path);
+  Future<void> setLocalContextLimit(int limit);
+  Future<int?> getLocalContextLimit();
 }
 
 class AIRepo implements AIRepoInterface {
@@ -48,5 +50,17 @@ class AIRepo implements AIRepoInterface {
   Future<void> setModelPath(String path) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(SPAIKeys.modelPath.value, path);
+  }
+
+  @override
+  Future<void> setLocalContextLimit(int limit) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(SPAIKeys.localContextLimit.value, limit);
+  }
+
+  @override
+  Future<int?> getLocalContextLimit() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(SPAIKeys.localContextLimit.value);
   }
 }

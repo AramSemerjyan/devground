@@ -88,6 +88,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
           style: TextStyle(color: AppColor.mainGreyLighter),
         ),
         backgroundColor: AppColor.mainGrey,
+        toolbarHeight: 40,
       ),
       backgroundColor: AppColor.mainGreyDark,
       body: Column(

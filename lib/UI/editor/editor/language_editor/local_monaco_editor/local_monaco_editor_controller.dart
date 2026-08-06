@@ -10,6 +10,8 @@ import '../../../../../core/storage/supported_language.dart';
 
 class LocalMonacoEditorController implements LanguageEditorControllerInterface {
   late final WebViewController controller;
+  Completer<void>? _pageReadyCompleter;
+  Completer<void>? _editorReadyCompleter;
 
   @override
   NavigationDecision Function(NavigationRequest)? onNavigationRequest;
@@ -24,7 +26,7 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
 
   @override
   Future<void> setUp() async {
-    final completer = Completer<void>();
+    _resetLoadState();
 
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -44,12 +46,19 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
             return NavigationDecision.prevent;
           },
           onPageFinished: (_) {
-            if (!completer.isCompleted) completer.complete();
+            if (_pageReadyCompleter?.isCompleted == false) {
+              _pageReadyCompleter!.complete();
+            }
           },
           onWebResourceError: (error) {
-            if (!completer.isCompleted) {
-              completer.completeError(
+            if (_pageReadyCompleter?.isCompleted == false) {
+              _pageReadyCompleter!.completeError(
                 Exception('Failed to load HTML: ${error.description}'),
+              );
+            }
+            if (_editorReadyCompleter?.isCompleted == false) {
+              _editorReadyCompleter!.completeError(
+                Exception('Failed to load editor: ${error.description}'),
               );
             }
           },
@@ -68,10 +77,16 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
       );
 
     await reload();
-    await completer.future;
   }
 
   Future<void> handleEditorMessage(Map<String, dynamic> msg) async {
+    if (msg['type'] == 'editorReady') {
+      if (_editorReadyCompleter?.isCompleted == false) {
+        _editorReadyCompleter!.complete();
+      }
+      return;
+    }
+
     if (msg['type'] == 'editorFocused') {
       editorFocusedCallback?.call(uuid);
       return;
@@ -84,62 +99,83 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
   }
 
   Future<void> sendStatus(String s) async {
+    await _waitUntilReady();
     final payload = jsonEncode({'type': 'status', 'payload': s});
-    controller.runJavaScript(
+    await controller.runJavaScript(
       'window.postMessageToEditor(${jsonEncode(payload)});',
     );
   }
 
   @override
   Future<void> formatCode() async {
+    await _waitUntilReady();
     await controller.runJavaScript('window.formatEditorCode();');
   }
 
   @override
   Future<String> getValue() async {
-    return await controller.runJavaScriptReturningResult(
-          'window.editor.getValue()',
-        )
-        as String;
+    await _waitUntilReady();
+    final result = await controller.runJavaScriptReturningResult(
+      'window.getEditorValue();',
+    );
+    if (result is String) return result;
+    return result.toString();
   }
 
   @override
   Future<void> runCode() async {
+    await _waitUntilReady();
     await controller.runJavaScript('window.runEditorCode();');
   }
 
   @override
   Future<void> setLanguage({required SupportedLanguage language}) async {
+    await _waitUntilReady();
     final jsLang = language.key.monacoKey;
-    await controller.runJavaScript('setEditorLanguage("$jsLang");');
+    await controller.runJavaScript('window.setEditorLanguage("$jsLang");');
 
-    setCode(code: language.snippet);
+    await setCode(code: language.snippet);
   }
 
   @override
   Future<void> setCode({required String code}) async {
+    await _waitUntilReady();
     final codeJson = jsonEncode(code);
     await controller.runJavaScript(
-      'postMessageToEditor({type:"replaceCode", payload:$codeJson});',
+      'window.postMessageToEditor({type:"replaceCode", payload:$codeJson});',
     );
   }
 
   @override
   Future<void> reload() async {
+    _resetLoadState();
     final html = await rootBundle.loadString('assets/index.html');
 
-    return await controller.loadHtmlString(html);
+    await controller.loadHtmlString(html);
+    await _waitUntilReady();
   }
 
   @override
   Future<void> dropFocus() async {
+    await _waitUntilReady();
     return await controller.runJavaScript('document.activeElement?.blur();');
   }
 
   @override
   Future<void> debug() async {
+    await _waitUntilReady();
     await controller.runJavaScript(
-      'postMessageToEditor({type:"setDiagnostics"});',
+      'window.postMessageToEditor({type:"setDiagnostics"});',
     );
+  }
+
+  void _resetLoadState() {
+    _pageReadyCompleter = Completer<void>();
+    _editorReadyCompleter = Completer<void>();
+  }
+
+  Future<void> _waitUntilReady() async {
+    await _pageReadyCompleter?.future;
+    await _editorReadyCompleter?.future;
   }
 }

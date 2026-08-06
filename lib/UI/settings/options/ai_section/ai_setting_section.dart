@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'options/ai_type_selector_option.dart';
+import 'options/local_ai_context_limit.dart';
 import 'options/model_path_option.dart';
 import '../setting_section.dart';
 import 'ai_setting_vm.dart';
@@ -44,6 +45,7 @@ class _AISettingSectionState extends State<AISettingSection> {
                   ),
                 ] else ...[
                   ModelPathOption(settings: value, onSave: _vm.setModelPath),
+                  LocalAiContextLimit(onLimitChanged: _vm.setLocalContextLimit),
                 ],
               ],
             );

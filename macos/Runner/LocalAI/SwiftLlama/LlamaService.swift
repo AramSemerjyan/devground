@@ -158,7 +158,7 @@ public final actor LlamaService {
 
     private func initializeLlamaIfNecessary() throws -> Llama {
         guard let llama else {
-            llama = try Llama(modelPath: modelUrl.path(percentEncoded: false), config: config)
+            llama = try Llama(modelPath: modelUrl.path, config: config)
             return llama!
         }
         return llama

@@ -14,7 +14,8 @@ enum SPKeys {
 enum SPAIKeys {
   modelPath('model_path'),
   type('ai_type'),
-  apiKey('ai_api_key');
+  apiKey('ai_api_key'),
+  localContextLimit('local_context_limit');
 
   final String value;
 
