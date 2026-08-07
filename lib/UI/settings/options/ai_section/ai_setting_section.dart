@@ -45,7 +45,21 @@ class _AISettingSectionState extends State<AISettingSection> {
                   ),
                 ] else ...[
                   ModelPathOption(settings: value, onSave: _vm.setModelPath),
-                  LocalAiContextLimit(onLimitChanged: _vm.setLocalContextLimit),
+                  FutureBuilder<int?>(
+                    future: _vm.localContextLimit,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        return LocalAiContextLimit(
+                          initialValue: snapshot.data ?? 0,
+                          onLimitChanged: _vm.setLocalContextLimit,
+                        );
+                      }
+                    },
+                  ),
                 ],
               ],
             );

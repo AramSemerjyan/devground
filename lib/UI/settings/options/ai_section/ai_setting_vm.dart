@@ -118,4 +118,6 @@ class AISettingVM implements AISettingVMInterface {
     }
     await _aiRepo.setLocalContextLimit(intLimit);
   }
+
+  get localContextLimit => _aiRepo.getLocalContextLimit();
 }

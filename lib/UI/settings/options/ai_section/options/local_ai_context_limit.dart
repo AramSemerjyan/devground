@@ -4,9 +4,10 @@ import '../../../../../utils/app_colors.dart';
 import '../../setting_option.dart';
 
 class LocalAiContextLimit extends StatefulWidget {
+  final int initialValue;
   final Function(String?)? onLimitChanged;
 
-  const LocalAiContextLimit({super.key, this.onLimitChanged});
+  const LocalAiContextLimit({super.key, this.initialValue = 0, this.onLimitChanged});
 
   @override
   LocalAiContextLimitState createState() => LocalAiContextLimitState();
@@ -32,6 +33,7 @@ class LocalAiContextLimitState extends State<LocalAiContextLimit> {
           ),
           StepSlider(
             steps: List.generate(10, (index) => ((index + 1) * 10).toString()),
+            initialValue: widget.initialValue,
             onStepChanged: (value) {
               widget.onLimitChanged?.call(value);
             },

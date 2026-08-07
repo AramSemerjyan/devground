@@ -3,9 +3,15 @@ import '../../utils/app_colors.dart';
 
 class StepSlider extends StatefulWidget {
   final List<String> steps;
+  final int initialValue;
   final Function(String)? onStepChanged;
 
-  const StepSlider({super.key, required this.steps, this.onStepChanged});
+  const StepSlider({
+    super.key,
+    required this.steps,
+    this.initialValue = 0,
+    this.onStepChanged,
+  });
 
   @override
   State<StepSlider> createState() => _StepSliderState();
@@ -13,7 +19,8 @@ class StepSlider extends StatefulWidget {
 
 class _StepSliderState extends State<StepSlider> {
   List<String> get _steps => widget.steps;
-  double _currentValue = 0;
+  late double _currentValue =
+      (widget.initialValue / 10 - 1).toDouble();
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +65,7 @@ class _StepSliderState extends State<StepSlider> {
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: isSelected
-                      ? AppColor.selected
-                      : AppColor.mainGreyLighter,
+                  color: isSelected ? AppColor.white : AppColor.mainGreyLighter,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               );
