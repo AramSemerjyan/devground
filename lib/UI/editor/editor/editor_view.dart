@@ -5,6 +5,7 @@ import 'package:dartpad_lite/UI/editor/ai_helper/ai_helper_page.dart';
 import 'package:dartpad_lite/UI/editor/editor/editor_view_vm.dart';
 import 'package:dartpad_lite/UI/editor/editor/language_editor/language_editor_factory.dart';
 import 'package:dartpad_lite/UI/editor/result_page/side_by_side/side_to_side_view.dart';
+import 'package:dartpad_lite/UI/terminal/terminal_page.dart';
 import 'package:dartpad_lite/core/pages_service/pages_service.dart';
 import 'package:dartpad_lite/core/services/import_file/imported_file.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class _EditorViewState extends State<EditorView>
   final ValueNotifier<double> _bottomBarHeight = ValueNotifier(300);
   final ValueNotifier<bool> _inProgress = ValueNotifier(false);
   final ValueNotifier<bool> _showAI = ValueNotifier(false);
+  final ValueNotifier<bool> _showTerminal = ValueNotifier(false);
   final ValueNotifier<bool> _showSideToSide = ValueNotifier(false);
   final ValueNotifier<bool> _sideBarToggle = ValueNotifier(true);
 
@@ -191,8 +193,28 @@ class _EditorViewState extends State<EditorView>
               icon: !show ? Icons.accessible : Icons.accessible_forward,
               onPressed: () async {
                 _showAI.value = !_showAI.value;
+                if (_showAI.value) {
+                  _showTerminal.value = false;
+                }
 
                 _vm.onAIBoosModeChange(state: _showAI.value);
+              },
+            );
+          },
+        ),
+        ValueListenableBuilder(
+          valueListenable: _showTerminal,
+          builder: (_, show, __) {
+            return AppButton(
+              heroTag: 'terminalBtn',
+              tooltip: 'Terminal',
+              isSelected: show,
+              icon: Icons.terminal_rounded,
+              onPressed: () async {
+                _showTerminal.value = !_showTerminal.value;
+                if (_showTerminal.value) {
+                  _showAI.value = false;
+                }
               },
             );
           },
@@ -283,6 +305,31 @@ class _EditorViewState extends State<EditorView>
                 editorController: _vm.controller,
                 fileService: widget.saveFileService,
               ),
+            ),
+            ValueListenableBuilder(
+              valueListenable: _isDragging,
+              builder: (_, isDragging, __) {
+                if (!isDragging) return SizedBox();
+
+                return Positioned.fill(child: _buildDragOverlay());
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTerminalView() {
+    return ValueListenableBuilder(
+      valueListenable: _bottomBarHeight,
+      builder: (_, value, __) {
+        return Stack(
+          children: [
+            SizedBox(
+              height: value,
+              width: double.infinity,
+              child: TerminalPage(),
             ),
             ValueListenableBuilder(
               valueListenable: _isDragging,
@@ -405,13 +452,17 @@ class _EditorViewState extends State<EditorView>
             ],
           ),
         ),
-        ValueListenableBuilder(
-          valueListenable: _showAI,
-          builder: (_, show, __) {
-            if (!show) return SizedBox();
+        ListenableBuilder(
+          listenable: Listenable.merge([_showAI, _showTerminal]),
+          builder: (_, __) {
+            if (!_showAI.value && !_showTerminal.value) return SizedBox();
+
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: [_buildResizeSeparatorHorizontal(), _buildAIView()],
+              children: [
+                _buildResizeSeparatorHorizontal(),
+                _showAI.value ? _buildAIView() : _buildTerminalView(),
+              ],
             );
           },
         ),
