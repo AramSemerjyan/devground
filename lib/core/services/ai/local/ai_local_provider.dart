@@ -4,6 +4,7 @@ import 'package:dartpad_lite/core/platform_channel/app_platform_channel.dart';
 import 'package:dartpad_lite/core/services/ai/ai_response.dart';
 import 'package:dartpad_lite/core/services/ai/local/ai_local_response.dart';
 import 'package:dartpad_lite/core/storage/supported_language.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
 import '../ai_provider.dart';
@@ -39,49 +40,102 @@ class AILocalProvider implements AIProviderInterface {
     // Add user message to the conversation history
     conversation.addUserMessage(text);
 
-    // Start generation with the entire context
-    await PlatformLlamaChannel.method.invokeMethod("startGeneration", {
-      'modelPath': path,
-      'messages': conversation.messages,
-    });
-
-    // Listen to tokens
-    final tokenStream = PlatformLlamaChannel.stream
-        .receiveBroadcastStream()
-        .cast<String>();
-
     final thinkBuffer = StringBuffer();
     bool inThinkBlock = false;
     String wholeText = "";
+    bool isDone = false;
 
-    await for (final token in tokenStream) {
-      if (token == "__done__") {
-        conversation.addBotResponse(wholeText.trim());
-        yield AILocalResponse(isDone: true);
-        break;
-      }
-
+    void emitToken(String token) {
       if (token.startsWith("<think>")) {
         inThinkBlock = true;
         thinkBuffer.write(token.replaceFirst("<think>", "").trim());
       } else if (token.endsWith("</think>")) {
-        // End of thinking block, add to bot response and clear buffer
+        // End of thinking block, add to bot response and clear buffer.
         thinkBuffer.write(token.replaceFirst("</think>", "").trim());
         conversation.addBotResponse(thinkBuffer.toString().trim());
-        yield AILocalResponse(isThinking: true);
         thinkBuffer.clear();
         inThinkBlock = false;
       } else {
         if (inThinkBlock) {
-          // Accumulate thinking tokens
+          // Accumulate thinking tokens.
           thinkBuffer.write(token);
+        } else {
+          // Regular result tokens.
+          wholeText += token;
+        }
+      }
+    }
+
+    try {
+      // Start generation with the entire context.
+      await PlatformLlamaChannel.method.invokeMethod("startGeneration", {
+        'modelPath': path,
+        'messages': conversation.messages,
+      });
+
+      // Listen to raw events and validate token type ourselves.
+      final tokenStream = PlatformLlamaChannel.stream.receiveBroadcastStream();
+
+      await for (final event in tokenStream) {
+        if (event is! String) continue;
+
+        final token = event;
+        final trimmed = token.trim();
+
+        if (trimmed == "__done__") {
+          conversation.addBotResponse(wholeText.trim());
+          yield AILocalResponse(isDone: true);
+          isDone = true;
+          break;
+        }
+
+        if (token.contains("__done__")) {
+          final content = token.replaceAll("__done__", "");
+          if (content.isNotEmpty) {
+            final wasInThinkBlock = inThinkBlock;
+            emitToken(content);
+            if (wasInThinkBlock ||
+                content.startsWith("<think>") ||
+                content.endsWith("</think>")) {
+              yield AILocalResponse(think: content, isThinking: true);
+            } else {
+              yield AILocalResponse(think: null, result: content);
+            }
+          }
+
+          conversation.addBotResponse(wholeText.trim());
+          yield AILocalResponse(isDone: true);
+          isDone = true;
+          break;
+        }
+
+        final wasInThinkBlock = inThinkBlock;
+        emitToken(token);
+        if (wasInThinkBlock ||
+            token.startsWith("<think>") ||
+            token.endsWith("</think>")) {
           yield AILocalResponse(think: token, isThinking: true);
         } else {
-          // Regular result tokens
-          wholeText += token;
           yield AILocalResponse(think: null, result: token);
         }
       }
+
+      if (!isDone) {
+        if (wholeText.trim().isNotEmpty) {
+          conversation.addBotResponse(wholeText.trim());
+          yield AILocalResponse(isDone: true);
+        } else {
+          throw AIRequestFailedError(
+            "Generation ended unexpectedly without completion token.",
+          );
+        }
+      }
+    } on PlatformException catch (e) {
+      throw AIRequestFailedError(
+        e.message?.trim().isNotEmpty == true ? e.message! : e.code,
+      );
+    } on TimeoutException catch (e) {
+      throw AIRequestFailedError(e.message ?? "Generation timed out.");
     }
   }
 }
