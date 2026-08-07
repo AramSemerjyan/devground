@@ -102,6 +102,15 @@ class AIHelperVM implements AIHelperVMInterface {
     _setUpAIProvider();
   }
 
+  StreamController<String> _newBroadcastController() {
+    return StreamController<String>.broadcast();
+  }
+
+  void _closeResponseStreams(AIBotChatMessage? response) {
+    response?.chunkStream?.close();
+    response?.thinkStream?.close();
+  }
+
   void _setUpAIProvider() async {
     try {
       final aiType = await aiRepoInterface.getType();
@@ -167,6 +176,8 @@ class AIHelperVM implements AIHelperVMInterface {
 
       String wholeResultText = '';
       String wholeThinkText = '';
+      StreamController<String>? chunkController;
+      StreamController<String>? thinkController;
 
       aiState.value = AIState.thinking;
 
@@ -179,6 +190,8 @@ class AIHelperVM implements AIHelperVMInterface {
               wholeThinkText += aiResponse.thinkingText;
 
               if (message.response == null) {
+                chunkController = _newBroadcastController();
+                thinkController = _newBroadcastController();
                 message = message.copyWithResponse(
                   botResponse: AIBotChatMessage(
                     fullResponse: wholeResultText,
@@ -186,8 +199,8 @@ class AIHelperVM implements AIHelperVMInterface {
                     isThinking: aiResponse.isThinking,
                     isDone: aiResponse.isDone,
                     shouldShowThink: aiResponse.shouldShowThink,
-                    chunkStream: StreamController(),
-                    thinkStream: StreamController(),
+                    chunkStream: chunkController,
+                    thinkStream: thinkController,
                   ),
                 );
 
@@ -198,6 +211,8 @@ class AIHelperVM implements AIHelperVMInterface {
               }
 
               if (message.response?.isThinking != aiResponse.isThinking) {
+                chunkController ??= message.response?.chunkStream;
+                thinkController ??= message.response?.thinkStream;
                 message = message.copyWithResponse(
                   botResponse: AIBotChatMessage(
                     fullResponse: wholeResultText,
@@ -205,8 +220,8 @@ class AIHelperVM implements AIHelperVMInterface {
                     isThinking: aiResponse.isThinking,
                     isDone: aiResponse.isDone,
                     shouldShowThink: aiResponse.shouldShowThink,
-                    chunkStream: StreamController(),
-                    thinkStream: StreamController(),
+                    chunkStream: chunkController,
+                    thinkStream: thinkController,
                   ),
                 );
 
@@ -218,7 +233,8 @@ class AIHelperVM implements AIHelperVMInterface {
 
               if (!aiResponse.isDone) {
                 if (aiResponse.isThinking) {
-                  message.response?.thinkStream?.sink.add(wholeThinkText);
+                  thinkController ??= message.response?.thinkStream;
+                  thinkController?.sink.add(wholeThinkText);
                 } else {
                   EventService.emit(
                     type: EventType.aiStateChanged,
@@ -226,9 +242,11 @@ class AIHelperVM implements AIHelperVMInterface {
                   );
                   aiState.value = AIState.generating;
 
-                  message.response?.chunkStream?.sink.add(wholeResultText);
+                  chunkController ??= message.response?.chunkStream;
+                  chunkController?.sink.add(wholeResultText);
                 }
               } else {
+                _closeResponseStreams(message.response);
                 message = message.copyWithResponse(
                   botResponse: AIBotChatMessage(
                     fullResponse: wholeResultText,
@@ -261,6 +279,8 @@ class AIHelperVM implements AIHelperVMInterface {
             }
           })
           .onError((error, stack) {
+            _closeResponseStreams(message.response);
+
             EventService.emit(
               type: EventType.aiStateChanged,
               data: AIState.idle,
