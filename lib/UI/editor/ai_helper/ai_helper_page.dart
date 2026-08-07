@@ -191,65 +191,89 @@ class _AiHelperPageState extends State<AiHelperPage> {
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      minLines: 1,
-                      maxLines: 3,
-                      focusNode: _fieldFocus,
-                      onTapOutside: (_) => _fieldFocus.unfocus(),
-                      style: TextStyle(color: AppColor.mainGreyLighter),
-                      onSubmitted: (_) => _sendMessage(),
-                      decoration: const InputDecoration(
-                        hintText: 'Type your message...',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
+                  TextField(
+                    controller: _controller,
+                    minLines: 1,
+                    maxLines: 3,
+                    focusNode: _fieldFocus,
+                    onTapOutside: (_) => _fieldFocus.unfocus(),
+                    style: TextStyle(color: AppColor.mainGreyLighter),
+                    onSubmitted: (_) => _sendMessage(),
+                    decoration: const InputDecoration(
+                      hintText: 'Type your message...',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                     ),
                   ),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: _vm.readFromEditor,
-                    builder: (_, value, __) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          color: value
-                              ? AppColor.mainGreyBlack.withValues(alpha: 0.3)
-                              : AppColor.mainGrey,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(4),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 2, 6, 6),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Model: ${_vm.providerInfo.name}',
+                          style: TextStyle(
+                            color: AppColor.mainGreyLighter.withValues(
+                              alpha: 0.6,
+                            ),
+                            fontSize: 12,
                           ),
                         ),
-                        child: Tooltip(
-                          message: 'Use editor code',
-                          child: IconButton(
-                            onPressed: () => _vm.readFromEditor.value = !value,
-                            icon: Icon(
-                              Icons.edit_note,
-                              color: AppColor.mainGreyLighter,
+                        Spacer(),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _vm.readFromEditor,
+                          builder: (_, value, __) {
+                            return Container(
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                color: value
+                                    ? AppColor.mainGreyBlack.withValues(
+                                        alpha: 0.3,
+                                      )
+                                    : AppColor.mainGrey,
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(4),
+                                ),
+                              ),
+                              child: Tooltip(
+                                message: 'Use editor code',
+                                child: IconButton(
+                                  onPressed: () =>
+                                      _vm.readFromEditor.value = !value,
+                                  icon: Icon(
+                                    Icons.edit_note,
+                                    color: AppColor.mainGreyLighter,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: AppColor.mainGrey,
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(4),
+                            ),
+                          ),
+                          child: Tooltip(
+                            message: 'Send message',
+                            child: IconButton(
+                              onPressed: _sendMessage,
+                              icon: Icon(
+                                Icons.send,
+                                color: AppColor.mainGreyLighter,
+                              ),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(right: 6),
-                    decoration: BoxDecoration(
-                      color: AppColor.mainGrey,
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    ),
-                    child: Tooltip(
-                      message: 'Send message',
-                      child: IconButton(
-                        onPressed: _sendMessage,
-                        icon: Icon(Icons.send, color: AppColor.mainGreyLighter),
-                      ),
+                      ],
                     ),
                   ),
                 ],

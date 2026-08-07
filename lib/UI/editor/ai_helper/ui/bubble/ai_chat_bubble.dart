@@ -181,14 +181,6 @@ class _AiChatBubbleState extends State<AiChatBubble> {
             children: [
               Row(
                 children: [
-                  if (widget.providerInfo != null)
-                    Text(
-                      'Powered by: ${widget.providerInfo?.name ?? ''}',
-                      style: TextStyle(
-                        color: AppColor.mainGreyLighter.withValues(alpha: 0.5),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   Spacer(),
                   Tooltip(
                     message: 'Save response as file',
