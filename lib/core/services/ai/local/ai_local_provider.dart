@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartpad_lite/core/platform_channel/app_platform_channel.dart';
 import 'package:dartpad_lite/core/services/ai/ai_response.dart';
 import 'package:dartpad_lite/core/services/ai/local/ai_local_response.dart';
+import 'package:dartpad_lite/core/storage/supported_language.dart';
 import 'package:path/path.dart';
 
 import '../ai_provider.dart';
@@ -13,12 +14,13 @@ import 'ai_local_conversation_state.dart';
 class AILocalProvider implements AIProviderInterface {
   final String path;
   final int contextLimit;
+  final SupportedLanguage? language;
   late final ConversationState conversation = ConversationState(contextLimit);
 
   @override
   AIProviderInfo get providerInfo => AIProviderInfo(name: basename(path));
 
-  AILocalProvider(this.path, this.contextLimit);
+  AILocalProvider(this.path, this.contextLimit, this.language);
 
   @override
   Stream<AIResponse?> generateContent({
@@ -27,6 +29,11 @@ class AILocalProvider implements AIProviderInterface {
   }) async* {
     if (path.isEmpty) {
       throw AIModelPathMissingError();
+    }
+
+    if (conversation.messages.isEmpty && language != null) {
+      text =
+          '$text\nprefered file type: ${language!.extension}, prefered programming language: ${language!.name}';
     }
 
     // Add user message to the conversation history

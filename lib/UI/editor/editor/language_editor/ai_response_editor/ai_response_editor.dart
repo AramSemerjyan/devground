@@ -23,6 +23,7 @@ class _AiResponseEditorState extends State<AiResponseEditor> {
       width: double.infinity,
       child: Container(
         padding: EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 25),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: AppColor.mainGrey,

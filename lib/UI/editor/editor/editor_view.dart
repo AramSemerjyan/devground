@@ -210,7 +210,7 @@ class _EditorViewState extends State<EditorView>
         return Stack(
           children: [
             _buildLanguageEditorView(),
-            Positioned(bottom: 4, left: 28, child: _buildButtons()),
+            Positioned(bottom: 4, left: 16, child: _buildButtons()),
             ValueListenableBuilder(
               valueListenable: _isDragging,
               builder: (_, isDragging, __) {

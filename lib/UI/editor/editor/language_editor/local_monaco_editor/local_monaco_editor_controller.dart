@@ -12,6 +12,7 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
   late final WebViewController controller;
   Completer<void>? _pageReadyCompleter;
   Completer<void>? _editorReadyCompleter;
+  SupportedLanguage? _currentLanguage;
 
   @override
   NavigationDecision Function(NavigationRequest)? onNavigationRequest;
@@ -135,6 +136,12 @@ class LocalMonacoEditorController implements LanguageEditorControllerInterface {
     await controller.runJavaScript('window.setEditorLanguage("$jsLang");');
 
     await setCode(code: language.snippet);
+    _currentLanguage = language;
+  }
+
+  @override
+  Future<SupportedLanguage?> getLanguage() async {
+    return _currentLanguage;
   }
 
   @override

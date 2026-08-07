@@ -12,6 +12,7 @@ abstract class LanguageEditorControllerInterface {
   Future<void> runCode();
   Future<String> getValue();
   Future<void> setLanguage({required SupportedLanguage language});
+  Future<SupportedLanguage?> getLanguage();
   Future<void> setCode({required String code});
   Future<void> reload();
   Future<void> dropFocus();

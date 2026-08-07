@@ -46,6 +46,11 @@ class AIResponseEditorController implements LanguageEditorControllerInterface {
   Future<void> setLanguage({required SupportedLanguage language}) async {}
 
   @override
+  Future<SupportedLanguage?> getLanguage() {
+    return Future.value(null);
+  }
+
+  @override
   Future<void> setUp() async {}
   
   @override

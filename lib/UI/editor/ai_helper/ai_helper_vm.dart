@@ -111,9 +111,11 @@ class AIHelperVM implements AIHelperVMInterface {
           final path = await aiRepoInterface.getModelPath();
           final contextLimit =
               await aiRepoInterface.getLocalContextLimit() ?? 10;
+          final language = await editorController.getLanguage();
           await _aiProviderService.loadFromFile(
             modelPath: path ?? '',
             contextLimit: contextLimit,
+            language: language,
           );
           break;
         case AIType.remote:
