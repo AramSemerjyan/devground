@@ -15,6 +15,6 @@ class ConversationState {
     if (messages.length >= maxMessages) {
       messages.removeAt(0); // Remove the oldest message
     }
-    messages.add({"role": "bot", "content": response});
+    messages.add({"role": "assistant", "content": response});
   }
 }

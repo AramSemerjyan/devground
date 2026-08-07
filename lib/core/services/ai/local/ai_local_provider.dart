@@ -45,9 +45,11 @@ class AILocalProvider implements AIProviderInterface {
 
     final thinkBuffer = StringBuffer();
     bool inThinkBlock = false;
+    String wholeText = "";
 
     await for (final token in tokenStream) {
       if (token == "__done__") {
+        conversation.addBotResponse(wholeText.trim());
         yield AILocalResponse(isDone: true);
         break;
       }
@@ -69,6 +71,7 @@ class AILocalProvider implements AIProviderInterface {
           yield AILocalResponse(think: token, isThinking: true);
         } else {
           // Regular result tokens
+          wholeText += token;
           yield AILocalResponse(think: null, result: token);
         }
       }
