@@ -32,7 +32,7 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
       valueListenable: _vm.selectedLanguage,
       builder: (_, selectedLanguage, __) {
         return SettingOption(
-          title: 'Language',
+          title: 'SDK Path',
           height: selectedLanguage?.needSDKPath ?? false ? 200 : 100,
           child: FutureBuilder(
             future: _vm.getSupportedLanguages(),
@@ -50,7 +50,7 @@ class _LanguageSettingOptionState extends State<LanguageSettingOption> {
                     onTap: () {
                       CommandPalette.showOption<SupportedLanguage>(
                         context: context,
-                        items: data.values.toList(),
+                        items: data.values.where((v) => v.needSDKPath).toList(),
                         itemBuilder: (context, item) => Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(

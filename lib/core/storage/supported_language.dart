@@ -32,7 +32,8 @@ enum SupportedLanguageKey {
   txt('txt'),
   log('log'),
   css('css'),
-  ai('ai');
+  ai('ai'),
+  csv('csv');
 
   final String value;
 
