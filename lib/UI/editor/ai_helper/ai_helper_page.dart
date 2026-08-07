@@ -199,6 +199,7 @@ class _AiHelperPageState extends State<AiHelperPage> {
                       minLines: 1,
                       maxLines: 3,
                       focusNode: _fieldFocus,
+                      onTapOutside: (_) => _fieldFocus.unfocus(),
                       style: TextStyle(color: AppColor.mainGreyLighter),
                       onSubmitted: (_) => _sendMessage(),
                       decoration: const InputDecoration(
